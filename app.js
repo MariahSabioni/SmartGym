@@ -68,7 +68,7 @@ disconnectButtonFTMS.addEventListener('click', function() {
 function handleTreadmillMeasurement(treadmillMeasurement) {
   treadmillMeasurement.addEventListener('characteristicvaluechanged', event => {
     var treadmillMeasurement = fitnessMachineDevice.parseTreadmillData(event.target.value);
-    statusTextFTMS.innerHTML = 'Speed: ' + treadmillMeasurement.speed + 'km/h | Inclination: ' + treadmillMeasurement.inclination + '%';
+    statusTextFTMS.innerHTML = /*'&#x1F3C3;'*/ `&#x1F4A8; Speed: ${(treadmillMeasurement.speed<10?'&nbsp;':'')}${treadmillMeasurement.speed} km/h<br />&#x26F0; Inclination: ${(treadmillMeasurement.inclination<0?'':'&nbsp;')}${treadmillMeasurement.inclination} % <br />&#x1f5fa; Distance: ${treadmillMeasurement.distance} m<br />&#x23f1; Time: ${treadmillMeasurement.time}`;
     titleTextFTMS.textContent = "Connected to: " + fitnessMachineDevice.getDeviceName();
     inclinations.push(treadmillMeasurement.inclination);
     speeds.push(treadmillMeasurement.speed);
@@ -102,7 +102,7 @@ function drawChartSpeed() {
 function handleHeartRateMeasurement(heartRateMeasurement) {
   heartRateMeasurement.addEventListener('characteristicvaluechanged', event => {
     var heartRateMeasurement = heartRateDevice.parseHeartRate(event.target.value);
-    statusTextHR.innerHTML = ' &#x2764;' + heartRateMeasurement.heartRate;
+    statusTextHR.innerHTML = `&#x2764; Heart rate: ${heartRateMeasurement.heartRate}bpm <br />&#x1F50B; Energy expended: ${heartRateMeasurement.energyExpended}`;
     titleTextHR.textContent = "Connected to: " + heartRateDevice.getDeviceName();
     heartRates.push(heartRateMeasurement.heartRate);
     canvasContainerHR.style.display = "block";

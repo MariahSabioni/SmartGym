@@ -68,12 +68,34 @@ disconnectButtonFTMS.addEventListener('click', function() {
 function handleTreadmillMeasurement(treadmillMeasurement) {
   treadmillMeasurement.addEventListener('characteristicvaluechanged', event => {
     var treadmillMeasurement = fitnessMachineDevice.parseTreadmillData(event.target.value);
-    statusTextFTMS.innerHTML = treadmillMeasurement.speed;
+    statusTextFTMS.innerHTML = 'Speed: ' + treadmillMeasurement.speed + 'km/h | Inclination: ' + treadmillMeasurement.inclination + '%';
     titleTextFTMS.textContent = "Connected to: " + fitnessMachineDevice.getDeviceName();
+    inclinations.push(treadmillMeasurement.inclination);
     speeds.push(treadmillMeasurement.speed);
-    console.log(speeds);
     canvasContainerFTMS.style.display = "block";
-    //drawChart();
+    drawChartSpeed();
+  });
+}
+
+function drawChartSpeed() {
+  requestAnimationFrame(() => {
+    var context = canvasFTMS.getContext('2d');
+    var max = Math.max(0, Math.round(canvasFTMS.width / 11));
+    var offset = Math.max(0, speeds.length - max);
+    context.clearRect(0, 0, canvasFTMS.width, canvasFTMS.height);
+    context.strokeStyle = '#FF0000';
+    context.beginPath();
+    context.lineWidth = 1;
+    context.lineJoin = 'round';
+    for (var i = 0; i < Math.max(speeds.length, max); i++) {
+      var lineHeight = Math.round(speeds[i + offset ] * canvasFTMS.height / 25);
+      if (i === 0) {
+        context.moveTo(11 * i, canvasFTMS.height - lineHeight);
+      } else {
+        context.lineTo(11 * i, canvasFTMS.height - lineHeight);
+      }
+      context.stroke();
+    }
   });
 }
 
@@ -83,13 +105,12 @@ function handleHeartRateMeasurement(heartRateMeasurement) {
     statusTextHR.innerHTML = ' &#x2764;' + heartRateMeasurement.heartRate;
     titleTextHR.textContent = "Connected to: " + heartRateDevice.getDeviceName();
     heartRates.push(heartRateMeasurement.heartRate);
-    console.log(heartRates);
     canvasContainerHR.style.display = "block";
-    drawChart();
+    drawChartHR();
   });
 }
 
-function drawChart() {
+function drawChartHR() {
   requestAnimationFrame(() => {
     var context = canvasHR.getContext('2d');
     var max = Math.max(0, Math.round(canvasHR.width / 11));

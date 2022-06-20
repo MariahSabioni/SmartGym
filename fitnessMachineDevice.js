@@ -44,15 +44,28 @@
         // let speed16Bits = flags & 0x0002;
         // console.log(speed16Bits)
         let result = {};
-        let index = 2;
-        result.speed = value.getUint16(index, /*littleEndian=*/true)/100;
-        index += 2;
+        let index_speed = 2;
+        result.speed = value.getUint16(index_speed, /*littleEndian=*/true)/100;
+        let index_inclination = 9;
+        result.inclination = value.getInt16(index_inclination, /*littleEndian=*/true)/10;
+        let index_distance = 6;
+        result.distance = this.getUint24(index_distance, value);
+        let index_time = 14;
+        result.time = value.getUint16(index_time, /*littleEndian=*/true);
         // let energyPresent = flags & 0x8;
         // if (energyPresent) {
         //     result.energyExpended = value.getUint16(index, /*littleEndian=*/true);
         //     index += 2;
         // }
+        console.log('result: ' + result.speed + 'km/h | ' + result.inclination + '% | '+ result.distance + 'm | ' + result.time + 's')
         return result;
+        }
+
+        getUint24(index_distance, value){
+            let a = value.getUint16(index_distance, /*littleEndian=*/true);
+            a << 8;
+            let b = value.getUint8(2 + index_distance, /*littleEndian=*/true);
+            return a + b;
         }
 
         /* Utils */

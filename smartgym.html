@@ -37,16 +37,36 @@
             <h5 class="card-header">Fitness machine</h5>
             <div class="card-body">
                 <div class="row">
-                    <div class="col">
+                    <div class="col-3">
                         <h5 id = "titleTextFTMS" class="card-title">Scan for Bluetooth fitness machine</h5>
                         <p id = "statusTextFTMS" class="card-text">No device connected</p>
                         <a id = "connectButtonFTMS" href="#" class="btn btn-primary">Connect</a>
                         <a id = "disconnectButtonFTMS" href="#" class="btn btn-primary">Disconnect</a>
                     </div>
-                    <div class="col-9">
-                        <div id="canvasContainerFTMS" class="card-body">
-                            <p class="card-text">Speed (km/h)</p>
-                            <canvas  id="canvasFTMS" ></canvas>
+                    <div id="controlsContainerFTMS" class="col">
+                        <div class="row">
+                            <div class="col-sm-auto">
+                                <div id="speedControlContainer" class="card-body">
+                                    <p class="card-text" style="text-align:center">Speed (km/h)</p>
+                                    <img id = 'speedUpButton' src="icons/chevron-up.svg" class="center">
+                                    <p id = "speedTextFTMS" class="card-text" style="text-align:center">speed</p>
+                                    <img id = 'speedDownButton' src="icons/chevron-down.svg" class="center">
+                                </div>
+                            </div>
+                            <div class="col-sm-auto">
+                                <div id="inclinationControlContainer" class="card-body">
+                                    <p class="card-text" style="text-align:center">Inclination (%)</p>
+                                    <img id = 'inclinationUpButton' src="icons/chevron-up.svg" class="center">
+                                    <p id = "inclinationTextFTMS" class="card-text" style="text-align:center">inclination</p>
+                                    <img id = 'inclinationDownButton' src="icons/chevron-down.svg" class="center">
+                                </div>
+                            </div>
+                            <div class="col">
+                                <div class="card-body">
+                                    <p class="card-text">Speed (km/h)</p>
+                                    <canvas  id="canvasFTMS" ></canvas>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>

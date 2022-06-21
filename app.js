@@ -10,8 +10,11 @@ let connectButtonFTMS = document.getElementById('connectButtonFTMS');
 let disconnectButtonFTMS = document.getElementById('disconnectButtonFTMS');
 let titleTextFTMS = document.getElementById('titleTextFTMS');
 let statusTextFTMS = document.getElementById("statusTextFTMS") ;
-let canvasContainerFTMS = document.getElementById("canvasContainerFTMS") ;
+let controlsContainerFTMS = document.getElementById("controlsContainerFTMS") ;
 let canvasFTMS = document.getElementById("canvasFTMS");
+
+let speedUpButton = document.getElementById('speedUpButton');
+let speedDownButton = document.getElementById('speedDownButton');
 
 let heartRates = [];
 let speeds = [];
@@ -21,12 +24,12 @@ let inclinations = [];
 statusTextHR.textContent = "No HR sensor connected" ;
 titleTextHR.textContent = "Scan for Bluetooth HR sensor";
 canvasContainerHR.style.display = "none";
-disconnectButtonHR.disabled = true; //not working why??
-connectButtonHR.disabled = false;
+//disconnectButtonHR.style.display = "none";
 
 statusTextFTMS.textContent = "No fitness machine connected" ;
 titleTextFTMS.textContent = "Scan for Bluetooth fitness machine";
-canvasContainerFTMS.style.display = "none";
+//controlsContainerFTMS.style.display = "none";
+//disconnectButtonFTMS.style.display = "none";
 
 //listeners
 connectButtonHR.addEventListener('click', function() {
@@ -35,16 +38,16 @@ connectButtonHR.addEventListener('click', function() {
   .catch(error => {
     statusTextHR.textContent = error;
   });
-  connectButtonHR.disabled = true;
-  disconnectButtonHR.disabled = false;
+  //connectButtonHR.style.display = "none";
+  //disconnectButtonHR.style.display = "block";
 });
 disconnectButtonHR.addEventListener('click', function() {
   heartRateDevice.disconnect();
   statusTextHR.textContent = "No HR sensor connected" ;
   titleTextHR.textContent = "Scan for Bluetooth HR sensor";
   canvasContainerHR.style.display = "none";
-  disconnectButtonHR.disabled = true;
-  connectButtonHR.disabled = false;
+  //disconnectButtonHR.style.display = "none";
+  //connectButtonHR.style.display = "block";
 });
 
 connectButtonFTMS.addEventListener('click', function() {
@@ -53,16 +56,20 @@ connectButtonFTMS.addEventListener('click', function() {
   .catch(error => {
     statusTextFTMS.textContent = error;
   });
-  connectButtonFTMS.disabled = true;
-  disconnectButtonFTMS.disabled = false;
+  //connectButtonFTMS.style.display = "none";
+  //disconnectButtonFTMS.style.display = "block";
 });
 disconnectButtonFTMS.addEventListener('click', function() {
   fitnessMachineDevice.disconnect();
   statusTextFTMS.textContent = "No fitness machine connected" ;
   titleTextFTMS.textContent = "Scan for Bluetooth fitness machine";
-  canvasContainerFTMS.style.display = "none";
-  disconnectButtonFTMS.disabled = true;
-  connectButtonFTMS.disabled = false;
+  controlsContainerFTMS.style.display = "none";
+  //disconnectButtonFTMS.style.display = "none";
+  //connectButtonFTMS.style.display = "block";
+});
+
+speedUpButton.addEventListener('click', function() {
+  fitnessMachineDevice.increaseSpeedStep();
 });
 
 function handleTreadmillMeasurement(treadmillMeasurement) {
@@ -72,7 +79,7 @@ function handleTreadmillMeasurement(treadmillMeasurement) {
     titleTextFTMS.textContent = "Connected to: " + fitnessMachineDevice.getDeviceName();
     inclinations.push(treadmillMeasurement.inclination);
     speeds.push(treadmillMeasurement.speed);
-    canvasContainerFTMS.style.display = "block";
+    controlsContainerFTMS.style.display = "block";
     drawChartSpeed();
   });
 }
@@ -102,7 +109,7 @@ function drawChartSpeed() {
 function handleHeartRateMeasurement(heartRateMeasurement) {
   heartRateMeasurement.addEventListener('characteristicvaluechanged', event => {
     var heartRateMeasurement = heartRateDevice.parseHeartRate(event.target.value);
-    statusTextHR.innerHTML = `&#x2764; Heart rate: ${heartRateMeasurement.heartRate}bpm <br />&#x1F50B; Energy expended: ${heartRateMeasurement.energyExpended}`;
+    statusTextHR.innerHTML = `&#x2764; Heart rate: ${heartRateMeasurement.heartRate}bpm<br />&#x1F50B; Energy expended: ${heartRateMeasurement.energyExpended}`;
     titleTextHR.textContent = "Connected to: " + heartRateDevice.getDeviceName();
     heartRates.push(heartRateMeasurement.heartRate);
     canvasContainerHR.style.display = "block";

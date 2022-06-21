@@ -4,20 +4,23 @@
         this.device = null;
         this.server = null;
         this._characteristics = new Map();
+        this.serviceUUID = '00001826-0000-1000-8000-00805f9b34fb';
+        this.dataChUUID = "00002acd-0000-1000-8000-00805f9b34fb";
+        this.controlChUUID = "00002AD9-0000-1000-8000-00805F9B34FB";
         }
         
         connect() {
-        return navigator.bluetooth.requestDevice({filters:[{services:[ '00001826-0000-1000-8000-00805f9b34fb' ]}]})
+        return navigator.bluetooth.requestDevice({filters:[{services:[ this.serviceUUID ]}]})
         .then(device => {
             this.device = device;
             return device.gatt.connect();
         })
         .then(server => {
             this.server = server;
-            return server.getPrimaryService('00001826-0000-1000-8000-00805f9b34fb');
+            return server.getPrimaryService(this.serviceUUID);
         })
         .then(service => {
-            return this._cacheCharacteristic(service, "00002acd-0000-1000-8000-00805f9b34fb");
+            return this._cacheCharacteristic(service, this.dataChUUID);
         })
         }
 
@@ -32,10 +35,10 @@
         /* Heart Rate Service */
 
         startNotificationsData() {
-        return this._startNotifications("00002acd-0000-1000-8000-00805f9b34fb");
+        return this._startNotifications(this.dataChUUID);
         }
         stopNotificationsData() {
-        return this._stopNotifications("00002acd-0000-1000-8000-00805f9b34fb");
+        return this._stopNotifications(this.dataChUUID);
         }
         parseTreadmillData(value) {
         // In Chrome 50+, a DataView is returned instead of an ArrayBuffer.
@@ -62,18 +65,22 @@
         return result;
         }
 
+        increaseSpeedStep(){
+            console.log('speed increased')
+        }
+
+        /* Utils */
+
         getUint24(index_distance, value){
             let a = value.getUint16(index_distance, /*littleEndian=*/true);
             a << 8;
             let b = value.getUint8(2 + index_distance, /*littleEndian=*/true);
             return a + b;
         }
-
-        /* Utils */
-
         _cacheCharacteristic(service, characteristicUuid) {
         return service.getCharacteristic(characteristicUuid)
         .then(characteristic => {
+            console.log('characteristic found: ', characteristicUuid);
             this._characteristics.set(characteristicUuid, characteristic);
         });
         }

@@ -52,7 +52,7 @@ disconnectButtonHR.addEventListener('click', function() {
 
 connectButtonFTMS.addEventListener('click', function() {
   fitnessMachineDevice.connect()
-  .then(() => fitnessMachineDevice.startNotificationsData().then(handleTreadmillMeasurement))
+  //.then(() => fitnessMachineDevice.startNotificationsData().then(handleTreadmillMeasurement))
   .catch(error => {
     statusTextFTMS.textContent = error;
   });

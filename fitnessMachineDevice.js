@@ -1,12 +1,15 @@
 (function(){
     class fitnessMachineDevice {
+
         constructor() {
         this.device = null;
         this.server = null;
-        this._characteristics = new Map();
+        //this._characteristics = new Map();
         this.serviceUUID = '00001826-0000-1000-8000-00805f9b34fb';
         this.dataChUUID = "00002acd-0000-1000-8000-00805f9b34fb";
-        this.controlChUUID = "00002AD9-0000-1000-8000-00805F9B34FB";
+        this.controlChUUID = "00002ad9-0000-1000-8000-00805f9b34fb";
+        this.controlCh = null;
+        this.dataCh = null;
         }
         
         connect() {
@@ -20,8 +23,38 @@
             return server.getPrimaryService(this.serviceUUID);
         })
         .then(service => {
-            return this._cacheCharacteristic(service, this.dataChUUID);
-        })
+            //this._cacheCharacteristic(service, this.controlChUUID)
+            this.controlCh = service.getCharacteristic(this.controlChUUID)
+            .then(characteristic => {
+                console.log('characteristic found: ', characteristic);
+                let permissionStatus = this.askControlPermission(characteristic);
+                console.log('permission: ', permissionStatus)
+            })
+            .then(() => this.dataCh = service.getCharacteristic(this.dataChUUID))
+            .then(characteristic => {
+                console.log('characteristic found: ', characteristic);
+                this.startDataNotifications(characteristic);
+            })
+            .catch(error => {
+                console.log(error);
+            });
+        });
+        }
+
+        askControlPermission(characteristic){
+            console.log('asking control permission');
+            let permission = Uint8Array.of(0);
+            return characteristic.writeValue(permission);
+            //return(this._writeCharacteristicValue(this.controlChUUID, permission));
+        }
+
+        startDataNotifications(characteristic) {
+        console.log('Starting notifications...');
+        return characteristic.startNotifications()
+        .then(() => {
+            console.log('Notifications started');
+            characteristic.addEventListener('characteristicvaluechanged', this.parseTreadmillData);
+        });
         }
 
         disconnect(){
@@ -32,16 +65,17 @@
             this.device.gatt.disconnect();
         }
 
-        /* Heart Rate Service */
+        /* Treadmill Service */
 
         startNotificationsData() {
-        return this._startNotifications(this.dataChUUID);
+        return this._startNotifications(this.dataCh);
         }
         stopNotificationsData() {
         return this._stopNotifications(this.dataChUUID);
         }
-        parseTreadmillData(value) {
+        parseTreadmillData(event) {
         // In Chrome 50+, a DataView is returned instead of an ArrayBuffer.
+        let value = event.target.value;
         value = value.buffer ? value : new DataView(value);
         // let flags = value.getUint8(0);
         // let speed16Bits = flags & 0x0002;
@@ -52,7 +86,11 @@
         let index_inclination = 9;
         result.inclination = Number(value.getInt16(index_inclination, /*littleEndian=*/true)/10).toFixed(1);
         let index_distance = 6;
-        result.distance = this.getUint24(index_distance, value);
+        //result.distance = this.getUint24(index_distance, value);
+        let a = value.getUint16(index_distance, /*littleEndian=*/true);
+        a << 8;
+        let b = value.getUint8(2 + index_distance, /*littleEndian=*/true);
+        result.distance = a + b;
         let index_time = 14;
         let seconds = value.getUint16(index_time, /*littleEndian=*/true);
         result.time = new Date(seconds * 1000).toISOString().slice(11, 19);
@@ -62,11 +100,12 @@
         //     index += 2;
         // }
         console.log('result: ' + result.speed + 'km/h | ' + result.inclination + '% | '+ result.distance + 'm | ' + result.time)
-        return result;
+        //return result;
+            
         }
 
         increaseSpeedStep(){
-            console.log('speed increased')
+            console.log('speed increased');
         }
 
         /* Utils */
@@ -94,11 +133,12 @@
         });
         }
         _writeCharacteristicValue(characteristicUuid, value) {
-        let characteristic = this._characteristics.get(characteristicUuid);
-        return characteristic.writeValue(value);
+            let wValue = Uint8Array.of(value)
+            let characteristic = this._characteristics.get(characteristicUuid);
+        return characteristic.writeValue(wValue);
         }
-        _startNotifications(characteristicUuid) {
-        let characteristic = this._characteristics.get(characteristicUuid);
+        _startNotifications(characteristic) {
+        //let characteristic = this._characteristics.get(characteristicUuid);
         // Returns characteristic to set up characteristicvaluechanged event
         // handlers in the resolved promise.
         return characteristic.startNotifications()

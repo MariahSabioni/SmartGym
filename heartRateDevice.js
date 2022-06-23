@@ -3,7 +3,6 @@
         constructor() {
         this.device = null;
         this.server = null;
-        this._characteristics = new Map();
         }
         
         connect() {
@@ -17,30 +16,36 @@
             return server.getPrimaryService('heart_rate');
         })
         .then(service => {
-            return this._cacheCharacteristic(service, 'heart_rate_measurement');
+            this.findDataCharacteristic(service);
+        });
+        }
+
+        findDataCharacteristic(service) {
+        service.getCharacteristic('heart_rate_measurement')
+        .then(characteristic => {
+        console.log('characteristic found: ', characteristic);
+        return characteristic.startNotifications();
         })
+        .then(characteristic => {
+        characteristic.addEventListener('characteristicvaluechanged', this.parseHeartRate);
+        })
+        .catch(error => {
+        console.log(error);
+        });
         }
 
         disconnect(){
-            if (this.device == null) {
-                console.log('The target device is null.');
-                return;
-            }
-            //this.stopNotificationsHeartRateMeasurement()
-            this.device.gatt.disconnect();
+        if (this.device == null) {
+            console.log('The target device is null.');
+            return;
+        }
+        this.device.gatt.disconnect();
         }
 
-        /* Heart Rate Service */
-
-        startNotificationsHeartRateMeasurement() {
-        return this._startNotifications('heart_rate_measurement');
-        }
-        stopNotificationsHeartRateMeasurement() {
-        return this._stopNotifications('heart_rate_measurement');
-        }
-        parseHeartRate(value) {
-        // In Chrome 50+, a DataView is returned instead of an ArrayBuffer.
-        value = value.buffer ? value : new DataView(value);
+        /* Utils */
+        parseHeartRate(event) {
+        let value = event.target.value;
+        value = value.buffer ? value : new DataView(value); // In Chrome 50+, a DataView is returned instead of an ArrayBuffer.
         let flags = value.getUint8(0);
         let rate16Bits = flags & 0x1;
         let result = {};
@@ -70,43 +75,7 @@
             }
             result.rrIntervals = rrIntervals;
         }
-        return result;
-        }
-
-        /* Utils */
-
-        _cacheCharacteristic(service, characteristicUuid) {
-        return service.getCharacteristic(characteristicUuid)
-        .then(characteristic => {
-            this._characteristics.set(characteristicUuid, characteristic);
-        });
-        }
-        _readCharacteristicValue(characteristicUuid) {
-        let characteristic = this._characteristics.get(characteristicUuid);
-        return characteristic.readValue()
-        .then(value => {
-            // In Chrome 50+, a DataView is returned instead of an ArrayBuffer.
-            value = value.buffer ? value : new DataView(value);
-            return value;
-        });
-        }
-        _writeCharacteristicValue(characteristicUuid, value) {
-        let characteristic = this._characteristics.get(characteristicUuid);
-        return characteristic.writeValue(value);
-        }
-        _startNotifications(characteristicUuid) {
-        let characteristic = this._characteristics.get(characteristicUuid);
-        // Returns characteristic to set up characteristicvaluechanged event
-        // handlers in the resolved promise.
-        return characteristic.startNotifications()
-        .then(() => characteristic);
-        }
-        _stopNotifications(characteristicUuid) {
-        let characteristic = this._characteristics.get(characteristicUuid);
-        // Returns characteristic to remove characteristicvaluechanged event
-        // handlers in the resolved promise.
-        return characteristic.stopNotifications()
-        .then(() => characteristic);
+        updateHRUI(result);
         }
         getDeviceName(){
             return this.device.name;
@@ -114,4 +83,5 @@
     }
 
     window.heartRateDevice = new heartRateDevice();
+
 })();

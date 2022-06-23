@@ -17,9 +17,10 @@ let speedUpButton = document.getElementById('speedUpButton');
 let speedDownButton = document.getElementById('speedDownButton');
 
 let heartRates = [];
-let treadmillMeasurements = [];
+let heartRateMeasurements = [];
 let speeds = [];
 let inclinations = [];
+let treadmillMeasurements = [];
 
 // initial ui settings
 statusTextHR.textContent = "No HR sensor connected" ;
@@ -33,9 +34,9 @@ titleTextFTMS.textContent = "Scan for Bluetooth fitness machine";
 //listeners
 connectButtonHR.addEventListener('click', function() {
   heartRateDevice.connect()
-  .then(() => heartRateDevice.startNotificationsHeartRateMeasurement().then(handleHeartRateMeasurement))
   .catch(error => {
     statusTextHR.textContent = error;
+    console.log(error);
   });
 });
 disconnectButtonHR.addEventListener('click', function() {
@@ -65,27 +66,27 @@ function updateFTMSUI(treadmillMeasurement){
   inclinations.push(treadmillMeasurement.inclination);
   speeds.push(treadmillMeasurement.speed);
   treadmillMeasurements.push(treadmillMeasurement);
-  console.log(treadmillMeasurements.length);
+  console.log('Treadmill array length: ',treadmillMeasurements.length);
   
   controlsContainerFTMS.style.display = "block";
   drawChartSpeed();
 }
 
+function updateHRUI(heartRateMeasurement){
+  statusTextHR.innerHTML = `&#x2764; Heart rate: ${heartRateMeasurement.heartRate}bpm<br />&#x1F50B; Energy expended: ${heartRateMeasurement.energyExpended}`;
+  titleTextHR.textContent = "Connected to: " + heartRateDevice.getDeviceName();
+  
+  heartRates.push(heartRateMeasurement.heartRate);
+  heartRateMeasurements.push(heartRates);
+  console.log('HR array length: ',heartRateMeasurements.length);
+  
+  canvasContainerHR.style.display = "block";
+  drawChartHR();
+}
+
 speedUpButton.addEventListener('click', function() {
   fitnessMachineDevice.increaseSpeedStep();
 });
-
-function handleTreadmillMeasurement(treadmillMeasurement) {
-  treadmillMeasurement.addEventListener('characteristicvaluechanged', event => {
-    var treadmillMeasurement = fitnessMachineDevice.parseTreadmillData(event.target.value);
-    statusTextFTMS.innerHTML = /*'&#x1F3C3;'*/ `&#x1F4A8; Speed: ${(treadmillMeasurement.speed<10?'&nbsp;':'')}${treadmillMeasurement.speed} km/h<br />&#x26F0; Inclination: ${(treadmillMeasurement.inclination<0?'':'&nbsp;')}${treadmillMeasurement.inclination} % <br />&#x1f5fa; Distance: ${treadmillMeasurement.distance} m<br />&#x23f1; Time: ${treadmillMeasurement.time}`;
-    titleTextFTMS.textContent = "Connected to: " + fitnessMachineDevice.getDeviceName();
-    inclinations.push(treadmillMeasurement.inclination);
-    speeds.push(treadmillMeasurement.speed);
-    controlsContainerFTMS.style.display = "block";
-    drawChartSpeed();
-  });
-}
 
 function drawChartSpeed() {
   requestAnimationFrame(() => {
@@ -106,17 +107,6 @@ function drawChartSpeed() {
       }
       context.stroke();
     }
-  });
-}
-
-function handleHeartRateMeasurement(heartRateMeasurement) {
-  heartRateMeasurement.addEventListener('characteristicvaluechanged', event => {
-    var heartRateMeasurement = heartRateDevice.parseHeartRate(event.target.value);
-    statusTextHR.innerHTML = `&#x2764; Heart rate: ${heartRateMeasurement.heartRate}bpm<br />&#x1F50B; Energy expended: ${heartRateMeasurement.energyExpended}`;
-    titleTextHR.textContent = "Connected to: " + heartRateDevice.getDeviceName();
-    heartRates.push(heartRateMeasurement.heartRate);
-    canvasContainerHR.style.display = "block";
-    drawChartHR();
   });
 }
 

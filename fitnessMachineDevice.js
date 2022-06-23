@@ -25,7 +25,7 @@
         .then(service => {
             this.findDataCharacteristic(service);
             this.findControlCharacteristic(service);
-        })
+        });
         }
 
         findDataCharacteristic(service) {

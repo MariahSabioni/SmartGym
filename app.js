@@ -17,6 +17,7 @@ let speedUpButton = document.getElementById('speedUpButton');
 let speedDownButton = document.getElementById('speedDownButton');
 
 let heartRates = [];
+let treadmillMeasurements = [];
 let speeds = [];
 let inclinations = [];
 
@@ -24,12 +25,10 @@ let inclinations = [];
 statusTextHR.textContent = "No HR sensor connected" ;
 titleTextHR.textContent = "Scan for Bluetooth HR sensor";
 canvasContainerHR.style.display = "none";
-//disconnectButtonHR.style.display = "none";
 
 statusTextFTMS.textContent = "No fitness machine connected" ;
 titleTextFTMS.textContent = "Scan for Bluetooth fitness machine";
 //controlsContainerFTMS.style.display = "none";
-//disconnectButtonFTMS.style.display = "none";
 
 //listeners
 connectButtonHR.addEventListener('click', function() {
@@ -38,35 +37,39 @@ connectButtonHR.addEventListener('click', function() {
   .catch(error => {
     statusTextHR.textContent = error;
   });
-  //connectButtonHR.style.display = "none";
-  //disconnectButtonHR.style.display = "block";
 });
 disconnectButtonHR.addEventListener('click', function() {
   heartRateDevice.disconnect();
   statusTextHR.textContent = "No HR sensor connected" ;
   titleTextHR.textContent = "Scan for Bluetooth HR sensor";
   canvasContainerHR.style.display = "none";
-  //disconnectButtonHR.style.display = "none";
-  //connectButtonHR.style.display = "block";
 });
-
 connectButtonFTMS.addEventListener('click', function() {
   fitnessMachineDevice.connect()
-  //.then(() => fitnessMachineDevice.startNotificationsData().then(handleTreadmillMeasurement))
   .catch(error => {
     statusTextFTMS.textContent = error;
+    console.log(error);
   });
-  //connectButtonFTMS.style.display = "none";
-  //disconnectButtonFTMS.style.display = "block";
 });
 disconnectButtonFTMS.addEventListener('click', function() {
   fitnessMachineDevice.disconnect();
   statusTextFTMS.textContent = "No fitness machine connected" ;
   titleTextFTMS.textContent = "Scan for Bluetooth fitness machine";
   controlsContainerFTMS.style.display = "none";
-  //disconnectButtonFTMS.style.display = "none";
-  //connectButtonFTMS.style.display = "block";
 });
+
+function updateFTMSUI(treadmillMeasurement){
+  statusTextFTMS.innerHTML = /*'&#x1F3C3;'*/ `&#x1F4A8; Speed: ${(treadmillMeasurement.speed<10?'&nbsp;':'')}${treadmillMeasurement.speed} km/h<br />&#x26F0; Inclination: ${(treadmillMeasurement.inclination<0?'':'&nbsp;')}${treadmillMeasurement.inclination} % <br />&#x1f5fa; Distance: ${treadmillMeasurement.distance} m<br />&#x23f1; Time: ${treadmillMeasurement.time}`;
+  titleTextFTMS.textContent = "Connected to: " + fitnessMachineDevice.getDeviceName();
+  
+  inclinations.push(treadmillMeasurement.inclination);
+  speeds.push(treadmillMeasurement.speed);
+  treadmillMeasurements.push(treadmillMeasurement);
+  console.log(treadmillMeasurements.length);
+  
+  controlsContainerFTMS.style.display = "block";
+  drawChartSpeed();
+}
 
 speedUpButton.addEventListener('click', function() {
   fitnessMachineDevice.increaseSpeedStep();

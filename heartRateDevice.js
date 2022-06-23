@@ -75,6 +75,7 @@
             }
             result.rrIntervals = rrIntervals;
         }
+        console.log('HR: ', result.heartRate);
         updateHRUI(result);
         }
         getDeviceName(){

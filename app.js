@@ -85,7 +85,11 @@ function updateHRUI(heartRateMeasurement){
 }
 
 speedUpButton.addEventListener('click', function() {
-  fitnessMachineDevice.increaseSpeedStep();
+  currSpeed = speeds[speeds.length - 1];
+  fitnessMachineDevice.increaseSpeedStep(currSpeed)
+  .catch(error => {
+    console.log(error);
+  });
 });
 
 function drawChartSpeed() {

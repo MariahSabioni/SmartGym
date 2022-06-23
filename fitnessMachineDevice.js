@@ -62,8 +62,32 @@
         this.device.gatt.disconnect();
         }
 
-        increaseSpeedStep(){
-            console.log('speed increased');
+        increaseSpeedStep(currSpeed, speedIncrement = 0.5){
+        console.log('speed increase clicked');
+        var newSpeed = parseFloat(currSpeed + speedIncrement);
+        console.log(newSpeed);
+        let server = this.server;
+        return server.getPrimaryService(this.serviceUUID)
+        .then(service => {
+            this.setNewSpeed(service, newSpeed);
+        });
+        }
+
+        setNewSpeed(service, newSpeed){
+        service.getCharacteristic(this.controlChUUID)
+        .then(characteristic => {
+            console.log('characteristic found: ', characteristic);
+            let b = Uint8Array.of(newSpeed*100);
+            let val = new Uint8Array(3);
+            val[0] = 2;
+            val[1] = b[0];
+            val[2] = b[1]
+            console.log('val', val);
+            characteristic.writeValue(val);
+        })
+        .catch(error => {
+            console.log(error);
+        });
         }
 
         /* Utils */
@@ -80,7 +104,7 @@
         let index_time = 14;
         let seconds = value.getUint16(index_time, /*littleEndian=*/true);
         result.time = new Date(seconds * 1000).toISOString().slice(11, 19);
-        console.log('result: ' + result.speed + 'km/h | ' + result.inclination + '% | '+ result.distance + 'm | ' + result.time)
+        console.log('Treadmill: ' + result.speed + 'km/h | ' + result.inclination + '% | '+ result.distance + 'm | ' + result.time)
         updateFTMSUI(result);
         }
         getDeviceName(){

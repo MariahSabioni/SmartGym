@@ -1,4 +1,4 @@
-// ui
+// ui hooks
 let connectButtonHR = document.getElementById('connectButtonHR');
 let disconnectButtonHR = document.getElementById('disconnectButtonHR');
 let titleTextHR = document.getElementById('titleTextHR');
@@ -18,6 +18,13 @@ let speedDownButton = document.getElementById('speedDownButton');
 let inclinationUpButton = document.getElementById('inclinationUpButton');
 let inclinationDownButton = document.getElementById('inclinationDownButton');
 
+let connectButtoIMU = document.getElementById('connectButtoIMU');
+let disconnectButtonIMU = document.getElementById('disconnectButtonIMU');
+let titleTextIMU = document.getElementById('titleTextIMU');
+let statusTextIMU = document.getElementById("statusTextIMU") ;
+let canvasContainerIMU = document.getElementById("canvasContainerIMU") ;
+let canvasIMU = document.getElementById("canvasIMU");
+
 let heartRates = [];
 let heartRateMeasurements = [];
 let speeds = [];
@@ -31,7 +38,11 @@ canvasContainerHR.style.display = "none";
 
 statusTextFTMS.textContent = "No fitness machine connected" ;
 titleTextFTMS.textContent = "Scan for Bluetooth fitness machine";
-//controlsContainerFTMS.style.display = "none";
+controlsContainerFTMS.style.display = "none";
+
+statusTextIMU.textContent = "No IMU sensor connected" ;
+titleTextIMU.textContent = "Scan for Bluetooth IMU sensor";
+controlsContainerIMU.style.display = "none";
 
 //listeners
 connectButtonHR.addEventListener('click', function() {

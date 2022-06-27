@@ -75,7 +75,7 @@
             }
             result.rrIntervals = rrIntervals;
         }
-        console.log('HR: ', result.heartRate);
+        console.log(`HR: ${result.heartRate} | Energy expended: ${result.energyExpended}`);
         updateHRUI(result);
         }
         getDeviceName(){

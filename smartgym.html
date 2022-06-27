@@ -15,57 +15,20 @@
 
     <body>
         <div class="card">
-            <h5 class="card-header">HR sensor</h5>
-            <div class="card-body">
-                <div class="row">
-                    <div class="col">
-                        <h5 id = "titleTextHR" class="card-title">Scan for Bluetooth HR sensor</h5>
-                        <p id = "statusTextHR" class="card-text">No device connected</p>
-                        <a id = "connectButtonHR" href="#" class="btn btn-primary">Connect</a>
-                        <a id = "disconnectButtonHR" href="#" class="btn btn-primary">Disconnect</a>
-                    </div>
-                    <div class="col-9">
-                        <div id="canvasContainerHR" class="card-body" >
-                            <p class="card-text">Heart rate (bpm)</p>
-                            <canvas  id="canvasHR"></canvas>
+            <h5 class="card-header" id="headingHR" data-toggle="collapse" data-target="#collapseHR" aria-expanded="true" aria-controls="collapseHR">HR Sensor</h5>
+            <div id="collapseHR" class="collapse show" aria-labelledby="headingHR"> 
+                <div class="card-body" >
+                    <div class="row">
+                        <div class="col">
+                            <h5 id = "titleTextHR" class="card-title">Scan for Bluetooth HR sensor</h5>
+                            <p id = "statusTextHR" class="card-text">No device connected</p>
+                            <a id = "connectButtonHR" href="#" class="btn btn-primary">Connect</a>
+                            <a id = "disconnectButtonHR" href="#" class="btn btn-primary">Disconnect</a>
                         </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div class="card">
-            <h5 class="card-header">Fitness machine</h5>
-            <div class="card-body">
-                <div class="row">
-                    <div class="col-3">
-                        <h5 id = "titleTextFTMS" class="card-title">Scan for Bluetooth fitness machine</h5>
-                        <p id = "statusTextFTMS" class="card-text">No device connected</p>
-                        <a id = "connectButtonFTMS" href="#" class="btn btn-primary">Connect</a>
-                        <a id = "disconnectButtonFTMS" href="#" class="btn btn-primary">Disconnect</a>
-                    </div>
-                    <div id="controlsContainerFTMS" class="col">
-                        <div class="row">
-                            <div class="col-sm-auto">
-                                <div id="speedControlContainer" class="card-body">
-                                    <p class="card-text" style="text-align:center">Speed (km/h)</p>
-                                    <img id = 'speedUpButton' src="icons/chevron-up.svg" class="center">
-                                    <p id = "speedTextFTMS" class="card-text" style="text-align:center">speed</p>
-                                    <img id = 'speedDownButton' src="icons/chevron-down.svg" class="center">
-                                </div>
-                            </div>
-                            <div class="col-sm-auto">
-                                <div id="inclinationControlContainer" class="card-body">
-                                    <p class="card-text" style="text-align:center">Inclination (%)</p>
-                                    <img id = 'inclinationUpButton' src="icons/chevron-up.svg" class="center">
-                                    <p id = "inclinationTextFTMS" class="card-text" style="text-align:center">inclination</p>
-                                    <img id = 'inclinationDownButton' src="icons/chevron-down.svg" class="center">
-                                </div>
-                            </div>
-                            <div class="col">
-                                <div class="card-body">
-                                    <p class="card-text">Speed (km/h)</p>
-                                    <canvas  id="canvasFTMS" ></canvas>
-                                </div>
+                        <div class="col-9">
+                            <div id="canvasContainerHR" class="card-body" >
+                                <p class="card-text">Heart rate (bpm)</p>
+                                <canvas  id="canvasHR"></canvas>
                             </div>
                         </div>
                     </div>
@@ -73,18 +36,61 @@
             </div>
         </div>
         <div class="card">
-            <h5 class="card-header">IMU sensor</h5>
-            <div class="card-body">
-                <div class="row">
-                    <div class="col">
-                        <h5 id = "titleTextIMU" class="card-title">Scan for Bluetooth IMU sensors</h5>
-                        <p id = "statusTextIMU" class="card-text">No device connected</p>
-                        <a id = "connectButtonIMU" href="#" class="btn btn-primary">Connect</a>
-                        <a id = "disconnectButtonIMU" href="#" class="btn btn-primary">Disconnect</a>
+            <h5 class="card-header" id="headingFTMS" data-toggle="collapse" data-target="#collapseFTMS" aria-expanded="true" aria-controls="collapseFTMS">Fitness machine</h5>
+            <div id="collapseFTMS" class="collapse show" aria-labelledby="headingFTMS"> 
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-3">
+                            <h5 id = "titleTextFTMS" class="card-title">Scan for Bluetooth fitness machine</h5>
+                            <p id = "statusTextFTMS" class="card-text">No device connected</p>
+                            <a id = "connectButtonFTMS" href="#" class="btn btn-primary">Connect</a>
+                            <a id = "disconnectButtonFTMS" href="#" class="btn btn-primary">Disconnect</a>
+                        </div>
+                        <div id="controlsContainerFTMS" class="col">
+                            <div class="row">
+                                <div class="col-sm-auto">
+                                    <div id="speedControlContainer" class="card-body">
+                                        <p class="card-text" style="text-align:center">Speed (km/h)</p>
+                                        <img id = 'speedUpButton' src="icons/chevron-up.svg" class="center">
+                                        <p id = "speedTextFTMS" class="card-text" style="text-align:center">speed</p>
+                                        <img id = 'speedDownButton' src="icons/chevron-down.svg" class="center">
+                                    </div>
+                                </div>
+                                <div class="col-sm-auto">
+                                    <div id="inclinationControlContainer" class="card-body">
+                                        <p class="card-text" style="text-align:center">Inclination (%)</p>
+                                        <img id = 'inclinationUpButton' src="icons/chevron-up.svg" class="center">
+                                        <p id = "inclinationTextFTMS" class="card-text" style="text-align:center">inclination</p>
+                                        <img id = 'inclinationDownButton' src="icons/chevron-down.svg" class="center">
+                                    </div>
+                                </div>
+                                <div class="col">
+                                    <div class="card-body">
+                                        <p class="card-text">Speed (km/h)</p>
+                                        <canvas  id="canvasFTMS" ></canvas>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
-                    <div class="col-9">
-                        <div id="canvasContainerIMU" class="card-body">
-                            <canvas  id="canvasIMU" ></canvas>
+                </div>
+            </div>
+        </div>
+        <div class="card">
+            <h5 class="card-header" id="headingIMU" data-toggle="collapse" data-target="#collapseIMU" aria-expanded="true" aria-controls="collapseIMU">IMU sensor</h5>
+            <div id="collapseIMU" class="collapse show" aria-labelledby="headingIMU"> 
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col">
+                            <h5 id = "titleTextIMU" class="card-title">Scan for Bluetooth IMU sensors</h5>
+                            <p id = "statusTextIMU" class="card-text">No device connected</p>
+                            <a id = "connectButtonIMU" href="#" class="btn btn-primary">Connect</a>
+                            <a id = "disconnectButtonIMU" href="#" class="btn btn-primary">Disconnect</a>
+                        </div>
+                        <div class="col-9">
+                            <div id="canvasContainerIMU" class="card-body">
+                                <canvas  id="canvasIMU" ></canvas>
+                            </div>
                         </div>
                     </div>
                 </div>

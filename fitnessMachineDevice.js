@@ -86,7 +86,7 @@
         });
         }
 
-        increaseInclinationStep(currInclination, inclinationIncrement = 0.5){
+        increaseInclinationStep(currInclination, inclinationIncrement = 0.1){
         console.log('inclination increase clicked');
         console.log(currInclination);
         var newInclination = (parseFloat(currInclination) + parseFloat(inclinationIncrement));
@@ -166,7 +166,7 @@
         let index_time = 14;
         let seconds = value.getUint16(index_time, /*littleEndian=*/true);
         result.time = new Date(seconds * 1000).toISOString().slice(11, 19);
-        console.log('Treadmill: ' + result.speed + 'km/h | ' + result.inclination + '% | '+ result.distance + 'm | ' + result.time)
+        console.log(`Treadmill: ${result.speed}km/h | ${result.inclination}% | ${result.distance}m | ${result.time}`)
         updateFTMSUI(result);
         }
         getDeviceName(){

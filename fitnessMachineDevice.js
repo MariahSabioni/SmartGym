@@ -64,7 +64,8 @@
 
         increaseSpeedStep(currSpeed, speedIncrement = 0.5){
         console.log('speed increase clicked');
-        var newSpeed = parseFloat(currSpeed + speedIncrement);
+        console.log(currSpeed);
+        var newSpeed = (parseFloat(currSpeed) + parseFloat(speedIncrement));
         console.log(newSpeed);
         let server = this.server;
         return server.getPrimaryService(this.serviceUUID)
@@ -73,15 +74,76 @@
         });
         }
 
+        decreaseSpeedStep(currSpeed, speedIncrement = 0.5){
+        console.log('speed decrease clicked');
+        console.log(currSpeed);
+        var newSpeed = (parseFloat(currSpeed) - parseFloat(speedIncrement));
+        console.log(newSpeed);
+        let server = this.server;
+        return server.getPrimaryService(this.serviceUUID)
+        .then(service => {
+            this.setNewSpeed(service, newSpeed);
+        });
+        }
+
+        increaseInclinationStep(currInclination, inclinationIncrement = 0.5){
+        console.log('inclination increase clicked');
+        console.log(currInclination);
+        var newInclination = (parseFloat(currInclination) + parseFloat(inclinationIncrement));
+        console.log(newInclination);
+        let server = this.server;
+        return server.getPrimaryService(this.serviceUUID)
+        .then(service => {
+            this.setNewInclination(service, newInclination);
+        });
+        }
+
+        decreaseInclinationStep(currInclination, inclinationIncrement = 0.1){
+        console.log('inclination decrease clicked');
+        console.log(currInclination);
+        var newInclination = (parseFloat(currInclination) - parseFloat(inclinationIncrement));
+        console.log(newInclination);
+        let server = this.server;
+        return server.getPrimaryService(this.serviceUUID)
+        .then(service => {
+            this.setNewInclination(service, newInclination);
+        });
+        }
+
         setNewSpeed(service, newSpeed){
         service.getCharacteristic(this.controlChUUID)
         .then(characteristic => {
             console.log('characteristic found: ', characteristic);
-            let b = Uint8Array.of(newSpeed*100);
+            let b = new Uint8Array(2);
+            let newSpeedInt = parseInt(newSpeed*100);
+            for (var i=0;  i < b.length; i++){
+                b[i] = newSpeedInt >> 8*i;
+            }
             let val = new Uint8Array(3);
             val[0] = 2;
             val[1] = b[0];
-            val[2] = b[1]
+            val[2] = b[1];
+            console.log('val', val);
+            characteristic.writeValue(val);
+        })
+        .catch(error => {
+            console.log(error);
+        });
+        }
+
+        setNewInclination(service, newInclination){
+        service.getCharacteristic(this.controlChUUID)
+        .then(characteristic => {
+            console.log('characteristic found: ', characteristic);
+            let b = new Uint8Array(2);
+            let newInclinationInt = parseInt(newInclination*10);
+            for (var i=0;  i < b.length; i++){
+                b[i] = newInclinationInt >> 8*i;
+            }
+            let val = new Uint8Array(3);
+            val[0] = 3;
+            val[1] = b[0];
+            val[2] = b[1];
             console.log('val', val);
             characteristic.writeValue(val);
         })

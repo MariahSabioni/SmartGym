@@ -15,6 +15,8 @@ let canvasFTMS = document.getElementById("canvasFTMS");
 
 let speedUpButton = document.getElementById('speedUpButton');
 let speedDownButton = document.getElementById('speedDownButton');
+let inclinationUpButton = document.getElementById('inclinationUpButton');
+let inclinationDownButton = document.getElementById('inclinationDownButton');
 
 let heartRates = [];
 let heartRateMeasurements = [];
@@ -48,7 +50,7 @@ disconnectButtonHR.addEventListener('click', function() {
 connectButtonFTMS.addEventListener('click', function() {
   fitnessMachineDevice.connect()
   .catch(error => {
-    statusTextFTMS.textContent = error;
+    statusTextFTMS.textContent = error.message;
     console.log(error);
   });
 });
@@ -57,6 +59,34 @@ disconnectButtonFTMS.addEventListener('click', function() {
   statusTextFTMS.textContent = "No fitness machine connected" ;
   titleTextFTMS.textContent = "Scan for Bluetooth fitness machine";
   controlsContainerFTMS.style.display = "none";
+});
+speedUpButton.addEventListener('click', function() {
+  currSpeed = speeds[speeds.length - 1];
+  fitnessMachineDevice.increaseSpeedStep(currSpeed)
+  .catch(error => {
+    console.log(error);
+  });
+});
+speedDownButton.addEventListener('click', function() {
+  currSpeed = speeds[speeds.length - 1];
+  fitnessMachineDevice.decreaseSpeedStep(currSpeed)
+  .catch(error => {
+    console.log(error);
+  });
+});
+inclinationUpButton.addEventListener('click', function() {
+  currInclination = inclinations[inclinations.length - 1];
+  fitnessMachineDevice.increaseInclinationStep(currInclination)
+  .catch(error => {
+    console.log(error);
+  });
+});
+inclinationDownButton.addEventListener('click', function() {
+  currInclination = inclinations[inclinations.length - 1];
+  fitnessMachineDevice.decreaseInclinationStep(currInclination)
+  .catch(error => {
+    console.log(error);
+  });
 });
 
 function updateFTMSUI(treadmillMeasurement){
@@ -83,14 +113,6 @@ function updateHRUI(heartRateMeasurement){
   canvasContainerHR.style.display = "block";
   drawChartHR();
 }
-
-speedUpButton.addEventListener('click', function() {
-  currSpeed = speeds[speeds.length - 1];
-  fitnessMachineDevice.increaseSpeedStep(currSpeed)
-  .catch(error => {
-    console.log(error);
-  });
-});
 
 function drawChartSpeed() {
   requestAnimationFrame(() => {

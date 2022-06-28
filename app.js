@@ -39,7 +39,7 @@ titleTextHR.textContent = "Scan for Bluetooth HR sensor";
 
 statusTextFTMS.textContent = "No fitness machine connected" ;
 titleTextFTMS.textContent = "Scan for Bluetooth fitness machine";
-controlsContainerFTMS.style.display = "none";
+//controlsContainerFTMS.style.display = "none";
 
 statusTextIMU.textContent = "No IMU sensor connected" ;
 titleTextIMU.textContent = "Scan for Bluetooth IMU sensor";
@@ -115,7 +115,7 @@ function updateFTMSUI(treadmillMeasurement){
   console.log('Treadmill array length: ',treadmillMeasurements.length);
   
   controlsContainerFTMS.style.display = "block";
-  drawChartSpeed();
+  //drawChartSpeed();
 }
 
 function updateHRUI(heartRateMeasurement){
@@ -131,15 +131,15 @@ function updateHRUI(heartRateMeasurement){
 }
 
 function drawChart() {
-  let data = new google.visualization.DataTable();
-  data.addColumn('number', 'timestamp');
-  data.addColumn('number', 'heart rate (bpm)');
+  let dataHR = new google.visualization.DataTable();
+  dataHR.addColumn('number', 'timestamp');
+  dataHR.addColumn('number', 'heart rate (bpm)');
   
-  data.addRows([
+  dataHR.addRows([
     [0,  0],
   ]);
   
-  var options = {
+  var optionsHR = {
     title: 'Heart rate (bpm)',
     vAxis: {minValue:0, maxValue:200},
     hAxis: {textPosition: 'none'},
@@ -148,20 +148,55 @@ function drawChart() {
     
   };
   
-  var chart = new google.visualization.LineChart(document.getElementById('canvasHR'));  
-  chart.draw(data, options);
+  var chartHR = new google.visualization.LineChart(document.getElementById('canvasHR'));  
+  chartHR.draw(dataHR, optionsHR);
+
+  let dataSpeed = new google.visualization.DataTable();
+  dataSpeed.addColumn('number', 'timestamp');
+  dataSpeed.addColumn('number', 'speed (km/h)');
+  
+  dataSpeed.addRows([
+    [0,  0],
+  ]);
+  
+  var optionsSpeed = {
+    title: 'Speed (km/h)',
+    vAxis: {minValue:0, maxValue:20.0},
+    hAxis: {textPosition: 'none'},
+    legend: 'bottom',
+    axisTitlesPosition: 'none',
+    
+  };
+  
+  var chartSpeed = new google.visualization.LineChart(document.getElementById('canvasFTMS'));  
+  chartSpeed.draw(dataSpeed, optionsSpeed);
 
   let index = 0;
+  let plotting = false;
   setInterval(function() {
     if (heartRateDevice.device !== null){
     let plotNewHR = heartRates[heartRates.length - 1];
-      data.addRow([index, plotNewHR]);
+      dataHR.addRow([index, plotNewHR]);
       //console.log(data.getNumberOfRows());
-      if (data.getNumberOfRows() > 49){
-        data.removeRow(0);
+      if (dataHR.getNumberOfRows() > 49){
+        dataHR.removeRow(0);
         //console.log('row removed: ',data.getNumberOfRows());
       }
-      chart.draw(data, options);
+      chartHR.draw(dataHR, optionsHR);
+      plotting = true;
+    }
+    if (fitnessMachineDevice.device !== null){
+      let plotNewSpeed = parseFloat(speeds[speeds.length - 1]);
+        dataSpeed.addRow([index, plotNewSpeed]);
+        //console.log(data.getNumberOfRows());
+        if (dataSpeed.getNumberOfRows() > 49){
+          dataSpeed.removeRow(0);
+          //console.log('row removed: ',data.getNumberOfRows());
+        }
+        chartSpeed.draw(dataSpeed, optionsSpeed);
+        plotting = true;
+    }
+    if (plotting){
       index++;
     }
   }, 500);

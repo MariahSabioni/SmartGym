@@ -20,13 +20,19 @@
             <div id="collapseHR" class="collapse show" aria-labelledby="headingHR"> 
                 <div class="card-body" >
                     <div class="row">
-                        <div class="col">
+                        <div class="col-3">
                             <h5 id = "titleTextHR" class="card-title">Scan for Bluetooth HR sensor</h5>
                             <p id = "statusTextHR" class="card-text">No device connected</p>
                             <a id = "connectButtonHR" href="#" class="btn btn-primary">Connect</a>
                             <a id = "disconnectButtonHR" href="#" class="btn btn-primary">Disconnect</a>
                         </div>
-                        <div class="col-9">
+                        <div class = "col">
+                            placeholder
+                        </div>
+                        <div class = "col">
+                            placeholder
+                        </div>
+                        <div class="col-6">
                             <div id="canvasContainerHR" class="card-body" >
                                 <div  id="canvasHR">
                                 </div>
@@ -49,7 +55,7 @@
                         </div>
                         <div id="controlsContainerFTMS" class="col">
                             <div class="row">
-                                <div class="col-sm-auto">
+                                <div class="col">
                                     <div id="speedControlContainer" class="card-body">
                                         <p class="card-text" style="text-align:center">Speed (km/h)</p>
                                         <img id = 'speedUpButton' src="icons/chevron-up.svg" class="center">
@@ -57,7 +63,7 @@
                                         <img id = 'speedDownButton' src="icons/chevron-down.svg" class="center">
                                     </div>
                                 </div>
-                                <div class="col-sm-auto">
+                                <div class="col">
                                     <div id="inclinationControlContainer" class="card-body">
                                         <p class="card-text" style="text-align:center">Inclination (%)</p>
                                         <img id = 'inclinationUpButton' src="icons/chevron-up.svg" class="center">
@@ -65,10 +71,9 @@
                                         <img id = 'inclinationDownButton' src="icons/chevron-down.svg" class="center">
                                     </div>
                                 </div>
-                                <div class="col">
+                                <div class="col-8">
                                     <div class="card-body">
-                                        <p class="card-text">Speed (km/h)</p>
-                                        <canvas  id="canvasFTMS" ></canvas>
+                                        <div  id="canvasFTMS" ></div>
                                     </div>
                                 </div>
                             </div>

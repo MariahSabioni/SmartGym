@@ -165,8 +165,9 @@
         result.distance = ((value.getUint16(index_distance, true)) << 8) + value.getUint8(2 + index_distance, true);
         let index_time = 14;
         let seconds = value.getUint16(index_time, /*littleEndian=*/true);
-        result.time = new Date(seconds * 1000).toISOString().slice(11, 19);
-        console.log(`Treadmill: ${result.speed}km/h | ${result.inclination}% | ${result.distance}m | ${result.time}`)
+        result.duration = new Date(seconds * 1000).toISOString().slice(11, 19);
+        result.time = Date.now();
+        console.log(`timestamp: ${result.time} | Treadmill: ${result.speed}km/h | ${result.inclination}% | ${result.distance}m | ${result.duration}`)
         updateFTMSUI(result);
         }
         getDeviceName(){

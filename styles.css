@@ -1,23 +1,17 @@
-#connectButton {
-    color: black;
-}
-
-#disconnectButton {
-    color: black;
-}
-
 #canvasHR{
     outline: grey 1px solid;
     justify-content: center;
     width: 100%;
-    height: 150px;
+    height: 200px;
+    padding: 1%;
 }
 
 #canvasFTMS{
     outline: grey 1px solid;
     justify-content: center;
     width: 100%;
-    height: 150px;
+    height: 200px;
+    padding: 1%;
 }
 
 .center {

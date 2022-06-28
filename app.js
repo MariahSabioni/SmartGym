@@ -30,11 +30,12 @@ let heartRateMeasurements = [];
 let speeds = [];
 let inclinations = [];
 let treadmillMeasurements = [];
+let heartRateDeviceCache = null;
 
 // initial ui settings
 statusTextHR.textContent = "No HR sensor connected" ;
 titleTextHR.textContent = "Scan for Bluetooth HR sensor";
-canvasContainerHR.style.display = "none";
+//canvasContainerHR.style.display = "none";
 
 statusTextFTMS.textContent = "No fitness machine connected" ;
 titleTextFTMS.textContent = "Scan for Bluetooth fitness machine";
@@ -42,7 +43,11 @@ controlsContainerFTMS.style.display = "none";
 
 statusTextIMU.textContent = "No IMU sensor connected" ;
 titleTextIMU.textContent = "Scan for Bluetooth IMU sensor";
-controlsContainerIMU.style.display = "none";
+canvasContainerIMU.style.display = "none";
+
+// google chart
+google.charts.load('current', {'packages':['corechart']});
+google.charts.setOnLoadCallback(drawChart);
 
 //listeners
 connectButtonHR.addEventListener('click', function() {
@@ -101,7 +106,7 @@ inclinationDownButton.addEventListener('click', function() {
 });
 
 function updateFTMSUI(treadmillMeasurement){
-  statusTextFTMS.innerHTML = /*'&#x1F3C3;'*/ `&#x1F4A8; Speed: ${(treadmillMeasurement.speed<10?'&nbsp;':'')}${treadmillMeasurement.speed} km/h<br />&#x26F0; Inclination: ${(treadmillMeasurement.inclination<0?'':'&nbsp;')}${treadmillMeasurement.inclination} % <br />&#x1f5fa; Distance: ${treadmillMeasurement.distance} m<br />&#x23f1; Time: ${treadmillMeasurement.time}`;
+  statusTextFTMS.innerHTML = /*'&#x1F3C3;'*/ `&#x1F4A8; Speed: ${(treadmillMeasurement.speed<10?'&nbsp;':'')}${treadmillMeasurement.speed} km/h<br />&#x26F0; Inclination: ${(treadmillMeasurement.inclination<0?'':'&nbsp;')}${treadmillMeasurement.inclination} % <br />&#x1f5fa; Distance: ${treadmillMeasurement.distance} m<br />&#x23f1; Time: ${treadmillMeasurement.duration}`;
   titleTextFTMS.textContent = "Connected to: " + fitnessMachineDevice.getDeviceName();
   
   inclinations.push(treadmillMeasurement.inclination);
@@ -114,7 +119,7 @@ function updateFTMSUI(treadmillMeasurement){
 }
 
 function updateHRUI(heartRateMeasurement){
-  statusTextHR.innerHTML = `&#x2764; Heart rate: ${heartRateMeasurement.heartRate}bpm<br />&#x1F50B; Energy expended: ${heartRateMeasurement.energyExpended}`;
+  statusTextHR.innerHTML = `&#x2764; Heart rate: ${heartRateMeasurement.heartRate}bpm`;
   titleTextHR.textContent = "Connected to: " + heartRateDevice.getDeviceName();
   
   heartRates.push(heartRateMeasurement.heartRate);
@@ -122,7 +127,44 @@ function updateHRUI(heartRateMeasurement){
   console.log('HR array length: ',heartRateMeasurements.length);
   
   canvasContainerHR.style.display = "block";
-  drawChartHR();
+  //drawChartHR();
+}
+
+function drawChart() {
+  let data = new google.visualization.DataTable();
+  data.addColumn('number', 'timestamp');
+  data.addColumn('number', 'heart rate (bpm)');
+  
+  data.addRows([
+    [0,  0],
+  ]);
+  
+  var options = {
+    title: 'Heart rate (bpm)',
+    vAxis: {minValue:0, maxValue:200},
+    hAxis: {textPosition: 'none'},
+    legend: 'bottom',
+    axisTitlesPosition: 'none',
+    
+  };
+  
+  var chart = new google.visualization.LineChart(document.getElementById('canvasHR'));  
+  chart.draw(data, options);
+
+  let index = 0;
+  setInterval(function() {
+    if (heartRateDevice.device !== null){
+    let plotNewHR = heartRates[heartRates.length - 1];
+      data.addRow([index, plotNewHR]);
+      //console.log(data.getNumberOfRows());
+      if (data.getNumberOfRows() > 49){
+        data.removeRow(0);
+        //console.log('row removed: ',data.getNumberOfRows());
+      }
+      chart.draw(data, options);
+      index++;
+    }
+  }, 500);
 }
 
 function drawChartSpeed() {

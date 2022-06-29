@@ -9,7 +9,7 @@
         <link href = "styles.css" rel = "stylesheet">
 
         <!-- Bootstrap CSS -->
-        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.3.1/dist/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
         <!-- Google Chart API -->
         <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
     </head>
@@ -26,16 +26,20 @@
                             <a id = "connectButtonHR" href="#" class="btn btn-primary">Connect</a>
                             <a id = "disconnectButtonHR" href="#" class="btn btn-primary">Disconnect</a>
                         </div>
-                        <div class = "col">
-                            placeholder
-                        </div>
-                        <div class = "col">
-                            placeholder
-                        </div>
-                        <div class="col-6">
-                            <div id="canvasContainerHR" class="card-body" >
-                                <div  id="canvasHR">
-                                </div>
+                        <div id="containerHR" class="col">
+                            <ul class="nav nav-pills mb-3" id="pills-tab-hr" role="tablist">
+                                <li class="nav-item" role="presentation">
+                                  <button class="nav-link active" id="pills-chart-hr-tab" data-bs-toggle="pill" data-bs-target="#pills-chart-hr" type="button" role="tab" aria-controls="pills-chart-hr" aria-selected="true">Chart</button>
+                                </li>
+                                <li class="nav-item" role="presentation">
+                                  <button class="nav-link" id="pills-zones-hr-tab" data-bs-toggle="pill" data-bs-target="#pills-zones-hr" type="button" role="tab" aria-controls="pills-zones-hr" aria-selected="false">Zones</button>
+                                </li>
+                            </ul>
+                            <div class="tab-content" id="pills-tabContent-hr">
+                            <div class="tab-pane fade show active" id="pills-chart-hr" role="tabpanel" aria-labelledby="pills-chart-hr-tab">
+                                <div id="canvasHR"></div>
+                            </div>
+                            <div class="tab-pane fade" id="pills-zones-hr" role="tabpanel" aria-labelledby="pills-zones-hr-tab">...</div>
                             </div>
                         </div>
                     </div>
@@ -53,27 +57,37 @@
                             <a id = "connectButtonFTMS" href="#" class="btn btn-primary">Connect</a>
                             <a id = "disconnectButtonFTMS" href="#" class="btn btn-primary">Disconnect</a>
                         </div>
-                        <div id="controlsContainerFTMS" class="col">
-                            <div class="row">
-                                <div class="col">
-                                    <div id="speedControlContainer" class="card-body">
-                                        <p class="card-text" style="text-align:center">Speed (km/h)</p>
-                                        <img id = 'speedUpButton' src="icons/chevron-up.svg" class="center">
-                                        <p id = "speedTextFTMS" class="card-text" style="text-align:center">speed</p>
-                                        <img id = 'speedDownButton' src="icons/chevron-down.svg" class="center">
-                                    </div>
+                        <div id="containerFTMS" class="col">
+                            <ul class="nav nav-pills mb-3" id="pills-tab-ftms" role="tablist">
+                                <li class="nav-item" role="presentation">
+                                  <button class="nav-link active" id="pills-chart-ftms-tab" data-bs-toggle="pill" data-bs-target="#pills-chart-ftms" type="button" role="tab" aria-controls="pills-chart-ftms" aria-selected="true">Chart</button>
+                                </li>
+                                <li class="nav-item" role="presentation">
+                                  <button class="nav-link" id="pills-controls-ftms-tab" data-bs-toggle="pill" data-bs-target="#pills-controls-ftms" type="button" role="tab" aria-controls="pills-controls-ftms" aria-selected="false">Controls</button>
+                                </li>
+                            </ul>
+                            <div class="tab-content" id="pills-tabContent-ftms">
+                                <div class="tab-pane fade show active" id="pills-chart-ftms" role="tabpanel" aria-labelledby="pills-chart-ftms-tab">
+                                    <div  id="canvasFTMS" ></div>
                                 </div>
-                                <div class="col">
-                                    <div id="inclinationControlContainer" class="card-body">
-                                        <p class="card-text" style="text-align:center">Inclination (%)</p>
-                                        <img id = 'inclinationUpButton' src="icons/chevron-up.svg" class="center">
-                                        <p id = "inclinationTextFTMS" class="card-text" style="text-align:center">inclination</p>
-                                        <img id = 'inclinationDownButton' src="icons/chevron-down.svg" class="center">
-                                    </div>
-                                </div>
-                                <div class="col-8">
-                                    <div class="card-body">
-                                        <div  id="canvasFTMS" ></div>
+                                <div class="tab-pane fade" id="pills-controls-ftms" role="tabpanel" aria-labelledby="pills-controls-ftms-tab">
+                                    <div id="controlsFTMS" class="row">
+                                        <div class="col">
+                                            <div id="speedControlContainer" class="card-body">
+                                                <p class="card-text" style="text-align:center">Speed (km/h)</p>
+                                                <img id = 'speedUpButton' src="icons/chevron-up.svg" class="center">
+                                                <p id = "speedTextFTMS" class="card-text" style="text-align:center">speed</p>
+                                                <img id = 'speedDownButton' src="icons/chevron-down.svg" class="center">
+                                            </div>
+                                        </div>
+                                        <div class="col">
+                                            <div id="inclinationControlContainer" class="card-body">
+                                                <p class="card-text" style="text-align:center">Inclination (%)</p>
+                                                <img id = 'inclinationUpButton' src="icons/chevron-up.svg" class="center">
+                                                <p id = "inclinationTextFTMS" class="card-text" style="text-align:center">inclination</p>
+                                                <img id = 'inclinationDownButton' src="icons/chevron-down.svg" class="center">
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -102,6 +116,26 @@
                 </div>
             </div>
         </div>
+        <div class="card">
+            <h5 class="card-header" id="headingRecord" data-toggle="collapse" data-target="#collapseRecord" aria-expanded="true" aria-controls="collapseRecord">Record Experiment</h5>
+            <div id="collapseRecord" class="collapse show" aria-labelledby="headingRecord"> 
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col">
+                            <h5 id = "titleTextRecord" class="card-title">Record and save data to .json file.</h5>
+                            <p id = "statusTextRecord" class="card-text">No device connected</p>
+                            <a id = "startRecordingButton" href="#" class="btn btn-primary">Start recording</a>
+                            <a id = "stopRecordingButton" href="#" class="btn btn-primary">Stop recording</a>
+                        </div>
+                        <div class="col-9">
+                            <div id="canvasContainerRecord" class="card-body">
+                                <canvas  id="canvasRecord" ></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
 
         <script src = "app.js"></script>
         <script src = "heartRateDevice.js"></script>
@@ -109,8 +143,8 @@
 
         <!-- jQuery first, then Popper.js, then Bootstrap JS -->
         <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
-        <script src="https://cdn.jsdelivr.net/npm/popper.js@1.14.7/dist/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
-        <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.3.1/dist/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
+        <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js" integrity="sha384-IQsoLXl5PILFhosVNubq5LC7Qb9DXgDA9i+tQ8Zj3iwWAwPtgFTxbJ8NT4GN1R8p" crossorigin="anonymous"></script>
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.min.js" integrity="sha384-cVKIPhGWiC2Al4u+LWgxfKTRIcfu0JTxR+EQDz/bgldoEyl4H0zUF0QKbrJ0EcQF" crossorigin="anonymous"></script>
     </body>
 
 </html>

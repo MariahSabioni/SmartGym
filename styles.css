@@ -1,17 +1,29 @@
 #canvasHR{
-    outline: grey 1px solid;
-    justify-content: center;
+    outline: lightgray 1px solid;
+    border-radius: 15px;
+    justify-content:center;
+    vertical-align: top;
     width: 100%;
     height: 250px;
     padding: 1%;
 }
 
+#canvasContainerHR{
+    padding: 0;
+}
+
 #canvasFTMS{
-    outline: grey 1px solid;
+    outline: lightgray 1px solid;
+    border-radius: 15px;
     justify-content: center;
+    vertical-align: top;
     width: 100%;
     height: 250px;
     padding: 1%;
+}
+
+#controlsContainerFTMS{
+    padding: 0;
 }
 
 .center {
@@ -20,7 +32,8 @@
     margin-right: auto;
 }
 
-.noPadding {
-    padding: 0;
-    margin: 0;
- }
+.nav-pills .nav-link.active {
+    background-color: lightgray!important;
+    color:black!important;
+}
+

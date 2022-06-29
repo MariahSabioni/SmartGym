@@ -3,14 +3,16 @@ let connectButtonHR = document.getElementById('connectButtonHR');
 let disconnectButtonHR = document.getElementById('disconnectButtonHR');
 let titleTextHR = document.getElementById('titleTextHR');
 let statusTextHR = document.getElementById("statusTextHR") ;
-let canvasContainerHR = document.getElementById("canvasContainerHR") ;
+let containerHR = document.getElementById("containerHR") ;
+let zonesHR = document.getElementById("zonesHR");
 let canvasHR = document.getElementById("canvasHR");
 
 let connectButtonFTMS = document.getElementById('connectButtonFTMS');
 let disconnectButtonFTMS = document.getElementById('disconnectButtonFTMS');
 let titleTextFTMS = document.getElementById('titleTextFTMS');
 let statusTextFTMS = document.getElementById("statusTextFTMS") ;
-let controlsContainerFTMS = document.getElementById("controlsContainerFTMS") ;
+let containerFTMS = document.getElementById("containerFTMS") ;
+let controlsFTMS = document.getElementById("controlsFTMS");
 let canvasFTMS = document.getElementById("canvasFTMS");
 
 let speedUpButton = document.getElementById('speedUpButton');
@@ -25,6 +27,11 @@ let statusTextIMU = document.getElementById("statusTextIMU") ;
 let canvasContainerIMU = document.getElementById("canvasContainerIMU") ;
 let canvasIMU = document.getElementById("canvasIMU");
 
+let titleTextRecord = document.getElementById('titleTextRecord');
+let statusTextRecord = document.getElementById('statusTextRecord');
+let startRecordingButton = document.getElementById('startRecordingButton');
+let stopRecordingButton = document.getElementById('stopRecordingButton');
+
 let heartRates = [];
 let heartRateMeasurements = [];
 let speeds = [];
@@ -35,18 +42,18 @@ let heartRateDeviceCache = null;
 // initial ui settings
 statusTextHR.textContent = "No HR sensor connected" ;
 titleTextHR.textContent = "Scan for Bluetooth HR sensor";
-//canvasContainerHR.style.display = "none";
+containerHR.style.display = "none";
 
 statusTextFTMS.textContent = "No fitness machine connected" ;
 titleTextFTMS.textContent = "Scan for Bluetooth fitness machine";
-//controlsContainerFTMS.style.display = "none";
+containerFTMS.style.display = "none";
 
 statusTextIMU.textContent = "No IMU sensor connected" ;
 titleTextIMU.textContent = "Scan for Bluetooth IMU sensor";
 canvasContainerIMU.style.display = "none";
 
 // google chart
-google.charts.load('current', {'packages':['corechart']});
+google.charts.load('current', {'packages':['corechart', 'line']});
 google.charts.setOnLoadCallback(drawChart);
 
 //listeners
@@ -61,7 +68,7 @@ disconnectButtonHR.addEventListener('click', function() {
   heartRateDevice.disconnect();
   statusTextHR.textContent = "No HR sensor connected" ;
   titleTextHR.textContent = "Scan for Bluetooth HR sensor";
-  canvasContainerHR.style.display = "none";
+  containerHR.style.display = "none";
 });
 connectButtonFTMS.addEventListener('click', function() {
   fitnessMachineDevice.connect()
@@ -74,7 +81,7 @@ disconnectButtonFTMS.addEventListener('click', function() {
   fitnessMachineDevice.disconnect();
   statusTextFTMS.textContent = "No fitness machine connected" ;
   titleTextFTMS.textContent = "Scan for Bluetooth fitness machine";
-  controlsContainerFTMS.style.display = "none";
+  containerFTMS.style.display = "none";
 });
 speedUpButton.addEventListener('click', function() {
   currSpeed = speeds[speeds.length - 1];
@@ -104,6 +111,18 @@ inclinationDownButton.addEventListener('click', function() {
     console.log(error);
   });
 });
+startRecordingButton.addEventListener('click', function() {
+  startRecording()
+  .catch(error => {
+    console.log(error);
+  });
+});
+stopRecordingButton.addEventListener('click', function() {
+  stopRecording()
+  .catch(error => {
+    console.log(error);
+  });
+});
 
 function updateFTMSUI(treadmillMeasurement){
   statusTextFTMS.innerHTML = /*'&#x1F3C3;'*/ `&#x1F4A8; Speed: ${(treadmillMeasurement.speed<10?'&nbsp;':'')}${treadmillMeasurement.speed} km/h<br />&#x26F0; Inclination: ${(treadmillMeasurement.inclination<0?'':'&nbsp;')}${treadmillMeasurement.inclination} % <br />&#x1f5fa; Distance: ${treadmillMeasurement.distance} m<br />&#x23f1; Time: ${treadmillMeasurement.duration}`;
@@ -114,8 +133,7 @@ function updateFTMSUI(treadmillMeasurement){
   treadmillMeasurements.push(treadmillMeasurement);
   console.log('Treadmill array length: ',treadmillMeasurements.length);
   
-  controlsContainerFTMS.style.display = "block";
-  //drawChartSpeed();
+  containerFTMS.style.display = "block";
 }
 
 function updateHRUI(heartRateMeasurement){
@@ -126,15 +144,13 @@ function updateHRUI(heartRateMeasurement){
   heartRateMeasurements.push(heartRates);
   console.log('HR array length: ',heartRateMeasurements.length);
   
-  canvasContainerHR.style.display = "block";
-  //drawChartHR();
+  containerHR.style.display = "block";
 }
 
 function drawChart() {
   let dataHR = new google.visualization.DataTable();
   dataHR.addColumn('number', 'timestamp');
   dataHR.addColumn('number', 'heart rate (bpm)');
-  
   dataHR.addRows([
     [0,  0],
   ]);
@@ -145,56 +161,75 @@ function drawChart() {
     hAxis: {textPosition: 'none'},
     legend: 'bottom',
     axisTitlesPosition: 'none',
-    
+    chartArea:{width:'80%',height:'80%'},
+    theme: 'material'
   };
   
   var chartHR = new google.visualization.LineChart(document.getElementById('canvasHR'));  
   chartHR.draw(dataHR, optionsHR);
 
-  let dataSpeed = new google.visualization.DataTable();
-  dataSpeed.addColumn('number', 'timestamp');
-  dataSpeed.addColumn('number', 'speed (km/h)');
+  let dataTreadmill = new google.visualization.DataTable();
+  dataTreadmill.addColumn('number', 'timestamp');
+  dataTreadmill.addColumn('number', 'speed (km/h)');
+  dataTreadmill.addColumn('number', 'inclination (%)');
   
-  dataSpeed.addRows([
-    [0,  0],
+  dataTreadmill.addRows([
+    [0,  0, 0],
   ]);
   
   var optionsSpeed = {
-    title: 'Speed (km/h)',
-    vAxis: {minValue:0, maxValue:20.0},
+    title: 'Speed (km/h) and inclination (%)',
+    series: {
+      0: {targetAxisIndex: 0,},
+      1: {targetAxisIndex: 1,}
+    },
+    vAxes: {
+      0:{ticks:[0, 5, 10, 15, 20, 25]},
+      1:{ticks:[-2.5, 0, 2.5, 5, 7.5, 10]},
+    },
     hAxis: {textPosition: 'none'},
     legend: 'bottom',
     axisTitlesPosition: 'none',
-    
+    chartArea:{width:'80%',height:'80%'},
+    theme: 'material'
   };
   
   var chartSpeed = new google.visualization.LineChart(document.getElementById('canvasFTMS'));  
-  chartSpeed.draw(dataSpeed, optionsSpeed);
+  chartSpeed.draw(dataTreadmill, optionsSpeed);
 
   let index = 0;
   let plotting = false;
+  let plotHR = false;
+  let plotFTMS = false;
   setInterval(function() {
     if (heartRateDevice.device !== null){
     let plotNewHR = heartRates[heartRates.length - 1];
       dataHR.addRow([index, plotNewHR]);
-      //console.log(data.getNumberOfRows());
-      if (dataHR.getNumberOfRows() > 49){
+      if (dataHR.getNumberOfRows() > 69){
         dataHR.removeRow(0);
-        //console.log('row removed: ',data.getNumberOfRows());
       }
-      chartHR.draw(dataHR, optionsHR);
+      //chartHR.draw(dataHR, optionsHR);
       plotting = true;
+      plotHR = true;
     }
     if (fitnessMachineDevice.device !== null){
       let plotNewSpeed = parseFloat(speeds[speeds.length - 1]);
-        dataSpeed.addRow([index, plotNewSpeed]);
-        //console.log(data.getNumberOfRows());
-        if (dataSpeed.getNumberOfRows() > 49){
-          dataSpeed.removeRow(0);
-          //console.log('row removed: ',data.getNumberOfRows());
+      let plotNewInclination = parseFloat(inclinations[inclinations.length - 1]);
+        dataTreadmill.addRow([index, plotNewSpeed, plotNewInclination]);
+        if (dataTreadmill.getNumberOfRows() > 69){
+          dataTreadmill.removeRow(0);
         }
-        chartSpeed.draw(dataSpeed, optionsSpeed);
+        //chartSpeed.draw(dataTreadmill, optionsSpeed);
         plotting = true;
+        plotFTMS = true;
+    }
+    if (plotHR){
+      chartHR.draw(dataHR, optionsHR);
+      plotHR = false;
+    }
+    if (plotFTMS){
+      chartSpeed.draw(dataTreadmill, optionsSpeed);
+      plotFTMS = false;
     }
     if (plotting){
       index++;
@@ -202,63 +237,34 @@ function drawChart() {
   }, 500);
 }
 
-function drawChartSpeed() {
-  requestAnimationFrame(() => {
-    var context = canvasFTMS.getContext('2d');
-    var max = Math.max(0, Math.round(canvasFTMS.width / 11));
-    var offset = Math.max(0, speeds.length - max);
-    context.clearRect(0, 0, canvasFTMS.width, canvasFTMS.height);
-    context.strokeStyle = '#FF0000';
-    context.beginPath();
-    context.lineWidth = 1;
-    context.lineJoin = 'round';
-    for (var i = 0; i < Math.max(speeds.length, max); i++) {
-      var lineHeight = Math.round(speeds[i + offset ] * canvasFTMS.height / 25);
-      if (i === 0) {
-        context.moveTo(11 * i, canvasFTMS.height - lineHeight);
-      } else {
-        context.lineTo(11 * i, canvasFTMS.height - lineHeight);
-      }
-      context.stroke();
-    }
-  });
+function startRecording(){
+
 }
 
-function drawChartHR() {
-  requestAnimationFrame(() => {
-    var context = canvasHR.getContext('2d');
-    var max = Math.max(0, Math.round(canvasHR.width / 11));
-    var offset = Math.max(0, heartRates.length - max);
-    context.clearRect(0, 0, canvasHR.width, canvasHR.height);
-    context.strokeStyle = '#FF0000';
-    context.beginPath();
-    context.lineWidth = 1;
-    context.lineJoin = 'round';
-    for (var i = 0; i < Math.max(heartRates.length, max); i++) {
-      var lineHeight = Math.round(heartRates[i + offset ] * canvasHR.height / 200);
-      if (i === 0) {
-        context.moveTo(11 * i, canvasHR.height - lineHeight);
-      } else {
-        context.lineTo(11 * i, canvasHR.height - lineHeight);
-      }
-      context.stroke();
-    }
-  });
+function stopRecording(){
+
 }
 
-// function animationLoop(timestamp){
-//   ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-//   ctx.font = "12px Arial";
-//   ctx.fillStyle = "#000000";
-//   ctx.fillText("Accelerometer",5,12);
-
-//   ctx.strokeStyle = "#FF0000";
-//   ctx.beginPath(0,200-xAcc[0]);
-//   for(foo = 0; foo < canvas.width; foo++){
-//       ctx.lineTo(foo*2,200-xAcc[foo]);
-//   }
-//   ctx.stroke(); 
-
-//   requestId = requestAnimationFrame(animationLoop);
-// }
+function saveToFile(){
+  var file;
+  var properties = {type: 'application/json'}; // Specify the file's mime-type.
+  var myObj = {accX: xAcc, accY: yAcc, accZ: zAcc, magX: xGyro, magY: yGyro, magZ: xGyro};
+  var myObj2 = {Acceleration: combinedAccelerations, RollData: rolls, PitchData: pitches, YawData: yaws, TimeData: timeStamps};
+  var myJSON = JSON.stringify(myObj);
+  var myJSON2 = JSON.stringify(myObj2);
+  try {
+      // Specify the filename using the File constructor, but ...
+      file = new File(myJSON, "6DOF.json", properties);
+      file2 = new File(myJSON2, "Dynamic_Data.json", properties)
+  } catch (e) {
+      // ... fall back to the Blob constructor if that isn't supported.
+      file = new Blob([myJSON], {type: "application/json"});
+      file2 = new Blob([myJSON2],{type: "application/json"});
+  }
+  var a = document.createElement('a');
+  a.href = window.URL.createObjectURL(file);
+  a.href = window.URL.createObjectURL(file2);
+  a.download = "6DOF.json";
+  a.download = "Dynamic_Data.json";
+  a.click();
+}

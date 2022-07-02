@@ -37,3 +37,9 @@
     color:black!important;
 }
 
+.card {
+    margin-left: 2px!important;
+    margin-right: 2px!important;
+    margin-top: 1px;
+    margin-bottom: 1px;
+}

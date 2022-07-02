@@ -15,8 +15,14 @@
     </head>
 
     <body>
+        <nav class="navbar sticky-top navbar" style="background-color: white;vertical-align: middle;padding-left: 30px;outline-style:solid;outline-color: lightgrey; margin-bottom: 5px;">
+            <a class="navbar-brand" href="#">
+                <h2>Smart Gym</h2></a>
+            <div class="container-fluid">
+            </div>
+        </nav>
         <div class="card">
-            <h5 class="card-header" id="headingHR" data-toggle="collapse" data-target="#collapseHR" aria-expanded="true" aria-controls="collapseHR">HR Sensor</h5>
+            <h5 class="card-header" id="headingHR" data-bs-toggle="collapse" data-bs-target="#collapseHR" aria-expanded="true" aria-controls="collapseHR">HR Sensor</h5>
             <div id="collapseHR" class="collapse show" aria-labelledby="headingHR"> 
                 <div class="card-body" >
                     <div class="row">
@@ -47,7 +53,7 @@
             </div>
         </div>
         <div class="card">
-            <h5 class="card-header" id="headingFTMS" data-toggle="collapse" data-target="#collapseFTMS" aria-expanded="true" aria-controls="collapseFTMS">Fitness machine</h5>
+            <h5 class="card-header" id="headingFTMS" data-bs-toggle="collapse" data-bs-target="#collapseFTMS" aria-expanded="true" aria-controls="collapseFTMS">Fitness machine</h5>
             <div id="collapseFTMS" class="collapse show" aria-labelledby="headingFTMS"> 
                 <div class="card-body">
                     <div class="row">
@@ -97,7 +103,7 @@
             </div>
         </div>
         <div class="card">
-            <h5 class="card-header" id="headingIMU" data-toggle="collapse" data-target="#collapseIMU" aria-expanded="true" aria-controls="collapseIMU">IMU sensor</h5>
+            <h5 class="card-header" id="headingIMU" data-bs-toggle="collapse" data-bs-target="#collapseIMU" aria-expanded="true" aria-controls="collapseIMU">IMU sensor</h5>
             <div id="collapseIMU" class="collapse show" aria-labelledby="headingIMU"> 
                 <div class="card-body">
                     <div class="row">
@@ -117,15 +123,49 @@
             </div>
         </div>
         <div class="card">
-            <h5 class="card-header" id="headingRecord" data-toggle="collapse" data-target="#collapseRecord" aria-expanded="true" aria-controls="collapseRecord">Record Experiment</h5>
+            <h5 class="card-header" id="headingRecord" data-bs-toggle="collapse" data-bs-target="#collapseRecord" aria-expanded="true" aria-controls="collapseRecord">Record Data</h5>
             <div id="collapseRecord" class="collapse show" aria-labelledby="headingRecord"> 
                 <div class="card-body">
                     <div class="row">
                         <div class="col">
-                            <h5 id = "titleTextRecord" class="card-title">Record and save data to .json file.</h5>
-                            <p id = "statusTextRecord" class="card-text">No device connected</p>
-                            <a id = "startRecordingButton" href="#" class="btn btn-primary">Start recording</a>
-                            <a id = "stopRecordingButton" href="#" class="btn btn-primary">Stop recording</a>
+                            <h5 id = "titleTextRecord" class="card-title">Record and save data to .json file</h5>
+                            <p id = "statusTextRecord" class="card-text">Not recording</p>
+                            <a id = "startRecordingButton" href="#" class="btn btn-primary" style="background-color: green;border-color: green;">Start</a>
+                            <a id = "stopRecordingButton" href="#" class="btn btn-primary" style="background-color: red;border-color: red;">Stop</a>
+                            <button id="settingsButton" type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#settingsModal">Settings</button>
+                            <div class="modal fade" id="settingsModal" tabindex="-1" aria-labelledby="settingsModalLabel" aria-hidden="true">
+                                <div class="modal-dialog">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                    <h5 class="modal-title" id="settingsModalLabel">Recording settings</h5>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                    </div>
+                                    <div class="modal-body">
+                                        <form>
+                                            <p><div>Devices:</div><div id="settingsDevices" style="font-style:italic;">No devices connected</div></p> 
+                                            <p>
+                                                <div>Auto stop:</div>
+                                                <div class="input-group mb-3">
+                                                    <input id="durationInput" type="text" class="form-control" aria-describedby="addon-duration" required>
+                                                    <span class="input-group-text" id="addon-duration">min</span>
+                                                </div>
+                                            </p>
+                                            <p>
+                                                <div>File name:</div>
+                                                <div class="input-group mb-3">
+                                                    <input id="fileNameInput" type="text" class="form-control" aria-describedby="addon-filename" required>
+                                                    <span class="input-group-text" id="addon-filename">.json</span>
+                                                </div>
+                                            </p>
+                                        </form>
+                                    </div>
+                                    <div class="modal-footer">
+                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                    <button type="button" class="btn btn-primary" id="saveSettingsButton">Save changes</button>
+                                    </div>
+                                </div>
+                                </div>
+                            </div>
                         </div>
                         <div class="col-9">
                             <div id="canvasContainerRecord" class="card-body">

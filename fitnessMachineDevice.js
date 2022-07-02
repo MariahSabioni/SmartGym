@@ -1,107 +1,174 @@
 (function(){
     class fitnessMachineDevice {
+
         constructor() {
         this.device = null;
         this.server = null;
-        this._characteristics = new Map();
+        this.serviceUUID = '00001826-0000-1000-8000-00805f9b34fb';
+        //characteristics
+        this.dataChUUID = "00002acd-0000-1000-8000-00805f9b34fb";
+        this.controlChUUID = "00002ad9-0000-1000-8000-00805f9b34fb";
+        this.controlCh = null;
+        this.dataCh = null;
         }
         
         connect() {
-        return navigator.bluetooth.requestDevice({filters:[{services:[ '00001826-0000-1000-8000-00805f9b34fb' ]}]})
+        return navigator.bluetooth.requestDevice({filters:[{services:[ this.serviceUUID ]}]})
         .then(device => {
             this.device = device;
             return device.gatt.connect();
         })
         .then(server => {
             this.server = server;
-            return server.getPrimaryService('00001826-0000-1000-8000-00805f9b34fb');
+            return server.getPrimaryService(this.serviceUUID);
         })
         .then(service => {
-            return this._cacheCharacteristic(service, "00002acd-0000-1000-8000-00805f9b34fb");
+            this.findDataCharacteristic(service);
+            this.findControlCharacteristic(service);
+        });
+        }
+
+        findDataCharacteristic(service) {
+        service.getCharacteristic(this.dataChUUID)
+        .then(characteristic => {
+        console.log('characteristic found: ', characteristic);
+        return characteristic.startNotifications();
         })
+        .then(characteristic => {
+        characteristic.addEventListener('characteristicvaluechanged', this.parseTreadmillData);
+        })
+        .catch(error => {
+        console.log(error);
+        });
+        }
+
+        findControlCharacteristic(service) {
+        service.getCharacteristic(this.controlChUUID)
+        .then(characteristic => {
+            console.log('characteristic found: ', characteristic);
+            const val = Uint8Array.of(0);
+            characteristic.writeValue(val);
+        })
+        .catch(error => {
+            console.log(error);
+        });
         }
 
         disconnect(){
-            if (this.device == null) {
-                console.log('The target device is null.');
-                return;
+        if (this.device == null) {
+            console.log('The target device is null.');
+            return;
+        }
+        this.device.gatt.disconnect();
+        }
+
+        increaseSpeedStep(currSpeed, speedIncrement = 0.5){
+        console.log('speed increase clicked');
+        console.log(currSpeed);
+        var newSpeed = (parseFloat(currSpeed) + parseFloat(speedIncrement));
+        console.log(newSpeed);
+        let server = this.server;
+        return server.getPrimaryService(this.serviceUUID)
+        .then(service => {
+            this.setNewSpeed(service, newSpeed);
+        });
+        }
+
+        decreaseSpeedStep(currSpeed, speedIncrement = 0.5){
+        console.log('speed decrease clicked');
+        console.log(currSpeed);
+        var newSpeed = (parseFloat(currSpeed) - parseFloat(speedIncrement));
+        console.log(newSpeed);
+        let server = this.server;
+        return server.getPrimaryService(this.serviceUUID)
+        .then(service => {
+            this.setNewSpeed(service, newSpeed);
+        });
+        }
+
+        increaseInclinationStep(currInclination, inclinationIncrement = 0.1){
+        console.log('inclination increase clicked');
+        console.log(currInclination);
+        var newInclination = (parseFloat(currInclination) + parseFloat(inclinationIncrement));
+        console.log(newInclination);
+        let server = this.server;
+        return server.getPrimaryService(this.serviceUUID)
+        .then(service => {
+            this.setNewInclination(service, newInclination);
+        });
+        }
+
+        decreaseInclinationStep(currInclination, inclinationIncrement = 0.1){
+        console.log('inclination decrease clicked');
+        console.log(currInclination);
+        var newInclination = (parseFloat(currInclination) - parseFloat(inclinationIncrement));
+        console.log(newInclination);
+        let server = this.server;
+        return server.getPrimaryService(this.serviceUUID)
+        .then(service => {
+            this.setNewInclination(service, newInclination);
+        });
+        }
+
+        setNewSpeed(service, newSpeed){
+        service.getCharacteristic(this.controlChUUID)
+        .then(characteristic => {
+            console.log('characteristic found: ', characteristic);
+            let b = new Uint8Array(2);
+            let newSpeedInt = parseInt(newSpeed*100);
+            for (var i=0;  i < b.length; i++){
+                b[i] = newSpeedInt >> 8*i;
             }
-            this.device.gatt.disconnect();
+            let val = new Uint8Array(3);
+            val[0] = 2;
+            val[1] = b[0];
+            val[2] = b[1];
+            console.log('val', val);
+            characteristic.writeValue(val);
+        })
+        .catch(error => {
+            console.log(error);
+        });
         }
 
-        /* Heart Rate Service */
-
-        startNotificationsData() {
-        return this._startNotifications("00002acd-0000-1000-8000-00805f9b34fb");
-        }
-        stopNotificationsData() {
-        return this._stopNotifications("00002acd-0000-1000-8000-00805f9b34fb");
-        }
-        parseTreadmillData(value) {
-        // In Chrome 50+, a DataView is returned instead of an ArrayBuffer.
-        value = value.buffer ? value : new DataView(value);
-        // let flags = value.getUint8(0);
-        // let speed16Bits = flags & 0x0002;
-        // console.log(speed16Bits)
-        let result = {};
-        let index_speed = 2;
-        result.speed = value.getUint16(index_speed, /*littleEndian=*/true)/100;
-        let index_inclination = 9;
-        result.inclination = value.getInt16(index_inclination, /*littleEndian=*/true)/10;
-        let index_distance = 6;
-        result.distance = this.getUint24(index_distance, value);
-        let index_time = 14;
-        result.time = value.getUint16(index_time, /*littleEndian=*/true);
-        // let energyPresent = flags & 0x8;
-        // if (energyPresent) {
-        //     result.energyExpended = value.getUint16(index, /*littleEndian=*/true);
-        //     index += 2;
-        // }
-        console.log('result: ' + result.speed + 'km/h | ' + result.inclination + '% | '+ result.distance + 'm | ' + result.time + 's')
-        return result;
-        }
-
-        getUint24(index_distance, value){
-            let a = value.getUint16(index_distance, /*littleEndian=*/true);
-            a << 8;
-            let b = value.getUint8(2 + index_distance, /*littleEndian=*/true);
-            return a + b;
+        setNewInclination(service, newInclination){
+        service.getCharacteristic(this.controlChUUID)
+        .then(characteristic => {
+            console.log('characteristic found: ', characteristic);
+            let b = new Uint8Array(2);
+            let newInclinationInt = parseInt(newInclination*10);
+            for (var i=0;  i < b.length; i++){
+                b[i] = newInclinationInt >> 8*i;
+            }
+            let val = new Uint8Array(3);
+            val[0] = 3;
+            val[1] = b[0];
+            val[2] = b[1];
+            console.log('val', val);
+            characteristic.writeValue(val);
+        })
+        .catch(error => {
+            console.log(error);
+        });
         }
 
         /* Utils */
-
-        _cacheCharacteristic(service, characteristicUuid) {
-        return service.getCharacteristic(characteristicUuid)
-        .then(characteristic => {
-            this._characteristics.set(characteristicUuid, characteristic);
-        });
-        }
-        _readCharacteristicValue(characteristicUuid) {
-        let characteristic = this._characteristics.get(characteristicUuid);
-        return characteristic.readValue()
-        .then(value => {
-            // In Chrome 50+, a DataView is returned instead of an ArrayBuffer.
-            value = value.buffer ? value : new DataView(value);
-            return value;
-        });
-        }
-        _writeCharacteristicValue(characteristicUuid, value) {
-        let characteristic = this._characteristics.get(characteristicUuid);
-        return characteristic.writeValue(value);
-        }
-        _startNotifications(characteristicUuid) {
-        let characteristic = this._characteristics.get(characteristicUuid);
-        // Returns characteristic to set up characteristicvaluechanged event
-        // handlers in the resolved promise.
-        return characteristic.startNotifications()
-        .then(() => characteristic);
-        }
-        _stopNotifications(characteristicUuid) {
-        let characteristic = this._characteristics.get(characteristicUuid);
-        // Returns characteristic to remove characteristicvaluechanged event
-        // handlers in the resolved promise.
-        return characteristic.stopNotifications()
-        .then(() => characteristic);
+        parseTreadmillData(event) {
+        let value = event.target.value;
+        value = value.buffer ? value : new DataView(value); // In Chrome 50+, a DataView is returned instead of an ArrayBuffer.
+        let result = {};
+        let index_speed = 2;
+        result.speed = Number(value.getUint16(index_speed, /*littleEndian=*/true)/100).toFixed(1);
+        let index_inclination = 9;
+        result.inclination = Number(value.getInt16(index_inclination, /*littleEndian=*/true)/10).toFixed(1);
+        let index_distance = 6;
+        result.distance = ((value.getUint16(index_distance, true)) << 8) + value.getUint8(2 + index_distance, true);
+        let index_time = 14;
+        let seconds = value.getUint16(index_time, /*littleEndian=*/true);
+        result.duration = new Date(seconds * 1000).toISOString().slice(11, 19);
+        result.time = Date.now();
+        console.log(`timestamp: ${result.time} | Treadmill: ${result.speed}km/h | ${result.inclination}% | ${result.distance}m | ${result.duration}`)
+        updateFTMSUI(result);
         }
         getDeviceName(){
             return this.device.name;
@@ -109,4 +176,5 @@
     }
 
     window.fitnessMachineDevice = new fitnessMachineDevice();
+
 })();

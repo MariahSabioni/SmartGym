@@ -1,21 +1,45 @@
-#connectButton {
-    color: black;
-}
-
-#disconnectButton {
-    color: black;
-}
-
 #canvasHR{
-    outline: grey 1px solid;
-    justify-content: center;
+    outline: lightgray 1px solid;
+    border-radius: 15px;
+    justify-content:center;
+    vertical-align: top;
     width: 100%;
-    height: 150px;
+    height: 250px;
+    padding: 1%;
+}
+
+#canvasContainerHR{
+    padding: 0;
 }
 
 #canvasFTMS{
-    outline: grey 1px solid;
+    outline: lightgray 1px solid;
+    border-radius: 15px;
     justify-content: center;
+    vertical-align: top;
     width: 100%;
-    height: 150px;
+    height: 250px;
+    padding: 1%;
+}
+
+#controlsContainerFTMS{
+    padding: 0;
+}
+
+.center {
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.nav-pills .nav-link.active {
+    background-color: lightgray!important;
+    color:black!important;
+}
+
+.card {
+    margin-left: 2px!important;
+    margin-right: 2px!important;
+    margin-top: 1px;
+    margin-bottom: 1px;
 }

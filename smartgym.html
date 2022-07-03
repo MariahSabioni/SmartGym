@@ -1,98 +1,116 @@
 <!DOCTYPE html>
 <html lang="en">
-    <head>
-        <meta charset="utf-8">
-        <title>KTH SmartGym</title>
-        <meta name = "author" content = "Mariah Sabioni">
-        <meta name = "description" content = "Data collector for KTH Integration Lab BLE devices">
-        <meta name = "viewport" content = "width=device-width, initial-scale=1">
-        <link href = "styles.css" rel = "stylesheet">
 
-        <!-- Bootstrap CSS -->
-        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
-        <!-- Google Chart API -->
-        <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
-    </head>
+<head>
+    <meta charset="utf-8">
+    <title>KTH SmartGym</title>
+    <meta name="author" content="Mariah Sabioni">
+    <meta name="description" content="Data collector for KTH Integration Lab BLE devices">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link href="styles.css" rel="stylesheet">
 
-    <body>
-        <nav class="navbar sticky-top navbar" style="background-color: white;vertical-align: middle;padding-left: 30px;outline-style:solid;outline-color: lightgrey; margin-bottom: 5px;">
-            <a class="navbar-brand" href="#">
-                <h2>Smart Gym</h2></a>
-            <div class="container-fluid">
-            </div>
-        </nav>
-        <div class="card">
-            <h5 class="card-header" id="headingHR" data-bs-toggle="collapse" data-bs-target="#collapseHR" aria-expanded="true" aria-controls="collapseHR">HR Sensor</h5>
-            <div id="collapseHR" class="collapse show" aria-labelledby="headingHR"> 
-                <div class="card-body" >
-                    <div class="row">
-                        <div class="col-3">
-                            <h5 id = "titleTextHR" class="card-title">Scan for Bluetooth HR sensor</h5>
-                            <p id = "statusTextHR" class="card-text">No device connected</p>
-                            <a id = "connectButtonHR" href="#" class="btn btn-primary">Connect</a>
-                            <a id = "disconnectButtonHR" href="#" class="btn btn-primary">Disconnect</a>
-                        </div>
-                        <div id="containerHR" class="col">
-                            <ul class="nav nav-pills mb-3" id="pills-tab-hr" role="tablist">
-                                <li class="nav-item" role="presentation">
-                                  <button class="nav-link active" id="pills-chart-hr-tab" data-bs-toggle="pill" data-bs-target="#pills-chart-hr" type="button" role="tab" aria-controls="pills-chart-hr" aria-selected="true">Chart</button>
-                                </li>
-                                <li class="nav-item" role="presentation">
-                                  <button class="nav-link" id="pills-zones-hr-tab" data-bs-toggle="pill" data-bs-target="#pills-zones-hr" type="button" role="tab" aria-controls="pills-zones-hr" aria-selected="false">Zones</button>
-                                </li>
-                            </ul>
-                            <div class="tab-content" id="pills-tabContent-hr">
-                            <div class="tab-pane fade show active" id="pills-chart-hr" role="tabpanel" aria-labelledby="pills-chart-hr-tab">
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+    <!-- Google Chart API -->
+    <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+</head>
+
+<body>
+    <nav class="navbar sticky-top navbar"
+        style="background-color: white;vertical-align: middle;padding-left: 30px;outline-style:solid;outline-color: lightgrey; margin-bottom: 5px;">
+        <a class="navbar-brand" href="#">
+            <h2>Smart Gym</h2>
+        </a>
+        <div class="container-fluid">
+        </div>
+    </nav>
+    <div class="card">
+        <h5 class="card-header" id="headingHR" data-bs-toggle="collapse" data-bs-target="#collapseHR"
+            aria-expanded="true" aria-controls="collapseHR">HR Sensor</h5>
+        <div id="collapseHR" class="collapse show" aria-labelledby="headingHR">
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-3">
+                        <h5 id="titleTextHR" class="card-title">Scan for Bluetooth HR sensor</h5>
+                        <p id="statusTextHR" class="card-text">No device connected</p>
+                        <a id="connectButtonHR" href="#" class="btn btn-primary">Connect</a>
+                        <a id="disconnectButtonHR" href="#" class="btn btn-primary">Disconnect</a>
+                    </div>
+                    <div id="containerHR" class="col">
+                        <ul class="nav nav-pills mb-3" id="pills-tab-hr" role="tablist">
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link active" id="pills-chart-hr-tab" data-bs-toggle="pill"
+                                    data-bs-target="#pills-chart-hr" type="button" role="tab"
+                                    aria-controls="pills-chart-hr" aria-selected="true">Chart</button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link" id="pills-zones-hr-tab" data-bs-toggle="pill"
+                                    data-bs-target="#pills-zones-hr" type="button" role="tab"
+                                    aria-controls="pills-zones-hr" aria-selected="false">Zones</button>
+                            </li>
+                        </ul>
+                        <div class="tab-content" id="pills-tabContent-hr">
+                            <div class="tab-pane fade show active" id="pills-chart-hr" role="tabpanel"
+                                aria-labelledby="pills-chart-hr-tab">
                                 <div id="canvasHR"></div>
                             </div>
-                            <div class="tab-pane fade" id="pills-zones-hr" role="tabpanel" aria-labelledby="pills-zones-hr-tab">...</div>
-                            </div>
+                            <div class="tab-pane fade" id="pills-zones-hr" role="tabpanel"
+                                aria-labelledby="pills-zones-hr-tab">...</div>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
-        <div class="card">
-            <h5 class="card-header" id="headingFTMS" data-bs-toggle="collapse" data-bs-target="#collapseFTMS" aria-expanded="true" aria-controls="collapseFTMS">Fitness machine</h5>
-            <div id="collapseFTMS" class="collapse show" aria-labelledby="headingFTMS"> 
-                <div class="card-body">
-                    <div class="row">
-                        <div class="col-3">
-                            <h5 id = "titleTextFTMS" class="card-title">Scan for Bluetooth fitness machine</h5>
-                            <p id = "statusTextFTMS" class="card-text">No device connected</p>
-                            <a id = "connectButtonFTMS" href="#" class="btn btn-primary">Connect</a>
-                            <a id = "disconnectButtonFTMS" href="#" class="btn btn-primary">Disconnect</a>
-                        </div>
-                        <div id="containerFTMS" class="col">
-                            <ul class="nav nav-pills mb-3" id="pills-tab-ftms" role="tablist">
-                                <li class="nav-item" role="presentation">
-                                  <button class="nav-link active" id="pills-chart-ftms-tab" data-bs-toggle="pill" data-bs-target="#pills-chart-ftms" type="button" role="tab" aria-controls="pills-chart-ftms" aria-selected="true">Chart</button>
-                                </li>
-                                <li class="nav-item" role="presentation">
-                                  <button class="nav-link" id="pills-controls-ftms-tab" data-bs-toggle="pill" data-bs-target="#pills-controls-ftms" type="button" role="tab" aria-controls="pills-controls-ftms" aria-selected="false">Controls</button>
-                                </li>
-                            </ul>
-                            <div class="tab-content" id="pills-tabContent-ftms">
-                                <div class="tab-pane fade show active" id="pills-chart-ftms" role="tabpanel" aria-labelledby="pills-chart-ftms-tab">
-                                    <div  id="canvasFTMS" ></div>
-                                </div>
-                                <div class="tab-pane fade" id="pills-controls-ftms" role="tabpanel" aria-labelledby="pills-controls-ftms-tab">
-                                    <div id="controlsFTMS" class="row">
-                                        <div class="col">
-                                            <div id="speedControlContainer" class="card-body">
-                                                <p class="card-text" style="text-align:center">Speed (km/h)</p>
-                                                <img id = 'speedUpButton' src="icons/chevron-up.svg" class="center">
-                                                <p id = "speedTextFTMS" class="card-text" style="text-align:center">speed</p>
-                                                <img id = 'speedDownButton' src="icons/chevron-down.svg" class="center">
-                                            </div>
+    </div>
+    <div class="card">
+        <h5 class="card-header" id="headingFTMS" data-bs-toggle="collapse" data-bs-target="#collapseFTMS"
+            aria-expanded="true" aria-controls="collapseFTMS">Fitness machine</h5>
+        <div id="collapseFTMS" class="collapse show" aria-labelledby="headingFTMS">
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-3">
+                        <h5 id="titleTextFTMS" class="card-title">Scan for Bluetooth fitness machine</h5>
+                        <p id="statusTextFTMS" class="card-text">No device connected</p>
+                        <a id="connectButtonFTMS" href="#" class="btn btn-primary">Connect</a>
+                        <a id="disconnectButtonFTMS" href="#" class="btn btn-primary">Disconnect</a>
+                    </div>
+                    <div id="containerFTMS" class="col">
+                        <ul class="nav nav-pills mb-3" id="pills-tab-ftms" role="tablist">
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link active" id="pills-chart-ftms-tab" data-bs-toggle="pill"
+                                    data-bs-target="#pills-chart-ftms" type="button" role="tab"
+                                    aria-controls="pills-chart-ftms" aria-selected="true">Chart</button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link" id="pills-controls-ftms-tab" data-bs-toggle="pill"
+                                    data-bs-target="#pills-controls-ftms" type="button" role="tab"
+                                    aria-controls="pills-controls-ftms" aria-selected="false">Controls</button>
+                            </li>
+                        </ul>
+                        <div class="tab-content" id="pills-tabContent-ftms">
+                            <div class="tab-pane fade show active" id="pills-chart-ftms" role="tabpanel"
+                                aria-labelledby="pills-chart-ftms-tab">
+                                <div id="canvasFTMS"></div>
+                            </div>
+                            <div class="tab-pane fade" id="pills-controls-ftms" role="tabpanel"
+                                aria-labelledby="pills-controls-ftms-tab">
+                                <div id="controlsFTMS" class="row">
+                                    <div class="col">
+                                        <div id="speedControlContainer" class="card-body">
+                                            <p class="card-text" style="text-align:center">Speed (km/h)</p>
+                                            <img id='speedUpButton' src="icons/chevron-up.svg" class="center">
+                                            <p id="speedTextFTMS" class="card-text" style="text-align:center">speed</p>
+                                            <img id='speedDownButton' src="icons/chevron-down.svg" class="center">
                                         </div>
-                                        <div class="col">
-                                            <div id="inclinationControlContainer" class="card-body">
-                                                <p class="card-text" style="text-align:center">Inclination (%)</p>
-                                                <img id = 'inclinationUpButton' src="icons/chevron-up.svg" class="center">
-                                                <p id = "inclinationTextFTMS" class="card-text" style="text-align:center">inclination</p>
-                                                <img id = 'inclinationDownButton' src="icons/chevron-down.svg" class="center">
-                                            </div>
+                                    </div>
+                                    <div class="col">
+                                        <div id="inclinationControlContainer" class="card-body">
+                                            <p class="card-text" style="text-align:center">Inclination (%)</p>
+                                            <img id='inclinationUpButton' src="icons/chevron-up.svg" class="center">
+                                            <p id="inclinationTextFTMS" class="card-text" style="text-align:center">
+                                                inclination</p>
+                                            <img id='inclinationDownButton' src="icons/chevron-down.svg" class="center">
                                         </div>
                                     </div>
                                 </div>
@@ -102,89 +120,111 @@
                 </div>
             </div>
         </div>
-        <div class="card">
-            <h5 class="card-header" id="headingIMU" data-bs-toggle="collapse" data-bs-target="#collapseIMU" aria-expanded="true" aria-controls="collapseIMU">IMU sensor</h5>
-            <div id="collapseIMU" class="collapse show" aria-labelledby="headingIMU"> 
-                <div class="card-body">
-                    <div class="row">
-                        <div class="col">
-                            <h5 id = "titleTextIMU" class="card-title">Scan for Bluetooth IMU sensors</h5>
-                            <p id = "statusTextIMU" class="card-text">No device connected</p>
-                            <a id = "connectButtonIMU" href="#" class="btn btn-primary">Connect</a>
-                            <a id = "disconnectButtonIMU" href="#" class="btn btn-primary">Disconnect</a>
-                        </div>
-                        <div class="col-9">
-                            <div id="canvasContainerIMU" class="card-body">
-                                <canvas  id="canvasIMU" ></canvas>
-                            </div>
+    </div>
+    <div class="card">
+        <h5 class="card-header" id="headingIMU" data-bs-toggle="collapse" data-bs-target="#collapseIMU"
+            aria-expanded="true" aria-controls="collapseIMU">IMU sensor</h5>
+        <div id="collapseIMU" class="collapse show" aria-labelledby="headingIMU">
+            <div class="card-body">
+                <div class="row">
+                    <div class="col">
+                        <h5 id="titleTextIMU" class="card-title">Scan for Bluetooth IMU sensors</h5>
+                        <p id="statusTextIMU" class="card-text">No device connected</p>
+                        <a id="connectButtonIMU" href="#" class="btn btn-primary">Connect</a>
+                        <a id="disconnectButtonIMU" href="#" class="btn btn-primary">Disconnect</a>
+                    </div>
+                    <div class="col-9">
+                        <div id="canvasContainerIMU" class="card-body">
+                            <canvas id="canvasIMU"></canvas>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
-        <div class="card">
-            <h5 class="card-header" id="headingRecord" data-bs-toggle="collapse" data-bs-target="#collapseRecord" aria-expanded="true" aria-controls="collapseRecord">Record Data</h5>
-            <div id="collapseRecord" class="collapse show" aria-labelledby="headingRecord"> 
-                <div class="card-body">
-                    <div class="row">
-                        <div class="col">
-                            <h5 id = "titleTextRecord" class="card-title">Record and save data to .json file</h5>
-                            <p id = "statusTextRecord" class="card-text">Not recording</p>
-                            <a id = "startRecordingButton" href="#" class="btn btn-primary" style="background-color: green;border-color: green;">Start</a>
-                            <a id = "stopRecordingButton" href="#" class="btn btn-primary" style="background-color: red;border-color: red;">Stop</a>
-                            <button id="settingsButton" type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#settingsModal">Settings</button>
-                            <div class="modal fade" id="settingsModal" tabindex="-1" aria-labelledby="settingsModalLabel" aria-hidden="true">
-                                <div class="modal-dialog">
+    </div>
+    <div class="card">
+        <h5 class="card-header" id="headingRecord" data-bs-toggle="collapse" data-bs-target="#collapseRecord"
+            aria-expanded="true" aria-controls="collapseRecord">Record Data</h5>
+        <div id="collapseRecord" class="collapse show" aria-labelledby="headingRecord">
+            <div class="card-body">
+                <div class="row">
+                    <div class="col">
+                        <h5 id="titleTextRecord" class="card-title">Record and save data to .json file</h5>
+                        <p id="statusTextRecord" class="card-text">Not recording</p>
+                        <button id="settingsButton" type="button" class="btn btn-primary" data-bs-toggle="modal"
+                            data-bs-target="#settingsModal"
+                            style="background-color: green;border-color: green;">Start</button>
+                        <a id="stopRecordingButton" href="#" class="btn btn-primary"
+                            style="background-color: red;border-color: red;">Stop</a>
+                        <div class="modal fade" id="settingsModal" tabindex="-1" aria-labelledby="settingsModalLabel"
+                            aria-hidden="true">
+                            <div class="modal-dialog">
                                 <div class="modal-content">
                                     <div class="modal-header">
-                                    <h5 class="modal-title" id="settingsModalLabel">Recording settings</h5>
-                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                        <h5 class="modal-title" id="settingsModalLabel">Recording settings</h5>
+                                        <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                            aria-label="Close"></button>
                                     </div>
                                     <div class="modal-body">
                                         <form>
-                                            <p><div>Devices:</div><div id="settingsDevices" style="font-style:italic;">No devices connected</div></p> 
                                             <p>
-                                                <div>Auto stop:</div>
-                                                <div class="input-group mb-3">
-                                                    <input id="durationInput" type="text" class="form-control" aria-describedby="addon-duration" required>
-                                                    <span class="input-group-text" id="addon-duration">min</span>
-                                                </div>
+                                            <div>Devices:</div>
+                                            <div id="settingsDevices" style="font-style:italic;">No devices connected
+                                            </div>
                                             </p>
                                             <p>
-                                                <div>File name:</div>
-                                                <div class="input-group mb-3">
-                                                    <input id="fileNameInput" type="text" class="form-control" aria-describedby="addon-filename" required>
-                                                    <span class="input-group-text" id="addon-filename">.json</span>
-                                                </div>
+                                            <div>Auto stop:</div>
+                                            <div class="input-group mb-3" data-bs-toggle="tooltip" data-bs-placement="left" title="You can still stop manually anytime">
+                                                <input id="durationInput" type="text" class="form-control"
+                                                    aria-describedby="addon-duration" required>
+                                                <span class="input-group-text" id="addon-duration">min</span>
+                                            </div>
+                                            </p>
+                                            <p>
+                                            <div>File name:</div>
+                                            <div class="input-group mb-3" data-bs-toggle="tooltip" data-bs-placement="left" title="Data from each device will be saved in a separate file">
+                                                <input id="fileNameInput" type="text" class="form-control"
+                                                    aria-describedby="addon-filename" required>
+                                                <span class="input-group-text" id="addon-filename">_DeviceName.json</span>
+                                            </div>
                                             </p>
                                         </form>
                                     </div>
                                     <div class="modal-footer">
-                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                                    <button type="button" class="btn btn-primary" id="saveSettingsButton">Save changes</button>
+                                        <button type="button" class="btn btn-secondary"
+                                            data-bs-dismiss="modal">Cancel</button>
+                                        <button type="button" class="btn btn-primary" id="saveSettingsButton"
+                                            style="background-color: green;border-color: green;">Start
+                                            recording</button>
                                     </div>
-                                </div>
                                 </div>
                             </div>
                         </div>
-                        <div class="col-9">
-                            <div id="canvasContainerRecord" class="card-body">
-                                <canvas  id="canvasRecord" ></canvas>
-                            </div>
+                    </div>
+                    <div class="col-9">
+                        <div id="canvasContainerRecord" class="card-body">
+                            <canvas id="canvasRecord"></canvas>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
+    </div>
 
-        <script src = "app.js"></script>
-        <script src = "heartRateDevice.js"></script>
-        <script src = "fitnessMachineDevice.js"></script>
+    <script src="app.js"></script>
+    <script src="heartRateDevice.js"></script>
+    <script src="fitnessMachineDevice.js"></script>
 
-        <!-- jQuery first, then Popper.js, then Bootstrap JS -->
-        <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
-        <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js" integrity="sha384-IQsoLXl5PILFhosVNubq5LC7Qb9DXgDA9i+tQ8Zj3iwWAwPtgFTxbJ8NT4GN1R8p" crossorigin="anonymous"></script>
-        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.min.js" integrity="sha384-cVKIPhGWiC2Al4u+LWgxfKTRIcfu0JTxR+EQDz/bgldoEyl4H0zUF0QKbrJ0EcQF" crossorigin="anonymous"></script>
-    </body>
+    <!-- jQuery first, then Popper.js, then Bootstrap JS -->
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"
+        integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo"
+        crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"
+        integrity="sha384-IQsoLXl5PILFhosVNubq5LC7Qb9DXgDA9i+tQ8Zj3iwWAwPtgFTxbJ8NT4GN1R8p"
+        crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.min.js"
+        integrity="sha384-cVKIPhGWiC2Al4u+LWgxfKTRIcfu0JTxR+EQDz/bgldoEyl4H0zUF0QKbrJ0EcQF"
+        crossorigin="anonymous"></script>
+</body>
 
 </html>

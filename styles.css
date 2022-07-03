@@ -1,18 +1,4 @@
-#canvasHR{
-    outline: lightgray 1px solid;
-    border-radius: 15px;
-    justify-content:center;
-    vertical-align: top;
-    width: 100%;
-    height: 250px;
-    padding: 1%;
-}
-
-#canvasContainerHR{
-    padding: 0;
-}
-
-#canvasFTMS{
+#canvasHR {
     outline: lightgray 1px solid;
     border-radius: 15px;
     justify-content: center;
@@ -22,7 +8,21 @@
     padding: 1%;
 }
 
-#controlsContainerFTMS{
+#canvasContainerHR {
+    padding: 0;
+}
+
+#canvasFTMS {
+    outline: lightgray 1px solid;
+    border-radius: 15px;
+    justify-content: center;
+    vertical-align: top;
+    width: 100%;
+    height: 250px;
+    padding: 1%;
+}
+
+#controlsContainerFTMS {
     padding: 0;
 }
 
@@ -33,13 +33,13 @@
 }
 
 .nav-pills .nav-link.active {
-    background-color: lightgray!important;
-    color:black!important;
+    background-color: lightgray !important;
+    color: black !important;
 }
 
 .card {
-    margin-left: 2px!important;
-    margin-right: 2px!important;
+    margin-left: 2px !important;
+    margin-right: 2px !important;
     margin-top: 1px;
     margin-bottom: 1px;
 }

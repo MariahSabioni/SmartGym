@@ -201,7 +201,7 @@ function drawChart() {
     if (heartRateDevice.device !== null) {
       let plotNewHR = heartRates[heartRates.length - 1];
       dataHR.addRow([indexHR, plotNewHR]);
-      if (dataHR.getNumberOfRows() > 30*60*2) {
+      if (dataHR.getNumberOfRows() > 30 * 60 * 2) {
         dataHR.removeRow(0);
       }
       chartHR.draw(dataHR, optionsHR);
@@ -211,7 +211,7 @@ function drawChart() {
       let plotNewSpeed = parseFloat(speeds[speeds.length - 1]);
       let plotNewInclination = parseFloat(inclinations[inclinations.length - 1]);
       dataTreadmill.addRow([indexFTMS, plotNewSpeed, plotNewInclination]);
-      if (dataTreadmill.getNumberOfRows() > 30*60*2) {
+      if (dataTreadmill.getNumberOfRows() > 30 * 60 * 2) {
         dataTreadmill.removeRow(0);
       }
       chartSpeed.draw(dataTreadmill, optionsSpeed);
@@ -355,7 +355,7 @@ function stopRecording() {
     duration = null;
     isRecording = false;
     recordingStartTime = null;
-  }else{
+  } else {
     alert("Not recording!");
   }
 }
@@ -363,42 +363,32 @@ function stopRecording() {
 function saveToFile() {
   var file;
   var properties = { type: 'application/json' }; // Specify the file's mime-type.
+  let heartRateSensor = null;
+  let treadmill = null;
   if (heartRateDevice.device !== null) {
-    var myObjHR = {
+    heartRateSensor = {
       device: heartRateDevice.getDeviceName(),
       measurements: heartRateMeasurements,
     };
-    var myJSONHR = JSON.stringify(myObjHR);
-    try {
-      // Specify the filename using the File constructor, but ...
-      var downloadFileName = fileName + "_" + heartRateDevice.getDeviceName().replace(/\s+/g, '-') + ".json";
-      file = new File(myJSONHR, downloadFileName, properties);
-    } catch (e) {
-      // ... fall back to the Blob constructor if that isn't supported.
-      file = new Blob([myJSONHR], { type: "application/json" });
-    }
-    var a = document.createElement('a');
-    a.href = window.URL.createObjectURL(file);
-    a.download = downloadFileName;
-    a.click();
   }
   if (fitnessMachineDevice.device !== null) {
-    var myObjTreadmill = {
+    treadmill = {
       device: fitnessMachineDevice.getDeviceName(),
       measurements: treadmillMeasurements,
     };
-    var myJSONTreadmill = JSON.stringify(myObjTreadmill);
-    try {
-      // Specify the filename using the File constructor, but ...
-      var downloadFileName2 = fileName + "_" + fitnessMachineDevice.getDeviceName().replace(/\s+/g, '-') + ".json";
-      file2 = new File(myJSONTreadmill, downloadFileName2, properties)
-    } catch (e) {
-      // ... fall back to the Blob constructor if that isn't supported.
-      file2 = new Blob([myJSONTreadmill], { type: "application/json" });
-    }
-    var a = document.createElement('a');
-    a.href = window.URL.createObjectURL(file2);
-    a.download = downloadFileName2;
-    a.click();
   }
+  var myObj = { heartRateSensor, treadmill };
+  var myJSON = JSON.stringify(myObj);
+  try {
+    // Specify the filename using the File constructor, but ...
+    var downloadFileName = fileName.replace(/\s+/g, '-') + ".json";
+    file = new File(myJSON, downloadFileName, properties);
+  } catch (e) {
+    // ... fall back to the Blob constructor if that isn't supported.
+    file = new Blob([myJSON], { type: "application/json" });
+  }
+  var a = document.createElement('a');
+  a.href = window.URL.createObjectURL(file);
+  a.download = downloadFileName;
+  a.click();
 }

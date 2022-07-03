@@ -48,6 +48,7 @@ let fileName = null;
 let duration = null;
 let isRecording = false;
 let recordingStartTime = null;
+let recordingDuration = null;
 
 // initial ui settings
 statusTextHR.textContent = "No HR sensor connected";
@@ -192,10 +193,20 @@ function drawChart() {
     //part 1: update the recording UI
     if (isRecording) {
       prettyDuration = new Date(duration).toISOString().slice(11, 19);
-      let recordingDuration = Date.now() - recordingStartTime;
+      recordingDuration = Date.now() - recordingStartTime;
       prettyRecordingDuration = new Date(recordingDuration).toISOString().slice(11, 19);
       prettyTimeRemaining = new Date(duration - recordingDuration).toISOString().slice(11, 19);
       statusTextRecord.innerHTML = `Now recording <br />Auto stop: ${prettyDuration}<br />Current duration: ${prettyRecordingDuration}<br />Time remaining: ${prettyTimeRemaining}`
+      if (recordingDuration >= duration) {
+        saveToFile();
+        isRecording = false;
+        //reset UI
+        statusTextRecord.textContent = "Not recording";
+        titleTextRecord.textContent = "Record and save data to .json file";
+        settingsButton.disabled = false;
+        fileName = null;
+        duration = null;
+      }
     }
     //part 2: update the charts
     if (heartRateDevice.device !== null) {
@@ -391,4 +402,5 @@ function saveToFile() {
   a.href = window.URL.createObjectURL(file);
   a.download = downloadFileName;
   a.click();
+  alert("File downloaded!")
 }

@@ -16,9 +16,25 @@
             return navigator.bluetooth.requestDevice({ filters: [{ services: [this.serviceUUID] }] })
                 .then(device => {
                     this.device = device;
-                    return device.gatt.connect();
+                    device.addEventListener('gattserverdisconnected', this.onDisconnected);
+                    let tries = 0;
+                    try {
+                        return device.gatt.connect();
+                    } catch (e) {
+                        tries++;
+                        if (tries <= 3) {
+                            console.log('attempting to connect');
+                            setTimeout(function () {
+                                connect();
+                            }, 1000);
+                        } else {
+                            console.log('could not connect');
+                            updateDiconnectedFTMSUI();
+                        }
+                    }
                 })
                 .then(server => {
+                    console.log('connection successfull');
                     this.server = server;
                     return server.getPrimaryService(this.serviceUUID);
                 })
@@ -26,6 +42,12 @@
                     this.findDataCharacteristic(service);
                     this.findControlCharacteristic(service);
                 });
+        }
+
+        onDisconnected(event) {
+            let device = event.target;
+            console.log('"' + device.name + '" bluetooth device disconnected');
+            updateDiconnectedFTMSUI();
         }
 
         findDataCharacteristic(service) {
@@ -86,7 +108,7 @@
                 });
         }
 
-        increaseInclinationStep(currInclination, inclinationIncrement = 0.1) {
+        increaseInclinationStep(currInclination, inclinationIncrement = 0.5) {
             console.log('inclination increase clicked');
             console.log(currInclination);
             var newInclination = (parseFloat(currInclination) + parseFloat(inclinationIncrement));
@@ -98,7 +120,7 @@
                 });
         }
 
-        decreaseInclinationStep(currInclination, inclinationIncrement = 0.1) {
+        decreaseInclinationStep(currInclination, inclinationIncrement = 0.5) {
             console.log('inclination decrease clicked');
             console.log(currInclination);
             var newInclination = (parseFloat(currInclination) - parseFloat(inclinationIncrement));

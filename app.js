@@ -141,9 +141,9 @@ function drawChart() {
   let dataHR = new google.visualization.DataTable();
   dataHR.addColumn('number', 'timestamp');
   dataHR.addColumn('number', 'heart rate (bpm)');
-  dataHR.addRows([
-    [0, 0],
-  ]);
+  // dataHR.addRows([
+  //   [0, 0],
+  // ]);
 
   var optionsHR = {
     title: 'Heart rate (bpm)',
@@ -163,9 +163,9 @@ function drawChart() {
   dataTreadmill.addColumn('number', 'speed (km/h)');
   dataTreadmill.addColumn('number', 'inclination (%)');
 
-  dataTreadmill.addRows([
-    [0, 0, 0],
-  ]);
+  // dataTreadmill.addRows([
+  //   [0, 0, 0],
+  // ]);
 
   var optionsSpeed = {
     title: 'Speed (km/h) and inclination (%)',
@@ -232,7 +232,8 @@ function drawChart() {
 }
 
 function updateFTMSUI(treadmillMeasurement) {
-  statusTextFTMS.innerHTML = /*'&#x1F3C3;'*/ `&#x1F4A8; Speed: ${(treadmillMeasurement.speed < 10 ? '&nbsp;' : '')}${treadmillMeasurement.speed} km/h<br />&#x26F0; Inclination: ${(treadmillMeasurement.inclination < 0 ? '' : '&nbsp;')}${treadmillMeasurement.inclination} % <br />&#x1f5fa; Distance: ${treadmillMeasurement.distance} m<br />&#x23f1; Time: ${treadmillMeasurement.duration}`;
+  //statusTextFTMS.innerHTML = /*'&#x1F3C3;'*/ `&#x1F4A8; Speed: ${(treadmillMeasurement.speed < 10 ? '&nbsp;' : '')}${treadmillMeasurement.speed} km/h<br />&#x26F0; Inclination: ${(treadmillMeasurement.inclination < 0 ? '' : '&nbsp;')}${treadmillMeasurement.inclination} % <br />&#x1f5fa; Distance: ${treadmillMeasurement.distance} m<br />&#x23f1; Time: ${treadmillMeasurement.duration}`;
+  statusTextFTMS.innerHTML = /*'&#x1F3C3;'*/ `&#x1F4A8; Speed: ${(treadmillMeasurement.speed < 10 ? '&nbsp;' : '')}${treadmillMeasurement.speed} km/h<br />&#x26F0; Inclination: ${(treadmillMeasurement.inclination < 0 ? '' : '&nbsp;')}${treadmillMeasurement.inclination} %`;
   titleTextFTMS.textContent = "Connected to: " + fitnessMachineDevice.getDeviceName();
 
   inclinations.push(treadmillMeasurement.inclination);
@@ -241,6 +242,12 @@ function updateFTMSUI(treadmillMeasurement) {
   console.log('Treadmill array length: ', treadmillMeasurements.length);
 
   containerFTMS.style.display = "block";
+}
+
+function updateDiconnectedFTMSUI() {
+  statusTextFTMS.textContent = "Connection to fitness machine was lost";
+  titleTextFTMS.textContent = "Scan for Bluetooth fitness machine";
+  containerFTMS.style.display = "none";
 }
 
 function updateHRUI(heartRateMeasurement) {

@@ -29,7 +29,8 @@
                             }, 1000);
                         } else {
                             console.log('could not connect');
-                            updateDiconnectedFTMSUI();
+                            showToast("Connection to treadmill failed. Try again.", "Fitness machine device");
+                            updateDisconnectedFTMSUI();
                         }
                     }
                 })
@@ -47,8 +48,11 @@
         onDisconnected(event) {
             let device = event.target;
             console.log('"' + device.name + '" bluetooth device disconnected');
-            updateDiconnectedFTMSUI();
-            window.fitnessMachineDevice = null;
+            showToast("Connection to treadmill lost. Try again.", "Fitness machine device");
+            updateDisconnectedFTMSUI();
+            for (var key in window.fitnessMachineDevice) {
+                window.fitnessMachineDevice[key] = null;
+            };
         }
 
         findDataCharacteristic(service) {
@@ -85,11 +89,12 @@
             this.device.removeEventListener('gattserverdisconnected', this.onDisconnected);
             this.device.gatt.disconnect();
             for (var key in window.fitnessMachineDevice) {
-                  window.fitnessMachineDevice[key] = null;
-              };
+                window.fitnessMachineDevice[key] = null;
+            };
+            updateDisconnectedFTMSUI();
         }
 
-        increaseSpeedStep(currSpeed, speedIncrement = 0.1) {
+        increaseSpeedStep(currSpeed, speedIncrement = 0.5) {
             console.log('speed increase clicked');
             console.log(currSpeed);
             var newSpeed = (parseFloat(currSpeed) + parseFloat(speedIncrement));
@@ -101,7 +106,7 @@
                 });
         }
 
-        decreaseSpeedStep(currSpeed, speedIncrement = 0.1) {
+        decreaseSpeedStep(currSpeed, speedIncrement = 0.5) {
             console.log('speed decrease clicked');
             console.log(currSpeed);
             var newSpeed = (parseFloat(currSpeed) - parseFloat(speedIncrement));

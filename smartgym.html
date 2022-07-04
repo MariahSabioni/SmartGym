@@ -174,7 +174,8 @@
                                             </p>
                                             <p>
                                             <div>Auto stop:</div>
-                                            <div class="input-group mb-3" data-bs-toggle="tooltip" data-bs-placement="left" title="You can still stop manually anytime">
+                                            <div class="input-group mb-3" data-bs-toggle="tooltip"
+                                                data-bs-placement="left" title="You can still stop manually anytime">
                                                 <input id="durationInput" type="text" class="form-control"
                                                     aria-describedby="addon-duration" required>
                                                 <span class="input-group-text" id="addon-duration">min</span>
@@ -182,7 +183,9 @@
                                             </p>
                                             <p>
                                             <div>File name:</div>
-                                            <div class="input-group mb-3" data-bs-toggle="tooltip" data-bs-placement="left" title="Data from all devices is saved in a single file">
+                                            <div class="input-group mb-3" data-bs-toggle="tooltip"
+                                                data-bs-placement="left"
+                                                title="Data from all devices is saved in a single file">
                                                 <input id="fileNameInput" type="text" class="form-control"
                                                     aria-describedby="addon-filename" required>
                                                 <span class="input-group-text" id="addon-filename">.json</span>
@@ -207,6 +210,16 @@
                         </div>
                     </div>
                 </div>
+            </div>
+        </div>
+    </div>
+    <div class="position-fixed bottom-0 end-0 p-3" style="z-index: 11">
+        <div id="toastDisconnection" class="toast" role="alert" aria-live="assertive" aria-atomic="true" data-bs-delay="15000">
+            <div class="toast-header">
+                <strong id="toastTitle" class="me-auto"></strong>
+                <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+            </div>
+            <div id="toastMessage" class="toast-body">
             </div>
         </div>
     </div>

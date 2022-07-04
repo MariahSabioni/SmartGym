@@ -195,7 +195,7 @@ function drawChart() {
       prettyDuration = new Date(duration).toISOString().slice(11, 19);
       recordingDuration = Date.now() - recordingStartTime;
       prettyRecordingDuration = new Date(recordingDuration).toISOString().slice(11, 19);
-      prettyTimeRemaining = new Date(duration - recordingDuration).toISOString().slice(11, 19);
+      prettyTimeRemaining = new Date(duration - recordingDuration + 1000).toISOString().slice(11, 19);
       statusTextRecord.innerHTML = `Now recording <br />Auto stop: ${prettyDuration}<br />Current duration: ${prettyRecordingDuration}<br />Time remaining: ${prettyTimeRemaining}`
       if (recordingDuration >= duration) {
         saveToFile();
@@ -398,11 +398,9 @@ function saveToFile() {
   var myObj = { heartRateSensor, treadmill };
   var myJSON = JSON.stringify(myObj);
   try {
-    // Specify the filename using the File constructor, but ...
     var downloadFileName = fileName.replace(/\s+/g, '-') + ".json";
     file = new File(myJSON, downloadFileName, properties);
   } catch (e) {
-    // ... fall back to the Blob constructor if that isn't supported.
     file = new Blob([myJSON], { type: "application/json" });
   }
   var a = document.createElement('a');

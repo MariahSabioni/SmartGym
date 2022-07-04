@@ -48,6 +48,7 @@
             let device = event.target;
             console.log('"' + device.name + '" bluetooth device disconnected');
             updateDiconnectedFTMSUI();
+            window.fitnessMachineDevice = null;
         }
 
         findDataCharacteristic(service) {
@@ -81,10 +82,14 @@
                 console.log('The target device is null.');
                 return;
             }
+            this.device.removeEventListener('gattserverdisconnected', this.onDisconnected);
             this.device.gatt.disconnect();
+            for (var key in window.fitnessMachineDevice) {
+                  window.fitnessMachineDevice[key] = null;
+              };
         }
 
-        increaseSpeedStep(currSpeed, speedIncrement = 0.5) {
+        increaseSpeedStep(currSpeed, speedIncrement = 0.1) {
             console.log('speed increase clicked');
             console.log(currSpeed);
             var newSpeed = (parseFloat(currSpeed) + parseFloat(speedIncrement));
@@ -96,7 +101,7 @@
                 });
         }
 
-        decreaseSpeedStep(currSpeed, speedIncrement = 0.5) {
+        decreaseSpeedStep(currSpeed, speedIncrement = 0.1) {
             console.log('speed decrease clicked');
             console.log(currSpeed);
             var newSpeed = (parseFloat(currSpeed) - parseFloat(speedIncrement));

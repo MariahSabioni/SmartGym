@@ -18,8 +18,8 @@
 
 <body>
     <nav class="navbar sticky-top navbar"
-        style="background-color: white;vertical-align: middle;padding-left: 30px;outline-style:solid;outline-color: lightgrey; margin-bottom: 5px;">
-        <a class="navbar-brand" href="#">
+        style="box-shadow: 0 3px 5px 0 rgba(0,0,0,0.16); background-color: white;vertical-align: middle;padding-left: 30px;outline-style:solid;outline-color: lightgrey; margin-bottom: 5px;outline-width: 1px;">
+        <a class="navbar-brand" href="#" style="color: black;">
             <h2>Smart Gym</h2>
         </a>
         <div class="container-fluid">
@@ -53,10 +53,12 @@
                         <div class="tab-content" id="pills-tabContent-hr">
                             <div class="tab-pane fade show active" id="pills-chart-hr" role="tabpanel"
                                 aria-labelledby="pills-chart-hr-tab">
-                                <div id="canvasHR"></div>
+                                <div id="canvasHR" class="myCanvas"></div>
                             </div>
                             <div class="tab-pane fade" id="pills-zones-hr" role="tabpanel"
-                                aria-labelledby="pills-zones-hr-tab">...</div>
+                                aria-labelledby="pills-zones-hr-tab">
+                                <div id="zonesHR" class="myCanvas">...</div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -91,26 +93,49 @@
                         <div class="tab-content" id="pills-tabContent-ftms">
                             <div class="tab-pane fade show active" id="pills-chart-ftms" role="tabpanel"
                                 aria-labelledby="pills-chart-ftms-tab">
-                                <div id="canvasFTMS"></div>
+                                <div id="canvasFTMS" class="myCanvas"></div>
                             </div>
                             <div class="tab-pane fade" id="pills-controls-ftms" role="tabpanel"
                                 aria-labelledby="pills-controls-ftms-tab">
-                                <div id="controlsFTMS" class="row">
-                                    <div class="col">
-                                        <div id="speedControlContainer" class="card-body">
-                                            <p class="card-text" style="text-align:center">Speed (km/h)</p>
-                                            <img id='speedUpButton' src="icons/chevron-up.svg" class="center">
-                                            <p id="speedTextFTMS" class="card-text" style="text-align:center">speed</p>
-                                            <img id='speedDownButton' src="icons/chevron-down.svg" class="center">
+                                <div id="controlsFTMS" class="myCanvas">
+                                    <div class="row d-flex align-items-center" style="height: 100%;">
+                                        <div class="col d-flex justify-content-center">
+                                            <div class="btn-group btn-group-lg" role="group"
+                                                aria-label="Basic outlined example">
+                                                <button id='speedDownStepButton' type="button"
+                                                    class="btn btn-outline-primary">&#8722&#8722</button>
+                                                <button id='speedDownButton' type="button"
+                                                    class="btn btn-outline-primary">&nbsp&#8722&nbsp</button>
+                                                <button type="button" class="btn btn-outline-primary"
+                                                    style="width: 120px;" disabled>
+                                                    <p id="speedTextFTMS" style="font-size: xx-large; margin: 0;">0.0
+                                                    </p>
+                                                    <p style="font-size: smaller; margin: 0;">km/h</p>
+                                                </button>
+                                                <button id='speedUpButton' type="button"
+                                                    class="btn btn-outline-primary">&nbsp&#x2b&nbsp</button>
+                                                <button id='speedUpStepButton' type="button"
+                                                    class="btn btn-outline-primary">&#x2b&#x2b</button>
+                                            </div>
                                         </div>
-                                    </div>
-                                    <div class="col">
-                                        <div id="inclinationControlContainer" class="card-body">
-                                            <p class="card-text" style="text-align:center">Inclination (%)</p>
-                                            <img id='inclinationUpButton' src="icons/chevron-up.svg" class="center">
-                                            <p id="inclinationTextFTMS" class="card-text" style="text-align:center">
-                                                inclination</p>
-                                            <img id='inclinationDownButton' src="icons/chevron-down.svg" class="center">
+                                        <div class="col d-flex justify-content-center">
+                                            <div class="btn-group btn-group-lg" role="group"
+                                                aria-label="Basic outlined example" style="height: 100%;">
+                                                <button id='inclinationDownStepButton' type="button"
+                                                    class="btn btn-outline-primary">&#8722&#8722</button>
+                                                <button id='inclinationDownButton' type="button"
+                                                    class="btn btn-outline-primary">&nbsp&#8722&nbsp</button>
+                                                <button type="button" class="btn btn-outline-primary"
+                                                    style="width: 120px;" disabled>
+                                                    <p id="inclinationTextFTMS" style="font-size: xx-large; margin: 0;">0.0
+                                                    </p>
+                                                    <p style="font-size: smaller; margin: 0;">%</p>
+                                                </button>
+                                                <button id='inclinationUpButton' type="button"
+                                                    class="btn btn-outline-primary">&nbsp&#x2b&nbsp</button>
+                                                <button id='inclinationUpStepButton' type="button"
+                                                    class="btn btn-outline-primary">&#x2b&#x2b</button>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
@@ -214,7 +239,8 @@
         </div>
     </div>
     <div class="position-fixed bottom-0 end-0 p-3" style="z-index: 11">
-        <div id="toastDisconnection" class="toast" role="alert" aria-live="assertive" aria-atomic="true" data-bs-delay="15000">
+        <div id="toastDisconnection" class="toast" role="alert" aria-live="assertive" aria-atomic="true"
+            data-bs-delay="15000">
             <div class="toast-header">
                 <strong id="toastTitle" class="me-auto"></strong>
                 <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>

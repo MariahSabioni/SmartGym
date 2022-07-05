@@ -94,7 +94,7 @@
             updateDisconnectedFTMSUI();
         }
 
-        increaseSpeedStep(currSpeed, speedIncrement = 0.5) {
+        increaseSpeedStep(currSpeed, speedIncrement) {
             console.log('speed increase clicked');
             console.log(currSpeed);
             var newSpeed = (parseFloat(currSpeed) + parseFloat(speedIncrement));
@@ -106,7 +106,7 @@
                 });
         }
 
-        decreaseSpeedStep(currSpeed, speedIncrement = 0.5) {
+        decreaseSpeedStep(currSpeed, speedIncrement) {
             console.log('speed decrease clicked');
             console.log(currSpeed);
             var newSpeed = (parseFloat(currSpeed) - parseFloat(speedIncrement));
@@ -118,7 +118,7 @@
                 });
         }
 
-        increaseInclinationStep(currInclination, inclinationIncrement = 0.5) {
+        increaseInclinationStep(currInclination, inclinationIncrement) {
             console.log('inclination increase clicked');
             console.log(currInclination);
             var newInclination = (parseFloat(currInclination) + parseFloat(inclinationIncrement));
@@ -130,7 +130,7 @@
                 });
         }
 
-        decreaseInclinationStep(currInclination, inclinationIncrement = 0.5) {
+        decreaseInclinationStep(currInclination, inclinationIncrement) {
             console.log('inclination decrease clicked');
             console.log(currInclination);
             var newInclination = (parseFloat(currInclination) - parseFloat(inclinationIncrement));

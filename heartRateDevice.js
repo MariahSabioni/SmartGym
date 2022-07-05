@@ -4,7 +4,7 @@
             this.device = null;
             this.server = null;
         }
-
+        
         connect() {
             return navigator.bluetooth.requestDevice({ filters: [{ services: ['heart_rate'] }] })
                 .then(device => {

@@ -17,8 +17,14 @@ let canvasFTMS = document.getElementById("canvasFTMS");
 
 let speedUpButton = document.getElementById('speedUpButton');
 let speedDownButton = document.getElementById('speedDownButton');
+let speedUpStepButton = document.getElementById('speedUpStepButton');
+let speedDownStepButton = document.getElementById('speedDownStepButton');
 let inclinationUpButton = document.getElementById('inclinationUpButton');
 let inclinationDownButton = document.getElementById('inclinationDownButton');
+let inclinationUpStepButton = document.getElementById('inclinationUpStepButton');
+let inclinationDownStepButton = document.getElementById('inclinationDownStepButton');
+let speedTextFTMS = document.getElementById('speedTextFTMS');
+let inclinationTextFTMS = document.getElementById('inclinationTextFTMS');
 
 let connectButtoIMU = document.getElementById('connectButtoIMU');
 let disconnectButtonIMU = document.getElementById('disconnectButtonIMU');
@@ -37,17 +43,24 @@ let fileNameInput = document.getElementById('fileNameInput');
 let durationInput = document.getElementById('durationInput')
 let settingsButton = document.getElementById('settingsButton');
 
+let toastDisconnection = document.getElementById('toastDisconnection');
+let toastTitle = document.getElementById('toastTitle');
+let toastMessage = document.getElementById('toastMessage');
+
 //global variables
+//list of results
 let heartRates = [];
 let heartRateMeasurements = [];
 let speeds = [];
 let inclinations = [];
 let treadmillMeasurements = [];
-
+//recording
 let fileName = null;
 let duration = null;
 let isRecording = false;
 let recordingStartTime = null;
+let recordingDuration = null;
+let recordingDeviceList = [];
 
 // initial ui settings
 statusTextHR.textContent = "No HR sensor connected";
@@ -57,6 +70,8 @@ containerHR.style.display = "none";
 statusTextFTMS.textContent = "No fitness machine connected";
 titleTextFTMS.textContent = "Scan for Bluetooth fitness machine";
 containerFTMS.style.display = "none";
+speedTextFTMS.textContent = '0.0';
+inclinationTextFTMS.textContent = '0.0';
 
 statusTextIMU.textContent = "No IMU sensor connected";
 titleTextIMU.textContent = "Scan for Bluetooth IMU sensor";
@@ -67,60 +82,88 @@ titleTextRecord.textContent = "Record and save data to .json file";
 canvasContainerRecord.style.display = "none";
 
 // google chart
-google.charts.load('current', { 'packages': ['corechart', 'line'] });
+google.charts.load('current', {
+  callback: function () {
+    drawChart();
+    $(window).resize(drawChart);
+  },
+  packages: ['corechart', 'line']
+});
 google.charts.setOnLoadCallback(drawChart);
 
 //listeners
 connectButtonHR.addEventListener('click', function () {
   heartRateDevice.connect()
     .catch(error => {
-      statusTextHR.textContent = error;
+      statusTextHR.textContent = error.message;
       console.log(error);
-    });
+    })
 });
 disconnectButtonHR.addEventListener('click', function () {
   heartRateDevice.disconnect();
-  statusTextHR.textContent = "No HR sensor connected";
-  titleTextHR.textContent = "Scan for Bluetooth HR sensor";
-  containerHR.style.display = "none";
 });
 connectButtonFTMS.addEventListener('click', function () {
   fitnessMachineDevice.connect()
     .catch(error => {
       statusTextFTMS.textContent = error.message;
       console.log(error);
-    });
+    })
 });
 disconnectButtonFTMS.addEventListener('click', function () {
   fitnessMachineDevice.disconnect();
-  statusTextFTMS.textContent = "No fitness machine connected";
-  titleTextFTMS.textContent = "Scan for Bluetooth fitness machine";
-  containerFTMS.style.display = "none";
 });
 speedUpButton.addEventListener('click', function () {
   currSpeed = speeds[speeds.length - 1];
-  fitnessMachineDevice.increaseSpeedStep(currSpeed)
+  fitnessMachineDevice.increaseSpeedStep(currSpeed, 0.1)
     .catch(error => {
       console.log(error);
     });
 });
 speedDownButton.addEventListener('click', function () {
   currSpeed = speeds[speeds.length - 1];
-  fitnessMachineDevice.decreaseSpeedStep(currSpeed)
+  fitnessMachineDevice.decreaseSpeedStep(currSpeed, 0.1)
+    .catch(error => {
+      console.log(error);
+    });
+});
+speedUpStepButton.addEventListener('click', function () {
+  currSpeed = speeds[speeds.length - 1];
+  fitnessMachineDevice.increaseSpeedStep(currSpeed, 1.0)
+    .catch(error => {
+      console.log(error);
+    });
+});
+speedDownStepButton.addEventListener('click', function () {
+  currSpeed = speeds[speeds.length - 1];
+  fitnessMachineDevice.decreaseSpeedStep(currSpeed, 1.0)
     .catch(error => {
       console.log(error);
     });
 });
 inclinationUpButton.addEventListener('click', function () {
   currInclination = inclinations[inclinations.length - 1];
-  fitnessMachineDevice.increaseInclinationStep(currInclination)
+  fitnessMachineDevice.increaseInclinationStep(currInclination, 0.5)
     .catch(error => {
       console.log(error);
     });
 });
 inclinationDownButton.addEventListener('click', function () {
   currInclination = inclinations[inclinations.length - 1];
-  fitnessMachineDevice.decreaseInclinationStep(currInclination)
+  fitnessMachineDevice.decreaseInclinationStep(currInclination, 0.5)
+    .catch(error => {
+      console.log(error);
+    });
+});
+inclinationUpStepButton.addEventListener('click', function () {
+  currInclination = inclinations[inclinations.length - 1];
+  fitnessMachineDevice.increaseInclinationStep(currInclination, 1.0)
+    .catch(error => {
+      console.log(error);
+    });
+});
+inclinationDownStepButton.addEventListener('click', function () {
+  currInclination = inclinations[inclinations.length - 1];
+  fitnessMachineDevice.decreaseInclinationStep(currInclination, 1.0)
     .catch(error => {
       console.log(error);
     });
@@ -137,13 +180,10 @@ saveSettingsButton.addEventListener('click', function () {
 });
 
 function drawChart() {
+  //create HR chart
   let dataHR = new google.visualization.DataTable();
   dataHR.addColumn('number', 'timestamp');
   dataHR.addColumn('number', 'heart rate (bpm)');
-  dataHR.addRows([
-    [0, 0],
-  ]);
-
   var optionsHR = {
     title: 'Heart rate (bpm)',
     vAxis: { minValue: 0, maxValue: 200 },
@@ -151,21 +191,17 @@ function drawChart() {
     legend: 'bottom',
     axisTitlesPosition: 'none',
     chartArea: { width: '80%', height: '80%' },
-    theme: 'material'
+    theme: 'material',
+    width: '100%'
   };
-
   var chartHR = new google.visualization.LineChart(document.getElementById('canvasHR'));
   chartHR.draw(dataHR, optionsHR);
 
+  //create treadmill chart
   let dataTreadmill = new google.visualization.DataTable();
   dataTreadmill.addColumn('number', 'timestamp');
   dataTreadmill.addColumn('number', 'speed (km/h)');
   dataTreadmill.addColumn('number', 'inclination (%)');
-
-  dataTreadmill.addRows([
-    [0, 0, 0],
-  ]);
-
   var optionsSpeed = {
     title: 'Speed (km/h) and inclination (%)',
     series: {
@@ -180,28 +216,42 @@ function drawChart() {
     legend: 'bottom',
     axisTitlesPosition: 'none',
     chartArea: { width: '80%', height: '80%' },
-    theme: 'material'
+    theme: 'material',
+    width: '100%'
   };
-
   var chartSpeed = new google.visualization.LineChart(document.getElementById('canvasFTMS'));
   chartSpeed.draw(dataTreadmill, optionsSpeed);
 
+  //loop to update charts and UI
+  let interval = 500; //miliseconds
   let indexHR = 0;
   let indexFTMS = 0;
   setInterval(function () {
     //part 1: update the recording UI
     if (isRecording) {
       prettyDuration = new Date(duration).toISOString().slice(11, 19);
-      let recordingDuration = Date.now() - recordingStartTime;
+      recordingDuration = Date.now() - recordingStartTime;
       prettyRecordingDuration = new Date(recordingDuration).toISOString().slice(11, 19);
-      prettyTimeRemaining = new Date(duration - recordingDuration).toISOString().slice(11, 19);
-      statusTextRecord.innerHTML = `Now recording <br />Auto stop: ${prettyDuration}<br />Current duration: ${prettyRecordingDuration}<br />Time remaining: ${prettyTimeRemaining}`
+      timeRemaining = duration - recordingDuration + 1000;
+      prettyTimeRemaining = new Date(timeRemaining).toISOString().slice(11, 19);
+      statusTextRecord.innerHTML = `Now recording:<br />${recordingDeviceList.join(' <br /> ')}<br />Auto stop: ${prettyDuration}<br />Current duration: ${prettyRecordingDuration}<br />Time remaining: ${prettyTimeRemaining}`
+      //automatic stop recording
+      if (recordingDuration >= duration) {
+        saveToFile();
+        isRecording = false;
+        //reset UI
+        statusTextRecord.textContent = "Not recording";
+        titleTextRecord.textContent = "Record and save data to .json file";
+        settingsButton.disabled = false;
+        fileName = null;
+        duration = null;
+      }
     }
     //part 2: update the charts
     if (heartRateDevice.device !== null) {
       let plotNewHR = heartRates[heartRates.length - 1];
       dataHR.addRow([indexHR, plotNewHR]);
-      if (dataHR.getNumberOfRows() > 30*60*2) {
+      if (dataHR.getNumberOfRows() > 10 * 60 * 2) {
         dataHR.removeRow(0);
       }
       chartHR.draw(dataHR, optionsHR);
@@ -211,36 +261,57 @@ function drawChart() {
       let plotNewSpeed = parseFloat(speeds[speeds.length - 1]);
       let plotNewInclination = parseFloat(inclinations[inclinations.length - 1]);
       dataTreadmill.addRow([indexFTMS, plotNewSpeed, plotNewInclination]);
-      if (dataTreadmill.getNumberOfRows() > 30*60*2) {
+      if (dataTreadmill.getNumberOfRows() > 10 * 60 * 2) {
         dataTreadmill.removeRow(0);
       }
       chartSpeed.draw(dataTreadmill, optionsSpeed);
       indexFTMS++;
     }
-  }, 500);
+  }, interval);
+}
+
+function updateDisconnectedHRUI() {
+  statusTextHR.textContent = "No HR sensor connected";
+  titleTextHR.textContent = "Scan for Bluetooth HR sensor";
+  containerHR.style.display = "none";
+}
+
+function updateDisconnectedFTMSUI() {
+  statusTextFTMS.textContent = "No fitness machine connected";
+  titleTextFTMS.textContent = "Scan for Bluetooth fitness machine";
+  containerFTMS.style.display = "none";
 }
 
 function updateFTMSUI(treadmillMeasurement) {
-  statusTextFTMS.innerHTML = /*'&#x1F3C3;'*/ `&#x1F4A8; Speed: ${(treadmillMeasurement.speed < 10 ? '&nbsp;' : '')}${treadmillMeasurement.speed} km/h<br />&#x26F0; Inclination: ${(treadmillMeasurement.inclination < 0 ? '' : '&nbsp;')}${treadmillMeasurement.inclination} % <br />&#x1f5fa; Distance: ${treadmillMeasurement.distance} m<br />&#x23f1; Time: ${treadmillMeasurement.duration}`;
+  //UI
+  statusTextFTMS.innerHTML = /*'&#x1F3C3;'*/ `&#x1F4A8; Speed: ${(treadmillMeasurement.speed < 10 ? '&nbsp;' : '')}${treadmillMeasurement.speed} km/h<br />&#x26F0; Inclination: ${(treadmillMeasurement.inclination < 0 ? '' : '&nbsp;')}${treadmillMeasurement.inclination} %`;
   titleTextFTMS.textContent = "Connected to: " + fitnessMachineDevice.getDeviceName();
-
+  containerFTMS.style.display = "block";
+  speedTextFTMS.textContent = treadmillMeasurement.speed;
+  inclinationTextFTMS.textContent = treadmillMeasurement.inclination;
+  //save results to lists
   inclinations.push(treadmillMeasurement.inclination);
   speeds.push(treadmillMeasurement.speed);
   treadmillMeasurements.push(treadmillMeasurement);
   console.log('Treadmill array length: ', treadmillMeasurements.length);
-
-  containerFTMS.style.display = "block";
 }
 
 function updateHRUI(heartRateMeasurement) {
+  //UI
   statusTextHR.innerHTML = `&#x2764; Heart rate: ${heartRateMeasurement.heartRate}bpm`;
   titleTextHR.textContent = "Connected to: " + heartRateDevice.getDeviceName();
-
+  containerHR.style.display = "block";
+  //save results to lists
   heartRates.push(heartRateMeasurement.heartRate);
   heartRateMeasurements.push(heartRateMeasurement);
   console.log('HR array length: ', heartRateMeasurements.length);
+}
 
-  containerHR.style.display = "block";
+function showToast(message, device) {
+  toastMessage.textContent = message;
+  toastTitle.textContent = device;
+  var toast = new bootstrap.Toast(toastDisconnection)
+  toast.show();
 }
 
 function updateSettingsModalContent() {
@@ -259,6 +330,7 @@ function updateSettingsModalContent() {
   } else {
     settingsDevices.innerHTML = "No devices connected";
   }
+  recordingDeviceList = deviceList;
   fileName = "experiment_" + Date.now();
   fileNameInput.value = fileName;
   duration = 60;
@@ -270,7 +342,7 @@ function saveSettingsAndRecord() {
     alert('No devices connected. Connect a device to record data.');
     return;
   } else {
-    //get filename and auto stop setting
+    //validate and get filename and auto stop setting
     if (fileNameInput.value == "") {
       console.log('empty input');
       fileNameInput.value = fileName;
@@ -346,7 +418,6 @@ function stopRecording() {
   if (isRecording) {
     isRecording = false;
     saveToFile();
-
     //reset UI
     statusTextRecord.textContent = "Not recording";
     titleTextRecord.textContent = "Record and save data to .json file";
@@ -355,7 +426,8 @@ function stopRecording() {
     duration = null;
     isRecording = false;
     recordingStartTime = null;
-  }else{
+    resetAllMeasurements();
+  } else {
     alert("Not recording!");
   }
 }
@@ -363,42 +435,31 @@ function stopRecording() {
 function saveToFile() {
   var file;
   var properties = { type: 'application/json' }; // Specify the file's mime-type.
+  let heartRateSensor = null;
+  let treadmill = null;
   if (heartRateDevice.device !== null) {
-    var myObjHR = {
+    heartRateSensor = {
       device: heartRateDevice.getDeviceName(),
       measurements: heartRateMeasurements,
     };
-    var myJSONHR = JSON.stringify(myObjHR);
-    try {
-      // Specify the filename using the File constructor, but ...
-      var downloadFileName = fileName + "_" + heartRateDevice.getDeviceName().replace(/\s+/g, '-') + ".json";
-      file = new File(myJSONHR, downloadFileName, properties);
-    } catch (e) {
-      // ... fall back to the Blob constructor if that isn't supported.
-      file = new Blob([myJSONHR], { type: "application/json" });
-    }
-    var a = document.createElement('a');
-    a.href = window.URL.createObjectURL(file);
-    a.download = downloadFileName;
-    a.click();
   }
   if (fitnessMachineDevice.device !== null) {
-    var myObjTreadmill = {
+    treadmill = {
       device: fitnessMachineDevice.getDeviceName(),
       measurements: treadmillMeasurements,
     };
-    var myJSONTreadmill = JSON.stringify(myObjTreadmill);
-    try {
-      // Specify the filename using the File constructor, but ...
-      var downloadFileName2 = fileName + "_" + fitnessMachineDevice.getDeviceName().replace(/\s+/g, '-') + ".json";
-      file2 = new File(myJSONTreadmill, downloadFileName2, properties)
-    } catch (e) {
-      // ... fall back to the Blob constructor if that isn't supported.
-      file2 = new Blob([myJSONTreadmill], { type: "application/json" });
-    }
-    var a = document.createElement('a');
-    a.href = window.URL.createObjectURL(file2);
-    a.download = downloadFileName2;
-    a.click();
   }
+  var myObj = { heartRateSensor, treadmill };
+  var myJSON = JSON.stringify(myObj);
+  try {
+    var downloadFileName = fileName.replace(/\s+/g, '-') + ".json";
+    file = new File(myJSON, downloadFileName, properties);
+  } catch (e) {
+    file = new Blob([myJSON], { type: "application/json" });
+  }
+  var a = document.createElement('a');
+  a.href = window.URL.createObjectURL(file);
+  a.download = downloadFileName;
+  a.click();
+  alert("File downloaded!")
 }

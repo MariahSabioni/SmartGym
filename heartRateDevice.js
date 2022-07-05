@@ -4,12 +4,28 @@
             this.device = null;
             this.server = null;
         }
-
+        
         connect() {
             return navigator.bluetooth.requestDevice({ filters: [{ services: ['heart_rate'] }] })
                 .then(device => {
                     this.device = device;
-                    return device.gatt.connect();
+                    device.addEventListener('gattserverdisconnected', this.onDisconnected);
+                    let tries = 0;
+                    try {
+                        return device.gatt.connect();
+                    } catch (e) {
+                        tries++;
+                        if (tries <= 3) {
+                            console.log('attempting to connect');
+                            setTimeout(function () {
+                                connect();
+                            }, 1000);
+                        } else {
+                            console.log('could not connect');
+                            showToast("Connection to HR sensor failed. Try again.", "Heart rate sensor");
+                            updateDisconnectedHRUI();
+                        }
+                    }
                 })
                 .then(server => {
                     this.server = server;
@@ -18,6 +34,16 @@
                 .then(service => {
                     this.findDataCharacteristic(service);
                 });
+        }
+
+        onDisconnected(event) {
+            let device = event.target;
+            console.log('"' + device.name + '" bluetooth device disconnected');
+            showToast("Connection to HR sensor lost. Try again.", "Heart rate sensor");
+            updateDisconnectedHRUI();
+            for (var key in window.heartRateDevice) {
+                window.heartRateDevice[key] = null;
+            };
         }
 
         findDataCharacteristic(service) {
@@ -39,7 +65,12 @@
                 console.log('The target device is null.');
                 return;
             }
+            this.device.removeEventListener('gattserverdisconnected', this.onDisconnected);
             this.device.gatt.disconnect();
+            for (var key in window.heartRateDevice) {
+                window.heartRateDevice[key] = null;
+            };
+            updateDisconnectedHRUI();
         }
 
         /* Utils */

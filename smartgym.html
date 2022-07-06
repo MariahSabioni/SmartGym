@@ -98,7 +98,21 @@
                             <div class="tab-pane fade" id="pills-controls-ftms" role="tabpanel"
                                 aria-labelledby="pills-controls-ftms-tab">
                                 <div id="controlsFTMS" class="myCanvas">
-                                    <div class="row d-flex align-items-center" style="height: 100%;">
+                                    <div class="row d-flex align-items-center" style="height: 40%;">
+                                        <div class="col d-flex justify-content-center">
+                                            <button id="startTreadmillButton" type="button"
+                                                class="btn btn-primary btn-lg"
+                                                style="background-color: green;border-color: green;">Start
+                                                Treadmill</button>
+                                        </div>
+                                        <div class="col d-flex justify-content-center">
+                                            <button id="stopTreadmillButton" type="button"
+                                                class="btn btn-primary btn-lg"
+                                                style="background-color: red;border-color: red;">Stop
+                                                Treadmill</button>
+                                        </div>
+                                    </div>
+                                    <div class="row d-flex align-items-center" style="height: 60%;">
                                         <div class="col d-flex justify-content-center">
                                             <div class="btn-group btn-group-lg" role="group"
                                                 aria-label="Basic outlined example">
@@ -127,7 +141,8 @@
                                                     class="btn btn-outline-primary">&nbsp&#8722&nbsp</button>
                                                 <button type="button" class="btn btn-outline-primary"
                                                     style="width: 120px;" disabled>
-                                                    <p id="inclinationTextFTMS" style="font-size: xx-large; margin: 0;">0.0
+                                                    <p id="inclinationTextFTMS" style="font-size: xx-large; margin: 0;">
+                                                        0.0
                                                     </p>
                                                     <p style="font-size: smaller; margin: 0;">%</p>
                                                 </button>
@@ -250,9 +265,10 @@
         </div>
     </div>
 
-    <script src="app.js"></script>
     <script src="heartRateDevice.js"></script>
     <script src="fitnessMachineDevice.js"></script>
+    <script src="conceptErgDevice.js"></script>
+    <script src="app.js"></script>
 
     <!-- jQuery first, then Popper.js, then Bootstrap JS -->
     <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"

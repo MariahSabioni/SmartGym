@@ -42,6 +42,8 @@ let saveSettingsButton = document.getElementById('saveSettingsButton');
 let fileNameInput = document.getElementById('fileNameInput');
 let durationInput = document.getElementById('durationInput')
 let settingsButton = document.getElementById('settingsButton');
+let startTreadmillButton = document.getElementById('startTreadmillButton');
+let stopTreadmillButton = document.getElementById('stopTreadmillButton');
 
 let toastDisconnection = document.getElementById('toastDisconnection');
 let toastTitle = document.getElementById('toastTitle');
@@ -61,6 +63,10 @@ let isRecording = false;
 let recordingStartTime = null;
 let recordingDuration = null;
 let recordingDeviceList = [];
+//devices
+let fitnessMachineDevice = new FitnessMachineDevice();
+let heartRateDevice = new HeartRateDevice();
+//let conceptErgDevice = new ConceptErgDevice();
 
 // initial ui settings
 statusTextHR.textContent = "No HR sensor connected";
@@ -83,10 +89,10 @@ canvasContainerRecord.style.display = "none";
 
 // google chart
 google.charts.load('current', {
-  callback: function () {
-    drawChart();
-    $(window).resize(drawChart);
-  },
+  // callback: function () {
+  //   drawChart();
+  //   $(window).resize(drawChart);
+  // },
   packages: ['corechart', 'line']
 });
 google.charts.setOnLoadCallback(drawChart);
@@ -101,6 +107,7 @@ connectButtonHR.addEventListener('click', function () {
 });
 disconnectButtonHR.addEventListener('click', function () {
   heartRateDevice.disconnect();
+  console.log(heartRateDevice);
 });
 connectButtonFTMS.addEventListener('click', function () {
   fitnessMachineDevice.connect()
@@ -111,6 +118,19 @@ connectButtonFTMS.addEventListener('click', function () {
 });
 disconnectButtonFTMS.addEventListener('click', function () {
   fitnessMachineDevice.disconnect();
+  console.log(fitnessMachineDevice);
+});
+startTreadmillButton.addEventListener('click', function () {
+  fitnessMachineDevice.changeTreadmillStatus('start')
+    .catch(error => {
+      console.log(error);
+    });
+});
+stopTreadmillButton.addEventListener('click', function () {
+  fitnessMachineDevice.changeTreadmillStatus('stop')
+    .catch(error => {
+      console.log(error);
+    });
 });
 speedUpButton.addEventListener('click', function () {
   currSpeed = speeds[speeds.length - 1];
@@ -251,7 +271,7 @@ function drawChart() {
     if (heartRateDevice.device !== null) {
       let plotNewHR = heartRates[heartRates.length - 1];
       dataHR.addRow([indexHR, plotNewHR]);
-      if (dataHR.getNumberOfRows() > 10 * 60 * 2) {
+      if (dataHR.getNumberOfRows() > 5 * 60 * 2) {
         dataHR.removeRow(0);
       }
       chartHR.draw(dataHR, optionsHR);
@@ -261,7 +281,7 @@ function drawChart() {
       let plotNewSpeed = parseFloat(speeds[speeds.length - 1]);
       let plotNewInclination = parseFloat(inclinations[inclinations.length - 1]);
       dataTreadmill.addRow([indexFTMS, plotNewSpeed, plotNewInclination]);
-      if (dataTreadmill.getNumberOfRows() > 10 * 60 * 2) {
+      if (dataTreadmill.getNumberOfRows() > 5 * 60 * 2) {
         dataTreadmill.removeRow(0);
       }
       chartSpeed.draw(dataTreadmill, optionsSpeed);
@@ -399,19 +419,24 @@ function startRecording() {
     duration = 60;
   }
   duration = duration * 60 * 1000 //miliseconds
-  resetAllMeasurements();
+  resetMeasurements(true, true);
 
   isRecording = true;
   recordingStartTime = Date.now();
   settingsButton.disabled = true;
+  drawChart();
 }
 
-function resetAllMeasurements() {
-  heartRates = [];
-  heartRateMeasurements = [];
-  speeds = [];
-  inclinations = [];
-  treadmillMeasurements = [];
+function resetMeasurements(heartRate, treadmill) {
+  if (heartRate) {
+    heartRates = [];
+    heartRateMeasurements = [];
+  }
+  if (treadmill) {
+    speeds = [];
+    inclinations = [];
+    treadmillMeasurements = [];
+  }
 }
 
 function stopRecording() {
@@ -426,7 +451,7 @@ function stopRecording() {
     duration = null;
     isRecording = false;
     recordingStartTime = null;
-    resetAllMeasurements();
+    resetMeasurements(true, true);
   } else {
     alert("Not recording!");
   }
@@ -437,6 +462,19 @@ function saveToFile() {
   var properties = { type: 'application/json' }; // Specify the file's mime-type.
   let heartRateSensor = null;
   let treadmill = null;
+  let endTime = Date.now();
+  let prettyRecordingStartTime = new Date(recordingStartTime).toISOString().slice(0, 19).replace(/-/g, "/").replace("T", " ");
+  let prettyRecordingEndTime = new Date(endTime).toISOString().slice(0, 19).replace(/-/g, "/").replace("T", " ");
+  let prettyPresetDuration = new Date(duration).toISOString().slice(11, 19);
+  let prettyActualDuration = new Date(endTime - recordingStartTime + 1000).toISOString().slice(11, 19);
+  let experiment = {
+    fileName: fileName,
+    devices: recordingDeviceList,
+    presetDuration: prettyPresetDuration,
+    actualDuration: prettyActualDuration,
+    startTime: prettyRecordingStartTime,
+    endTime: prettyRecordingEndTime,
+  };
   if (heartRateDevice.device !== null) {
     heartRateSensor = {
       device: heartRateDevice.getDeviceName(),
@@ -444,12 +482,23 @@ function saveToFile() {
     };
   }
   if (fitnessMachineDevice.device !== null) {
+    //fix the distance and duration values to account only for the experiment.
+    //the treasmill does not allow control of distance and duration (counts from when the treadmill started)
+    let initialDistance = treadmillMeasurements[0].distance;
+    let initialDuration = treadmillMeasurements[0].duration;
+    const treadmillMeasurementsFixed = treadmillMeasurements.map(element => {
+      return {
+        ...element,
+        distance: element.distance - initialDistance,
+        duration: new Date(element.duration - initialDuration).toISOString().slice(11, 19),
+      };
+    });
     treadmill = {
       device: fitnessMachineDevice.getDeviceName(),
-      measurements: treadmillMeasurements,
+      measurements: treadmillMeasurementsFixed,
     };
   }
-  var myObj = { heartRateSensor, treadmill };
+  var myObj = { experiment, heartRateSensor, treadmill };
   var myJSON = JSON.stringify(myObj);
   try {
     var downloadFileName = fileName.replace(/\s+/g, '-') + ".json";

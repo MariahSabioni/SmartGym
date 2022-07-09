@@ -1,4 +1,6 @@
 // ui hooks
+let resetChartsButton = document.getElementById('resetChartsButton');
+
 let connectButtonHR = document.getElementById('connectButtonHR');
 let disconnectButtonHR = document.getElementById('disconnectButtonHR');
 let titleTextHR = document.getElementById('titleTextHR');
@@ -7,24 +9,24 @@ let containerHR = document.getElementById("containerHR");
 let zonesHR = document.getElementById("zonesHR");
 let canvasHR = document.getElementById("canvasHR");
 
-let connectButtonFTMS = document.getElementById('connectButtonFTMS');
-let disconnectButtonFTMS = document.getElementById('disconnectButtonFTMS');
-let titleTextFTMS = document.getElementById('titleTextFTMS');
-let statusTextFTMS = document.getElementById("statusTextFTMS");
-let containerFTMS = document.getElementById("containerFTMS");
-let controlsFTMS = document.getElementById("controlsFTMS");
-let canvasFTMS = document.getElementById("canvasFTMS");
+let connectButtonTreadmill = document.getElementById('connectButtonTreadmill');
+let disconnectButtonTreadmill = document.getElementById('disconnectButtonTreadmill');
+let titleTextTreadmill = document.getElementById('titleTextTreadmill');
+let statusTextTreadmill = document.getElementById("statusTextTreadmill");
+let containerTreadmill = document.getElementById("containerTreadmill");
+let controlsTreadmill = document.getElementById("controlsTreadmill");
+let canvasTreadmill = document.getElementById("canvasTreadmill");
 
 let speedUpButton = document.getElementById('speedUpButton');
 let speedDownButton = document.getElementById('speedDownButton');
-let speedUpStepButton = document.getElementById('speedUpStepButton');
-let speedDownStepButton = document.getElementById('speedDownStepButton');
+let speedUp2Button = document.getElementById('speedUp2Button');
+let speedDown2Button = document.getElementById('speedDown2Button');
 let inclinationUpButton = document.getElementById('inclinationUpButton');
 let inclinationDownButton = document.getElementById('inclinationDownButton');
-let inclinationUpStepButton = document.getElementById('inclinationUpStepButton');
-let inclinationDownStepButton = document.getElementById('inclinationDownStepButton');
-let speedTextFTMS = document.getElementById('speedTextFTMS');
-let inclinationTextFTMS = document.getElementById('inclinationTextFTMS');
+let inclinationUp2Button = document.getElementById('inclinationUp2Button');
+let inclinationDown2Button = document.getElementById('inclinationDown2Button');
+let speedTextTreadmill = document.getElementById('speedTextTreadmill');
+let inclinationTextTreadmill = document.getElementById('inclinationTextTreadmill');
 
 let connectButtoIMU = document.getElementById('connectButtoIMU');
 let disconnectButtonIMU = document.getElementById('disconnectButtonIMU');
@@ -63,6 +65,14 @@ let isRecording = false;
 let recordingStartTime = null;
 let recordingDuration = null;
 let recordingDeviceList = [];
+//charts
+let interval = 500; //miliseconds
+let indexHR;
+let indexTreadmill;
+let nIntervId;
+let dataHR, chartHR, optionsHR;
+let dataTreadmill, chartTreadmill, optionsTreadmill;
+let formatter;
 //devices
 let fitnessMachineDevice = new FitnessMachineDevice();
 let heartRateDevice = new HeartRateDevice();
@@ -73,11 +83,11 @@ statusTextHR.textContent = "No HR sensor connected";
 titleTextHR.textContent = "Scan for Bluetooth HR sensor";
 containerHR.style.display = "none";
 
-statusTextFTMS.textContent = "No fitness machine connected";
-titleTextFTMS.textContent = "Scan for Bluetooth fitness machine";
-containerFTMS.style.display = "none";
-speedTextFTMS.textContent = '0.0';
-inclinationTextFTMS.textContent = '0.0';
+statusTextTreadmill.textContent = "No treadmill connected";
+titleTextTreadmill.textContent = "Scan for Bluetooth treadmill";
+containerTreadmill.style.display = "none";
+speedTextTreadmill.textContent = '0.0';
+inclinationTextTreadmill.textContent = '0.0';
 
 statusTextIMU.textContent = "No IMU sensor connected";
 titleTextIMU.textContent = "Scan for Bluetooth IMU sensor";
@@ -95,9 +105,13 @@ google.charts.load('current', {
   // },
   packages: ['corechart', 'line']
 });
-google.charts.setOnLoadCallback(drawChart);
+google.charts.setOnLoadCallback(drawChartHR);
+google.charts.setOnLoadCallback(drawChartTreadmill);
 
 //listeners
+resetChartsButton.addEventListener('click', function () {
+  resetAllCharts();
+});
 connectButtonHR.addEventListener('click', function () {
   heartRateDevice.connect()
     .catch(error => {
@@ -107,18 +121,16 @@ connectButtonHR.addEventListener('click', function () {
 });
 disconnectButtonHR.addEventListener('click', function () {
   heartRateDevice.disconnect();
-  console.log(heartRateDevice);
 });
-connectButtonFTMS.addEventListener('click', function () {
+connectButtonTreadmill.addEventListener('click', function () {
   fitnessMachineDevice.connect()
     .catch(error => {
-      statusTextFTMS.textContent = error.message;
+      statusTextTreadmill.textContent = error.message;
       console.log(error);
     })
 });
-disconnectButtonFTMS.addEventListener('click', function () {
+disconnectButtonTreadmill.addEventListener('click', function () {
   fitnessMachineDevice.disconnect();
-  console.log(fitnessMachineDevice);
 });
 startTreadmillButton.addEventListener('click', function () {
   fitnessMachineDevice.changeTreadmillStatus('start')
@@ -146,14 +158,14 @@ speedDownButton.addEventListener('click', function () {
       console.log(error);
     });
 });
-speedUpStepButton.addEventListener('click', function () {
+speedUp2Button.addEventListener('click', function () {
   currSpeed = speeds[speeds.length - 1];
   fitnessMachineDevice.increaseSpeedStep(currSpeed, 1.0)
     .catch(error => {
       console.log(error);
     });
 });
-speedDownStepButton.addEventListener('click', function () {
+speedDown2Button.addEventListener('click', function () {
   currSpeed = speeds[speeds.length - 1];
   fitnessMachineDevice.decreaseSpeedStep(currSpeed, 1.0)
     .catch(error => {
@@ -174,14 +186,14 @@ inclinationDownButton.addEventListener('click', function () {
       console.log(error);
     });
 });
-inclinationUpStepButton.addEventListener('click', function () {
+inclinationUp2Button.addEventListener('click', function () {
   currInclination = inclinations[inclinations.length - 1];
   fitnessMachineDevice.increaseInclinationStep(currInclination, 1.0)
     .catch(error => {
       console.log(error);
     });
 });
-inclinationDownStepButton.addEventListener('click', function () {
+inclinationDown2Button.addEventListener('click', function () {
   currInclination = inclinations[inclinations.length - 1];
   fitnessMachineDevice.decreaseInclinationStep(currInclination, 1.0)
     .catch(error => {
@@ -199,30 +211,42 @@ saveSettingsButton.addEventListener('click', function () {
   $('#settingsModal').modal('hide'); //why does it work only with jQuery?
 });
 
-function drawChart() {
-  //create HR chart
-  let dataHR = new google.visualization.DataTable();
-  dataHR.addColumn('number', 'timestamp');
+function resetAllCharts(){
+  if (!isDeviceConnected()){
+    alert("No devices connected!");
+    return;
+  }
+  drawChartHR();
+  drawChartTreadmill();
+}
+
+function drawChartHR() {
+  dataHR = new google.visualization.DataTable();
+  dataHR.addColumn('date', 'timestamp');
   dataHR.addColumn('number', 'heart rate (bpm)');
-  var optionsHR = {
+  optionsHR = {
     title: 'Heart rate (bpm)',
     vAxis: { minValue: 0, maxValue: 200 },
-    hAxis: { textPosition: 'none' },
+    hAxis: { format: 'HH:mm:ss', textPosition: 'none' },
     legend: 'bottom',
     axisTitlesPosition: 'none',
     chartArea: { width: '80%', height: '80%' },
     theme: 'material',
-    width: '100%'
+    width: '100%',
+    pointSize: 3,
   };
-  var chartHR = new google.visualization.LineChart(document.getElementById('canvasHR'));
+  chartHR = new google.visualization.LineChart(document.getElementById('canvasHR'));
+  formatter = new google.visualization.DateFormat({ pattern: 'HH:mm:ss' });
+  formatter.format(dataHR, 0);
   chartHR.draw(dataHR, optionsHR);
+}
 
-  //create treadmill chart
-  let dataTreadmill = new google.visualization.DataTable();
-  dataTreadmill.addColumn('number', 'timestamp');
+function drawChartTreadmill() {
+  dataTreadmill = new google.visualization.DataTable();
+  dataTreadmill.addColumn('date', 'timestamp');
   dataTreadmill.addColumn('number', 'speed (km/h)');
   dataTreadmill.addColumn('number', 'inclination (%)');
-  var optionsSpeed = {
+  optionsTreadmill = {
     title: 'Speed (km/h) and inclination (%)',
     series: {
       0: { targetAxisIndex: 0, },
@@ -232,62 +256,83 @@ function drawChart() {
       0: { ticks: [0, 5, 10, 15, 20, 25] },
       1: { ticks: [-2.5, 0, 2.5, 5, 7.5, 10] },
     },
-    hAxis: { textPosition: 'none' },
+    hAxis: { format: 'HH:mm:ss', textPosition: 'none' },
     legend: 'bottom',
     axisTitlesPosition: 'none',
     chartArea: { width: '80%', height: '80%' },
     theme: 'material',
-    width: '100%'
+    width: '100%',
+    pointSize: 3,
   };
-  var chartSpeed = new google.visualization.LineChart(document.getElementById('canvasFTMS'));
-  chartSpeed.draw(dataTreadmill, optionsSpeed);
+  chartTreadmill = new google.visualization.LineChart(document.getElementById('canvasTreadmill'));
+  formatter = new google.visualization.DateFormat({ pattern: 'HH:mm:ss' });
+  formatter.format(dataTreadmill, 0);
+  chartTreadmill.draw(dataTreadmill, optionsTreadmill);
+}
 
-  //loop to update charts and UI
-  let interval = 500; //miliseconds
-  let indexHR = 0;
-  let indexFTMS = 0;
-  setInterval(function () {
-    //part 1: update the recording UI
-    if (isRecording) {
-      prettyDuration = new Date(duration).toISOString().slice(11, 19);
-      recordingDuration = Date.now() - recordingStartTime;
-      prettyRecordingDuration = new Date(recordingDuration).toISOString().slice(11, 19);
-      timeRemaining = duration - recordingDuration + 1000;
-      prettyTimeRemaining = new Date(timeRemaining).toISOString().slice(11, 19);
-      statusTextRecord.innerHTML = `Now recording:<br />${recordingDeviceList.join(' <br /> ')}<br />Auto stop: ${prettyDuration}<br />Current duration: ${prettyRecordingDuration}<br />Time remaining: ${prettyTimeRemaining}`
-      //automatic stop recording
-      if (recordingDuration >= duration) {
-        saveToFile();
-        isRecording = false;
-        //reset UI
-        statusTextRecord.textContent = "Not recording";
-        titleTextRecord.textContent = "Record and save data to .json file";
-        settingsButton.disabled = false;
-        fileName = null;
-        duration = null;
-      }
+function startLoopUpdate() {
+  if (!nIntervId) {
+    nIntervId = setInterval(updateChartAndRecording, interval);
+  }
+}
+
+function stopLoopUpdate() {
+  clearInterval(nIntervId);
+  nIntervId = null;
+}
+
+//loop function: we use only one setInterval since javascript is single threaded
+function updateChartAndRecording() {
+  //part 0: stop loop if no device is connected
+  if (!isDeviceConnected()) {
+    stopLoopUpdate();
+    return;
+  }
+  //part 1: update the recording UI
+  if (isRecording) {
+    prettyDuration = new Date(duration).toISOString().slice(11, 19);
+    recordingDuration = Date.now() - recordingStartTime;
+    prettyRecordingDuration = new Date(recordingDuration).toISOString().slice(11, 19);
+    timeRemaining = duration - recordingDuration + 1000;
+    prettyTimeRemaining = new Date(timeRemaining).toISOString().slice(11, 19);
+    statusTextRecord.innerHTML = `Now recording:<br />${recordingDeviceList.join(' <br /> ')}<br />Auto stop: ${prettyDuration}<br />Current duration: ${prettyRecordingDuration}<br />Time remaining: ${prettyTimeRemaining}`
+    //automatic stop recording to preset autostop
+    if (recordingDuration >= duration) {
+      saveToFile();
+      isRecording = false;
+      //reset UI
+      statusTextRecord.textContent = "Not recording";
+      titleTextRecord.textContent = "Record and save data to .json file";
+      settingsButton.disabled = false;
+      fileName = null;
+      duration = null;
+      recordingStartTime = null;
+      resetMeasurements(true, true);
+      setTimeout(resetAllCharts(), 1000);
     }
-    //part 2: update the charts
-    if (heartRateDevice.device !== null) {
-      let plotNewHR = heartRates[heartRates.length - 1];
-      dataHR.addRow([indexHR, plotNewHR]);
-      if (dataHR.getNumberOfRows() > 5 * 60 * 2) {
-        dataHR.removeRow(0);
-      }
-      chartHR.draw(dataHR, optionsHR);
-      indexHR++;
+  }
+  //part 2: update the charts
+  indexHR = new Date(Date.now());
+  indexTreadmill = indexHR;
+  if (heartRateDevice.device !== null) {
+    let plotNewHR = heartRates[heartRates.length - 1];
+    dataHR.addRow([indexHR, plotNewHR]);
+    if (dataHR.getNumberOfRows() > 5 * 60 * 2) {
+      dataHR.removeRow(0);
     }
-    if (fitnessMachineDevice.device !== null) {
-      let plotNewSpeed = parseFloat(speeds[speeds.length - 1]);
-      let plotNewInclination = parseFloat(inclinations[inclinations.length - 1]);
-      dataTreadmill.addRow([indexFTMS, plotNewSpeed, plotNewInclination]);
-      if (dataTreadmill.getNumberOfRows() > 5 * 60 * 2) {
-        dataTreadmill.removeRow(0);
-      }
-      chartSpeed.draw(dataTreadmill, optionsSpeed);
-      indexFTMS++;
+    formatter.format(dataHR, 0);
+    chartHR.draw(dataHR, optionsHR);
+  }
+  if (fitnessMachineDevice.device !== null) {
+    let plotNewSpeed = parseFloat(speeds[speeds.length - 1]);
+    let plotNewInclination = parseFloat(inclinations[inclinations.length - 1]);
+    dataTreadmill.addRow([indexTreadmill, plotNewSpeed, plotNewInclination]);
+    if (dataTreadmill.getNumberOfRows() > 5 * 60 * 2) {
+      dataTreadmill.removeRow(0);
     }
-  }, interval);
+    formatter.format(dataTreadmill, 0);
+    chartTreadmill.draw(dataTreadmill, optionsTreadmill);
+  }
 }
 
 function updateDisconnectedHRUI() {
@@ -296,19 +341,19 @@ function updateDisconnectedHRUI() {
   containerHR.style.display = "none";
 }
 
-function updateDisconnectedFTMSUI() {
-  statusTextFTMS.textContent = "No fitness machine connected";
-  titleTextFTMS.textContent = "Scan for Bluetooth fitness machine";
-  containerFTMS.style.display = "none";
+function updateDisconnectedTreadmillUI() {
+  statusTextTreadmill.textContent = "No treadmill connected";
+  titleTextTreadmill.textContent = "Scan for Bluetooth treadmill";
+  containerTreadmill.style.display = "none";
 }
 
-function updateFTMSUI(treadmillMeasurement) {
+function updateTreadmillUI(treadmillMeasurement) {
   //UI
-  statusTextFTMS.innerHTML = /*'&#x1F3C3;'*/ `&#x1F4A8; Speed: ${(treadmillMeasurement.speed < 10 ? '&nbsp;' : '')}${treadmillMeasurement.speed} km/h<br />&#x26F0; Inclination: ${(treadmillMeasurement.inclination < 0 ? '' : '&nbsp;')}${treadmillMeasurement.inclination} %`;
-  titleTextFTMS.textContent = "Connected to: " + fitnessMachineDevice.getDeviceName();
-  containerFTMS.style.display = "block";
-  speedTextFTMS.textContent = treadmillMeasurement.speed;
-  inclinationTextFTMS.textContent = treadmillMeasurement.inclination;
+  statusTextTreadmill.innerHTML = /*'&#x1F3C3;'*/ `&#x1F4A8; Speed: ${(treadmillMeasurement.speed < 10 ? '&nbsp;' : '')}${treadmillMeasurement.speed} km/h<br />&#x26F0; Inclination: ${(treadmillMeasurement.inclination < 0 ? '' : '&nbsp;')}${treadmillMeasurement.inclination} %`;
+  titleTextTreadmill.textContent = "Connected to: " + fitnessMachineDevice.getDeviceName();
+  containerTreadmill.style.display = "block";
+  speedTextTreadmill.textContent = treadmillMeasurement.speed;
+  inclinationTextTreadmill.textContent = treadmillMeasurement.inclination;
   //save results to lists
   inclinations.push(treadmillMeasurement.inclination);
   speeds.push(treadmillMeasurement.speed);
@@ -327,9 +372,9 @@ function updateHRUI(heartRateMeasurement) {
   console.log('HR array length: ', heartRateMeasurements.length);
 }
 
-function showToast(message, device) {
+function showToast(message, title) {
   toastMessage.textContent = message;
-  toastTitle.textContent = device;
+  toastTitle.textContent = title;
   var toast = new bootstrap.Toast(toastDisconnection)
   toast.show();
 }
@@ -419,23 +464,23 @@ function startRecording() {
     duration = 60;
   }
   duration = duration * 60 * 1000 //miliseconds
-  resetMeasurements(true, true);
 
   isRecording = true;
   recordingStartTime = Date.now();
   settingsButton.disabled = true;
-  drawChart();
+  resetMeasurements(true, true);
+  setTimeout(resetAllCharts(), 500);
 }
 
 function resetMeasurements(heartRate, treadmill) {
-  if (heartRate) {
-    heartRates = [];
-    heartRateMeasurements = [];
-  }
   if (treadmill) {
     speeds = [];
     inclinations = [];
     treadmillMeasurements = [];
+  }
+  if (heartRate) {
+    heartRates = [];
+    heartRateMeasurements = [];
   }
 }
 
@@ -449,11 +494,11 @@ function stopRecording() {
     settingsButton.disabled = false;
     fileName = null;
     duration = null;
-    isRecording = false;
     recordingStartTime = null;
     resetMeasurements(true, true);
+    setTimeout(resetAllCharts(), 1000)
   } else {
-    alert("Not recording!");
+    showToast("Not recording!", "Record data");
   }
 }
 
@@ -483,7 +528,7 @@ function saveToFile() {
   }
   if (fitnessMachineDevice.device !== null) {
     //fix the distance and duration values to account only for the experiment.
-    //the treasmill does not allow control of distance and duration (counts from when the treadmill started)
+    //the treadmill does not allow control of distance and duration (counts from when the treadmill started)
     let initialDistance = treadmillMeasurements[0].distance;
     let initialDuration = treadmillMeasurements[0].duration;
     const treadmillMeasurementsFixed = treadmillMeasurements.map(element => {
@@ -510,5 +555,5 @@ function saveToFile() {
   a.href = window.URL.createObjectURL(file);
   a.download = downloadFileName;
   a.click();
-  alert("File downloaded!")
+  showToast("File downloaded!", "Record data")
 }

@@ -19,10 +19,11 @@
 <body>
     <nav class="navbar sticky-top navbar"
         style="box-shadow: 0 3px 5px 0 rgba(0,0,0,0.16); background-color: white;vertical-align: middle;padding-left: 30px;outline-style:solid;outline-color: lightgrey; margin-bottom: 5px;outline-width: 1px;">
-        <a class="navbar-brand" href="#" style="color: black;">
-            <h2>Smart Gym</h2>
-        </a>
         <div class="container-fluid">
+            <a class="navbar-brand" href="#" style="color: black;">
+                <h2>Smart Gym</h2>
+            </a>
+            <button id="resetChartsButton" class="btn btn-sm btn-outline-secondary" type="button">Reset all charts</button>
         </div>
     </nav>
     <div class="card">
@@ -66,38 +67,38 @@
         </div>
     </div>
     <div class="card">
-        <h5 class="card-header" id="headingFTMS" data-bs-toggle="collapse" data-bs-target="#collapseFTMS"
-            aria-expanded="true" aria-controls="collapseFTMS">Fitness machine</h5>
-        <div id="collapseFTMS" class="collapse show" aria-labelledby="headingFTMS">
+        <h5 class="card-header" id="headingTreadmill" data-bs-toggle="collapse" data-bs-target="#collapseTreadmill"
+            aria-expanded="true" aria-controls="collapseTreadmill">Treadmill</h5>
+        <div id="collapseTreadmill" class="collapse show" aria-labelledby="headingTreadmill">
             <div class="card-body">
                 <div class="row">
                     <div class="col-3">
-                        <h5 id="titleTextFTMS" class="card-title">Scan for Bluetooth fitness machine</h5>
-                        <p id="statusTextFTMS" class="card-text">No device connected</p>
-                        <a id="connectButtonFTMS" href="#" class="btn btn-primary">Connect</a>
-                        <a id="disconnectButtonFTMS" href="#" class="btn btn-primary">Disconnect</a>
+                        <h5 id="titleTextTreadmill" class="card-title">Scan for Bluetooth treadmill</h5>
+                        <p id="statusTextTreadmill" class="card-text">No device connected</p>
+                        <a id="connectButtonTreadmill" href="#" class="btn btn-primary">Connect</a>
+                        <a id="disconnectButtonTreadmill" href="#" class="btn btn-primary">Disconnect</a>
                     </div>
-                    <div id="containerFTMS" class="col">
-                        <ul class="nav nav-pills mb-3" id="pills-tab-ftms" role="tablist">
+                    <div id="containerTreadmill" class="col">
+                        <ul class="nav nav-pills mb-3" id="pills-tab-treadmill" role="tablist">
                             <li class="nav-item" role="presentation">
-                                <button class="nav-link active" id="pills-chart-ftms-tab" data-bs-toggle="pill"
-                                    data-bs-target="#pills-chart-ftms" type="button" role="tab"
-                                    aria-controls="pills-chart-ftms" aria-selected="true">Chart</button>
+                                <button class="nav-link active" id="pills-chart-treadmill-tab" data-bs-toggle="pill"
+                                    data-bs-target="#pills-chart-treadmill" type="button" role="tab"
+                                    aria-controls="pills-chart-treadmill" aria-selected="true">Chart</button>
                             </li>
                             <li class="nav-item" role="presentation">
-                                <button class="nav-link" id="pills-controls-ftms-tab" data-bs-toggle="pill"
-                                    data-bs-target="#pills-controls-ftms" type="button" role="tab"
-                                    aria-controls="pills-controls-ftms" aria-selected="false">Controls</button>
+                                <button class="nav-link" id="pills-controls-treadmill-tab" data-bs-toggle="pill"
+                                    data-bs-target="#pills-controls-treadmill" type="button" role="tab"
+                                    aria-controls="pills-controls-treadmill" aria-selected="false">Controls</button>
                             </li>
                         </ul>
-                        <div class="tab-content" id="pills-tabContent-ftms">
-                            <div class="tab-pane fade show active" id="pills-chart-ftms" role="tabpanel"
-                                aria-labelledby="pills-chart-ftms-tab">
-                                <div id="canvasFTMS" class="myCanvas"></div>
+                        <div class="tab-content" id="pills-tabContent-treadmill">
+                            <div class="tab-pane fade show active" id="pills-chart-treadmill" role="tabpanel"
+                                aria-labelledby="pills-chart-treadmill-tab">
+                                <div id="canvasTreadmill" class="myCanvas"></div>
                             </div>
-                            <div class="tab-pane fade" id="pills-controls-ftms" role="tabpanel"
-                                aria-labelledby="pills-controls-ftms-tab">
-                                <div id="controlsFTMS" class="myCanvas">
+                            <div class="tab-pane fade" id="pills-controls-treadmill" role="tabpanel"
+                                aria-labelledby="pills-controls-treadmill-tab">
+                                <div id="controlsTreadmill" class="myCanvas">
                                     <div class="row d-flex align-items-center" style="height: 40%;">
                                         <div class="col d-flex justify-content-center">
                                             <button id="startTreadmillButton" type="button"
@@ -116,39 +117,41 @@
                                         <div class="col d-flex justify-content-center">
                                             <div class="btn-group btn-group-lg" role="group"
                                                 aria-label="Basic outlined example">
-                                                <button id='speedDownStepButton' type="button"
+                                                <button id='speedDown2Button' type="button"
                                                     class="btn btn-outline-primary">&#8722&#8722</button>
                                                 <button id='speedDownButton' type="button"
                                                     class="btn btn-outline-primary">&nbsp&#8722&nbsp</button>
                                                 <button type="button" class="btn btn-outline-primary"
                                                     style="width: 120px;" disabled>
-                                                    <p id="speedTextFTMS" style="font-size: xx-large; margin: 0;">0.0
+                                                    <p id="speedTextTreadmill" style="font-size: xx-large; margin: 0;">
+                                                        0.0
                                                     </p>
                                                     <p style="font-size: smaller; margin: 0;">km/h</p>
                                                 </button>
                                                 <button id='speedUpButton' type="button"
                                                     class="btn btn-outline-primary">&nbsp&#x2b&nbsp</button>
-                                                <button id='speedUpStepButton' type="button"
+                                                <button id='speedUp2Button' type="button"
                                                     class="btn btn-outline-primary">&#x2b&#x2b</button>
                                             </div>
                                         </div>
                                         <div class="col d-flex justify-content-center">
                                             <div class="btn-group btn-group-lg" role="group"
                                                 aria-label="Basic outlined example" style="height: 100%;">
-                                                <button id='inclinationDownStepButton' type="button"
+                                                <button id='inclinationDown2Button' type="button"
                                                     class="btn btn-outline-primary">&#8722&#8722</button>
                                                 <button id='inclinationDownButton' type="button"
                                                     class="btn btn-outline-primary">&nbsp&#8722&nbsp</button>
                                                 <button type="button" class="btn btn-outline-primary"
                                                     style="width: 120px;" disabled>
-                                                    <p id="inclinationTextFTMS" style="font-size: xx-large; margin: 0;">
+                                                    <p id="inclinationTextTreadmill"
+                                                        style="font-size: xx-large; margin: 0;">
                                                         0.0
                                                     </p>
                                                     <p style="font-size: smaller; margin: 0;">%</p>
                                                 </button>
                                                 <button id='inclinationUpButton' type="button"
                                                     class="btn btn-outline-primary">&nbsp&#x2b&nbsp</button>
-                                                <button id='inclinationUpStepButton' type="button"
+                                                <button id='inclinationUp2Button' type="button"
                                                     class="btn btn-outline-primary">&#x2b&#x2b</button>
                                             </div>
                                         </div>

@@ -10,6 +10,7 @@ class ConceptErgDevice {
         this.serviceUUID = "ce060030-43e5-11e4-916c-0800200c9a66"; //rowing service
         //characteristics
         this.dataChUUID = "ce060031-43e5-11e4-916c-0800200c9a66"; //general status characteristic
+        this.dataAddChUUID - "ce060032-43e5-11e4-916c-0800200c9a66";
         //this.controlChUUID = "ce060020-43e5-11e4-916c-0800200c9a66";
     }
 
@@ -42,18 +43,8 @@ class ConceptErgDevice {
             })
             .then(service => {
                 this.findDataCharacteristic(service);
-                //this.findControlCharacteristic(service);
+                this.findDataAddCharacteristic(service);
             });
-    }
-
-    onDisconnected(event) {
-        let device = event.target;
-        console.log('"' + device.name + '" bluetooth device disconnected');
-        showToast("Connection to concept2-PM5 lost. Try again.", "Fitness machine device");
-        //updateDisconnectedConceptErgUI();
-        for (var key in window.conceptErgDevice) {
-            window.conceptErgDevice[key] = null;
-        };
     }
 
     findDataCharacteristic(service) {
@@ -63,23 +54,47 @@ class ConceptErgDevice {
                 return characteristic.startNotifications();
             })
             .then(characteristic => {
-                characteristic.addEventListener('characteristicvaluechanged', this.parseTreadmillData);
+                characteristic.addEventListener('characteristicvaluechanged', this.parseConceptErgData);
             })
             .catch(error => {
                 console.log(error);
             });
     }
 
-    findControlCharacteristic(service) {
-        service.getCharacteristic(this.controlChUUID)
+    findDataAddCharacteristic(service) {
+        service.getCharacteristic(this.dataAddChUUID)
             .then(characteristic => {
                 console.log('characteristic found: ', characteristic);
-                const val = Uint8Array.of(0);
-                characteristic.writeValue(val);
+                return characteristic.startNotifications();
+            })
+            .then(characteristic => {
+                characteristic.addEventListener('characteristicvaluechanged', this.parseConceptErgDataAdd);
             })
             .catch(error => {
                 console.log(error);
             });
+    }
+
+    // findControlCharacteristic(service) {
+    //     service.getCharacteristic(this.controlChUUID)
+    //         .then(characteristic => {
+    //             console.log('characteristic found: ', characteristic);
+    //             const val = Uint8Array.of(0);
+    //             characteristic.writeValue(val);
+    //         })
+    //         .catch(error => {
+    //             console.log(error);
+    //         });
+    // }
+
+    onDisconnected(event) {
+        let device = event.target;
+        console.log('"' + device.name + '" bluetooth device disconnected');
+        showToast("Connection to concept2-PM5 lost. Try again.", "Fitness machine device");
+        //updateDisconnectedConceptErgUI();
+        this.reset();
+        //resetMeasurements(false, false);
+        //drawChart();
     }
 
     disconnect() {
@@ -89,147 +104,60 @@ class ConceptErgDevice {
         }
         this.device.removeEventListener('gattserverdisconnected', this.onDisconnected);
         this.device.gatt.disconnect();
-        for (var key in window.fitnessMachineDevice) {
-            window.fitnessMachineDevice[key] = null;
-        };
         updateDisconnectedFTMSUI();
+        this.reset();
+        //resetMeasurements(false, false);
+        //drawChart();
     }
 
-    startTreadmill() {
-        service.getCharacteristic(this.controlChUUID)
-            .then(characteristic => {
-                console.log('characteristic found: ', characteristic);
-                let val = new Uint8Array(3);
-                val[0] = 7;
-                console.log('val', val);
-                characteristic.writeValue(val);
-            })
-            .catch(error => {
-                console.log(error);
-            });
-    }
-
-    stopTreadmill() {
-        service.getCharacteristic(this.controlChUUID)
-            .then(characteristic => {
-                console.log('characteristic found: ', characteristic);
-                let val = new Uint8Array(3);
-                val[0] = 8;
-                console.log('val', val);
-                characteristic.writeValue(val);
-            })
-            .catch(error => {
-                console.log(error);
-            });
-    }
-
-    increaseSpeedStep(currSpeed, speedIncrement) {
-        console.log('speed increase clicked');
-        console.log(currSpeed);
-        var newSpeed = (parseFloat(currSpeed) + parseFloat(speedIncrement));
-        console.log(newSpeed);
-        let server = this.server;
-        return server.getPrimaryService(this.serviceUUID)
-            .then(service => {
-                this.setNewSpeed(service, newSpeed);
-            });
-    }
-
-    decreaseSpeedStep(currSpeed, speedIncrement) {
-        console.log('speed decrease clicked');
-        console.log(currSpeed);
-        var newSpeed = (parseFloat(currSpeed) - parseFloat(speedIncrement));
-        console.log(newSpeed);
-        let server = this.server;
-        return server.getPrimaryService(this.serviceUUID)
-            .then(service => {
-                this.setNewSpeed(service, newSpeed);
-            });
-    }
-
-    increaseInclinationStep(currInclination, inclinationIncrement) {
-        console.log('inclination increase clicked');
-        console.log('current inclination is: ', currInclination);
-        var newInclination = (parseFloat(currInclination) + parseFloat(inclinationIncrement));
-        console.log('new inclination is: ', newInclination);
-        let server = this.server;
-        return server.getPrimaryService(this.serviceUUID)
-            .then(service => {
-                this.setNewInclination(service, newInclination);
-            });
-    }
-
-    decreaseInclinationStep(currInclination, inclinationIncrement) {
-        console.log('inclination decrease clicked');
-        console.log(currInclination);
-        var newInclination = (parseFloat(currInclination) - parseFloat(inclinationIncrement));
-        console.log(newInclination);
-        let server = this.server;
-        return server.getPrimaryService(this.serviceUUID)
-            .then(service => {
-                this.setNewInclination(service, newInclination);
-            });
-    }
-
-    setNewSpeed(service, newSpeed) {
-        service.getCharacteristic(this.controlChUUID)
-            .then(characteristic => {
-                console.log('characteristic found: ', characteristic);
-                let b = new Uint8Array(2);
-                let newSpeedInt = parseInt(newSpeed * 100);
-                for (var i = 0; i < b.length; i++) {
-                    b[i] = newSpeedInt >> 8 * i;
-                }
-                let val = new Uint8Array(3);
-                val[0] = 2;
-                val[1] = b[0];
-                val[2] = b[1];
-                console.log('val', val);
-                characteristic.writeValue(val);
-            })
-            .catch(error => {
-                console.log(error);
-            });
-    }
-
-    setNewInclination(service, newInclination) {
-        service.getCharacteristic(this.controlChUUID)
-            .then(characteristic => {
-                console.log('characteristic found: ', characteristic);
-                let b = new Uint8Array(2);
-                let newInclinationInt = parseInt(newInclination * 10);
-                for (var i = 0; i < b.length; i++) {
-                    b[i] = newInclinationInt >> 8 * i;
-                }
-                let val = new Uint8Array(3);
-                val[0] = 3;
-                val[1] = b[0];
-                val[2] = b[1];
-                console.log('val', val);
-                characteristic.writeValue(val);
-            })
-            .catch(error => {
-                console.log(error);
-            });
+    reset() {
+        this.device = null;
+        this.server = null;
+        this.serviceUUID = "ce060030-43e5-11e4-916c-0800200c9a66"; //rowing service
+        //characteristics
+        this.dataChUUID = "ce060031-43e5-11e4-916c-0800200c9a66"; //general status characteristic
+        //this.controlChUUID = "ce060020-43e5-11e4-916c-0800200c9a66";
     }
 
     /* Utils */
-    parseTreadmillData(event) {
+    parseConceptErgData(event) {
         let value = event.target.value;
         value = value.buffer ? value : new DataView(value); // In Chrome 50+, a DataView is returned instead of an ArrayBuffer.
-        let result = {};
-        let index_speed = 2;
-        result.speed = Number(value.getUint16(index_speed, /*littleEndian=*/true) / 100).toFixed(1);
-        let index_inclination = 9;
-        result.inclination = Number(value.getInt16(index_inclination, /*littleEndian=*/true) / 10).toFixed(1);
-        let index_distance = 6;
-        result.distance = ((value.getUint16(index_distance, true)) << 8) + value.getUint8(2 + index_distance, true);
-        let index_time = 14;
-        let seconds = value.getUint16(index_time, /*littleEndian=*/true);
-        result.duration = new Date(seconds * 1000).toISOString().slice(11, 19);
-        result.time = Date.now();
-        console.log(`timestamp: ${result.time} | Treadmill: ${result.speed}km/h | ${result.inclination}% | ${result.distance}m | ${result.duration}`)
-        updateFTMSUI(result);
+        let o = 0;
+        let result = {
+            elapsedTime: (v[o + 0] + (v[o + 1] << 8) + (v[o + 2] << 16)) * 0.01,
+            distance: (v[o + 3] + (v[o + 4] << 8) + (v[o + 5] << 16)) * 0.1,
+            workoutType: v[o + 6],
+            intervalType: v[o + 7],
+            workoutState: v[o + 8],
+            rowingState: v[o + 9],
+            strokeState: v[o + 10],
+            totalWorkDistance: (v[o + 11] + (v[o + 12] << 8) + (v[o + 13] << 16)),
+            workoutDuration: (v[o + 14] + (v[o + 15] << 8) + (v[o + 16] << 16)),
+            workoutDurationType: v[o + 17],
+            dragFactor: v[o + 18],
+            time: Date.now(),
+        }
+        console.log(`timestamp: ${result.time} | Rower: ${result.elapsedTime}s | ${result.distance}m | ${result.dragFactor}`)
+        //updateFTMSUI(result);
+    }
+    parseConceptErgDataAdd(event) {
+        let value = event.target.value;
+        value = value.buffer ? value : new DataView(value); // In Chrome 50+, a DataView is returned instead of an ArrayBuffer.
+        let o = 0;
+        let result = {
+            elapsedTime: (v[o + 0] + (v[o + 1] << 8) + (v[o + 2] << 16)) * 0.01,
+            speed: (v[o + 3] + (v[o + 4] << 8)) * 0.001,
+            strokeRate: v[o + 5],
+            //heartRate: v[o + 6],
+            currentPace: (v[o + 7] + (v[o + 8] << 8)) * 0.01,
+            averagePace: (v[o + 9] + (v[o + 10] << 8)) * 0.01,
+            restDistance: (v[o + 11] + (v[o + 12] << 8)),
+            restTime: (v[o + 13] + (v[o + 14] << 8) + (v[o + 15] << 16)) * 0.01,
+            time: Date.now(),
+        }
+        console.log(`timestamp: ${result.time} | Rower: ${result.elapsedTime}s | ${result.speed}m | ${result.currentPace} | ${result.averagePace}`)
+        //updateFTMSUI(result);
     }
     getDeviceName() {
         return this.device.name;

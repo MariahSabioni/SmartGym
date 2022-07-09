@@ -55,7 +55,7 @@ class HeartRateDevice {
         showToast("Connection to HR sensor lost. Try again.", "Heart rate sensor");
         this.reset();
         resetMeasurements(true, false);
-        drawChart();
+        drawChartHR();
     }
 
     disconnect() {
@@ -71,7 +71,7 @@ class HeartRateDevice {
         updateDisconnectedHRUI();
         this.reset();
         resetMeasurements(true, false);
-        drawChart();
+        drawChartHR();
     }
 
     reset() {
@@ -115,6 +115,7 @@ class HeartRateDevice {
         result.time = Date.now();
         console.log(`timestamp: ${result.time}| HR: ${result.heartRate}bpm`);
         updateHRUI(result);
+        startLoopUpdate();
     }
     getDeviceName() {
         return this.device.name;

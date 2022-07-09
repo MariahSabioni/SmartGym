@@ -27,8 +27,8 @@ class FitnessMachineDevice {
                         }, 1000);
                     } else {
                         console.log('could not connect');
-                        showToast("Connection to treadmill failed. Try again.", "Fitness machine device");
-                        updateDisconnectedFTMSUI();
+                        showToast("Connection to treadmill failed. Try again.", "Treadmill device");
+                        updateDisconnectedTreadmillUI();
                     }
                 }
             })
@@ -72,11 +72,11 @@ class FitnessMachineDevice {
     onDisconnected(event) {
         let device = event.target;
         console.log('"' + device.name + '" bluetooth device disconnected');
-        showToast("Connection to treadmill lost. Try again.", "Fitness machine device");
-        updateDisconnectedFTMSUI();
+        showToast("Connection to treadmill lost. Try again.", "Treadmill device");
+        updateDisconnectedTreadmillUI();
         this.reset();
         resetMeasurements(false, true);
-        drawChart();
+        chartHR.clear();
     }
 
     disconnect() {
@@ -86,10 +86,10 @@ class FitnessMachineDevice {
         }
         this.device.removeEventListener('gattserverdisconnected', this.onDisconnected);
         this.device.gatt.disconnect();
-        updateDisconnectedFTMSUI();
+        updateDisconnectedTreadmillUI();
         this.reset();
         resetMeasurements(false, true);
-        drawChart();
+        drawChartTreadmill();
     }
 
     reset() {
@@ -248,7 +248,8 @@ class FitnessMachineDevice {
         result.duration = seconds * 1000;
         result.time = Date.now();
         console.log(`timestamp: ${result.time} | Treadmill: ${result.speed}km/h | ${result.inclination}% | ${result.distance}m | ${result.duration}`)
-        updateFTMSUI(result);
+        updateTreadmillUI(result);
+        startLoopUpdate();
     }
     getDeviceName() {
         return this.device.name;

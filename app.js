@@ -50,6 +50,8 @@ let stopTreadmillButton = document.getElementById('stopTreadmillButton');
 let toastDisconnection = document.getElementById('toastDisconnection');
 let toastTitle = document.getElementById('toastTitle');
 let toastMessage = document.getElementById('toastMessage');
+let selectionClickable = document.getElementById('selectionClickable');
+let headingTreadmill = document.getElementById('headingTreadmill');
 
 //global variables
 //list of results
@@ -210,9 +212,31 @@ saveSettingsButton.addEventListener('click', function () {
   saveSettingsAndRecord();
   $('#settingsModal').modal('hide'); //why does it work only with jQuery?
 });
+headingTreadmill.addEventListener('click', function (event) {
+  $('#collapseTreadmill').collapse('toggle'); //why does it work only with jQuery?
+});
+selectionClickable.addEventListener('click', function (e) {
+  e.stopPropagation();
+  $('.selectionClickable').trigger('change');
+});
+selectionClickable.addEventListener('change', function () {
+  if (this.value == 0) {
+    //showTreadmillCanva();
+    console.log('showTreadmillCanva');
+  } else if (this.value == 1) {
+    //showConcept2RowErgCanva();
+    console.log('showConcept2RowErgCanva');
+  } else if (this.value == 2) {
+    //showConcept2SkiErgCanva();
+    console.log('showConcept2SkiErgCanva');
+  } else if (this.value == 1) {
+    //showMonarkBikeCanva();
+    console.log('showMonarkBikeCanva');
+  }
+});
 
-function resetAllCharts(){
-  if (!isDeviceConnected()){
+function resetAllCharts() {
+  if (!isDeviceConnected()) {
     alert("No devices connected!");
     return;
   }

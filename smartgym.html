@@ -23,7 +23,8 @@
             <a class="navbar-brand" href="#" style="color: black;">
                 <h2>Smart Gym</h2>
             </a>
-            <button id="resetChartsButton" class="btn btn-sm btn-outline-secondary" type="button">Reset all charts</button>
+            <button id="resetChartsButton" class="btn btn-sm btn-outline-secondary" type="button">Reset all
+                charts</button>
         </div>
     </nav>
     <div class="card">
@@ -67,10 +68,16 @@
         </div>
     </div>
     <div class="card">
-        <h5 class="card-header" id="headingTreadmill" data-bs-toggle="collapse" data-bs-target="#collapseTreadmill"
-            aria-expanded="true" aria-controls="collapseTreadmill">Treadmill</h5>
+        <h5 class="card-header" id="headingTreadmill" aria-expanded="true" aria-controls="collapseTreadmill">
+            <select id="selectionClickable" class="form-select" aria-label="select" style="width:auto;">
+                <option value="0" selected>Treadmill</option>
+                <option value="1">Concept2 RowErg</option>
+                <option value="2">Concept2 SkiErg</option>
+                <option value="3">Monark bike</option>
+            </select>
+        </h5>
         <div id="collapseTreadmill" class="collapse show" aria-labelledby="headingTreadmill">
-            <div class="card-body">
+            <div id="selectedTreadmill" class="card-body">
                 <div class="row">
                     <div class="col-3">
                         <h5 id="titleTextTreadmill" class="card-title">Scan for Bluetooth treadmill</h5>

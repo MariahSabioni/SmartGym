@@ -54,7 +54,7 @@ class HeartRateDevice {
         console.log('"' + device.name + '" bluetooth device disconnected');
         showToast("Connection to HR sensor lost. Try again.", "Heart rate sensor");
         this.reset();
-        resetMeasurements(true, false);
+        resetMeasurements(true, false, false);
         drawChartHR();
     }
 
@@ -70,7 +70,7 @@ class HeartRateDevice {
         };
         updateDisconnectedHRUI();
         this.reset();
-        resetMeasurements(true, false);
+        resetMeasurements(true, false, false);
         drawChartHR();
     }
 

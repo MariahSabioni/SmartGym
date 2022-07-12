@@ -71,9 +71,7 @@
         <h5 class="card-header" id="headingTreadmill" aria-expanded="true" aria-controls="collapseTreadmill">
             <select id="selectionClickable" class="form-select" aria-label="select" style="width:auto;">
                 <option value="0" selected>Treadmill</option>
-                <option value="1">Concept2 RowErg</option>
-                <option value="2">Concept2 SkiErg</option>
-                <option value="3">Monark bike</option>
+                <option value="1">Concept2 PM5</option>
             </select>
         </h5>
         <div id="collapseTreadmill" class="collapse show" aria-labelledby="headingTreadmill">
@@ -163,6 +161,43 @@
                                             </div>
                                         </div>
                                     </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div id="collapseConcept2pm" class="collapse show" aria-labelledby="headingConcept2pm" style="display: none;" >
+            <div id="selectedConcept2pm" class="card-body">
+                <div class="row">
+                    <div class="col-3">
+                        <h5 id="titleTextConcept2pm" class="card-title">Scan for Bluetooth Concept2 PM5</h5>
+                        <p id="statusTextConcept2pm" class="card-text">No device connected</p>
+                        <a id="connectButtonConcept2pm" href="#" class="btn btn-primary">Connect</a>
+                        <a id="disconnectButtonConcept2pm" href="#" class="btn btn-primary">Disconnect</a>
+                    </div>
+                    <div id="containerConcept2pm" class="col">
+                        <ul class="nav nav-pills mb-3" id="pills-tab-concept2pm" role="tablist">
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link active" id="pills-chart-concept2pm-tab" data-bs-toggle="pill"
+                                    data-bs-target="#pills-chart-concept2pm" type="button" role="tab"
+                                    aria-controls="pills-chart-concept2pm" aria-selected="true">Chart</button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link" id="pills-controls-concept2pm-tab" data-bs-toggle="pill"
+                                    data-bs-target="#pills-controls-concept2pm" type="button" role="tab"
+                                    aria-controls="pills-controls-concept2pm" aria-selected="false">Rounds</button>
+                            </li>
+                        </ul>
+                        <div class="tab-content" id="pills-tabContent-concept2pm">
+                            <div class="tab-pane fade show active" id="pills-chart-concept2pm" role="tabpanel"
+                                aria-labelledby="pills-chart-concept2pm-tab">
+                                <div id="canvasConcept2pm" class="myCanvas"></div>
+                            </div>
+                            <div class="tab-pane fade" id="pills-controls-concept2pm" role="tabpanel"
+                                aria-labelledby="pills-controls-concept2pm-tab">
+                                <div id="controlsConcept2pm" class="myCanvas">
                                 </div>
                             </div>
                         </div>
@@ -276,8 +311,8 @@
     </div>
 
     <script src="heartRateDevice.js"></script>
-    <script src="fitnessMachineDevice.js"></script>
-    <script src="conceptErgDevice.js"></script>
+    <script src="treadmillDevice.js"></script>
+    <script src="concept2pmDevice.js"></script>
     <script src="app.js"></script>
 
     <!-- jQuery first, then Popper.js, then Bootstrap JS -->

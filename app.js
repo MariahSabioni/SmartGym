@@ -10,13 +10,14 @@ let zonesHR = document.getElementById("zonesHR");
 let canvasHR = document.getElementById("canvasHR");
 
 let collapseTreadmill = document.getElementById('collapseTreadmill');
+let selectedTreadmill = document.getElementById('selectedTreadmill');
 let connectButtonTreadmill = document.getElementById('connectButtonTreadmill');
 let disconnectButtonTreadmill = document.getElementById('disconnectButtonTreadmill');
 let titleTextTreadmill = document.getElementById('titleTextTreadmill');
 let statusTextTreadmill = document.getElementById("statusTextTreadmill");
 let containerTreadmill = document.getElementById("containerTreadmill");
 let controlsTreadmill = document.getElementById("controlsTreadmill");
-let canvasTreadmill = document.getElementById("canvasTreadmill");
+//let canvasTreadmill = document.getElementById("canvasTreadmill");
 
 let speedUpButton = document.getElementById('speedUpButton');
 let speedDownButton = document.getElementById('speedDownButton');
@@ -31,14 +32,14 @@ let inclinationTextTreadmill = document.getElementById('inclinationTextTreadmill
 let startTreadmillButton = document.getElementById('startTreadmillButton');
 let stopTreadmillButton = document.getElementById('stopTreadmillButton');
 
-let collapseConcept2pm = document.getElementById('collapseConcept2pm');
+let selectedConcept2pm = document.getElementById('selectedConcept2pm');
 let connectButtonConcept2pm = document.getElementById('connectButtonConcept2pm');
 let disconnectButtonConcept2pm = document.getElementById('disconnectButtonConcept2pm');
 let titleTextConcept2pm = document.getElementById('titleTextConcept2pm');
 let statusTextConcept2pm = document.getElementById("statusTextConcept2pm");
 let containerConcept2pm = document.getElementById("containerConcept2pm");
 let controlsConcept2pm = document.getElementById("controlsConcept2pm");
-let canvasConcept2pm = document.getElementById("canvasConcept2pm");
+//let canvasConcept2pm = document.getElementById("canvasConcept2pm");
 
 let connectButtoIMU = document.getElementById('connectButtoIMU');
 let disconnectButtonIMU = document.getElementById('disconnectButtonIMU');
@@ -72,7 +73,10 @@ let inclinations = [];
 let treadmillMeasurements = [];
 let paces = [];
 let strokes = [];
+let dragFactors = [];
 let concept2pmMeasurements = [];
+let concept2pmAddMeasurements = [];
+let concept2pmAddMeasurements2 = [];
 //recording
 let fileName = null;
 let duration = null;
@@ -82,12 +86,15 @@ let recordingDuration = null;
 let recordingDeviceList = [];
 //charts
 let interval = 500; //miliseconds
-let indexHR;
-let indexTreadmill;
 let nIntervId;
 let dataHR, chartHR, optionsHR;
+let indexHR;
 let dataTreadmill, chartTreadmill, optionsTreadmill;
+let indexTreadmill;
+let dataConcept2pm, chartConcept2pm, optionsConcept2pm;
+let indexConcept2pm;
 let formatter;
+let formatter2;
 //devices
 let treadmillDevice = new TreadmillDevice();
 let heartRateDevice = new HeartRateDevice();
@@ -126,7 +133,7 @@ google.charts.load('current', {
 });
 google.charts.setOnLoadCallback(drawChartHR);
 google.charts.setOnLoadCallback(drawChartTreadmill);
-//google.charts.setOnLoadCallback(drawChartConcept2PM);
+google.charts.setOnLoadCallback(drawChartConcept2pm);
 
 //listeners
 resetChartsButton.addEventListener('click', function () {
@@ -257,14 +264,14 @@ selectionClickable.addEventListener('change', function () {
   }
 });
 
-function showTreadmillCanva(){
-  collapseConcept2pm.style.display = "none";
-  collapseTreadmill.style.display = "block";
+function showTreadmillCanva() {
+  selectedConcept2pm.style.display = "none";
+  selectedTreadmill.style.display = "block";
 }
 
-function showConcept2pmCanva(){
-  collapseTreadmill.style.display = "none";
-  collapseConcept2pm.style.display = "block";
+function showConcept2pmCanva() {
+  selectedTreadmill.style.display = "none";
+  selectedConcept2pm.style.display = "block";
 }
 
 function resetAllCharts() {
@@ -274,6 +281,7 @@ function resetAllCharts() {
   }
   drawChartHR();
   drawChartTreadmill();
+  drawChartConcept2pm();
 }
 
 function drawChartHR() {
@@ -326,6 +334,36 @@ function drawChartTreadmill() {
   chartTreadmill.draw(dataTreadmill, optionsTreadmill);
 }
 
+function drawChartConcept2pm() {
+  dataConcept2pm = new google.visualization.DataTable();
+  dataConcept2pm.addColumn('date', 'timestamp');
+  dataConcept2pm.addColumn('date', 'pace(time/500m)');
+  dataConcept2pm.addColumn('number', 'strokes (spm)');
+  optionsConcept2pm = {
+    title: 'Pace (time/500m) and strokes (spm)',
+    series: {
+      0: { targetAxisIndex: 0, },
+      1: { targetAxisIndex: 1, }
+    },
+    hAxis: { format: 'HH:mm:ss', textPosition: 'none' },
+    vAxes: {
+      0: { format: 'm:ss' },
+    },
+    legend: 'bottom',
+    axisTitlesPosition: 'none',
+    chartArea: { width: '80%', height: '80%' },
+    theme: 'material',
+    width: '100%',
+    pointSize: 3,
+  };
+  chartConcept2pm = new google.visualization.LineChart(document.getElementById('canvasConcept2pm'));
+  formatter = new google.visualization.DateFormat({ pattern: 'HH:mm:ss' });
+  formatter.format(dataConcept2pm, 0);
+  formatter2 = new google.visualization.DateFormat({ pattern: 'm:ss' });
+  formatter2.format(dataConcept2pm, 1);
+  chartConcept2pm.draw(dataConcept2pm, optionsConcept2pm);
+}
+
 function startLoopUpdate() {
   if (!nIntervId) {
     nIntervId = setInterval(updateChartAndRecording, interval);
@@ -370,10 +408,11 @@ function updateChartAndRecording() {
   //part 2: update the charts
   indexHR = new Date(Date.now());
   indexTreadmill = indexHR;
+  indexConcept2pm = indexHR;
   if (heartRateDevice.device !== null) {
     let plotNewHR = heartRates[heartRates.length - 1];
     dataHR.addRow([indexHR, plotNewHR]);
-    if (dataHR.getNumberOfRows() > 5 * 60 * 2) {
+    if (dataHR.getNumberOfRows() > 3 * 60 * 2) {
       dataHR.removeRow(0);
     }
     formatter.format(dataHR, 0);
@@ -383,11 +422,22 @@ function updateChartAndRecording() {
     let plotNewSpeed = parseFloat(speeds[speeds.length - 1]);
     let plotNewInclination = parseFloat(inclinations[inclinations.length - 1]);
     dataTreadmill.addRow([indexTreadmill, plotNewSpeed, plotNewInclination]);
-    if (dataTreadmill.getNumberOfRows() > 5 * 60 * 2) {
+    if (dataTreadmill.getNumberOfRows() > 3 * 60 * 2) {
       dataTreadmill.removeRow(0);
     }
     formatter.format(dataTreadmill, 0);
     chartTreadmill.draw(dataTreadmill, optionsTreadmill);
+  }
+  if (concept2pmDevice.device !== null) {
+    let plotNewPace = new Date(parseFloat(paces[paces.length - 1]) * 1000);
+    let plotNewStroke = parseFloat(strokes[strokes.length - 1]);
+    dataConcept2pm.addRow([indexConcept2pm, plotNewPace, plotNewStroke]);
+    if (dataConcept2pm.getNumberOfRows() > 3 * 60 * 2) {
+      dataConcept2pm.removeRow(0);
+    }
+    formatter.format(dataConcept2pm, 0);
+    formatter2.format(dataConcept2pm, 1);
+    chartConcept2pm.draw(dataConcept2pm, optionsConcept2pm);
   }
 }
 
@@ -434,16 +484,25 @@ function updateHRUI(heartRateMeasurement) {
   console.log('HR array length: ', heartRateMeasurements.length);
 }
 
-function updateConcept2pmUI(concept2pmMeasurement) {
+function updateConcept2pmUI(concept2pmAddMeasurement) {
   //UI
-  statusTextConcept2pm.innerHTML = /*'&#x1F3C3;'*/ `Pace: ${(concept2pmMeasurement.currentPace)}/500m<br />Stroke rate: ${(concept2pmMeasurement.strokeRate)}spm`;
+  statusTextConcept2pm.innerHTML = /*'&#x1F3C3;'*/ `Pace: ${(concept2pmAddMeasurement.prettyCurrentPace)}/500m<br />Speed: ${(concept2pmAddMeasurement.speed)}m/s<br />Stroke rate: ${(concept2pmAddMeasurement.strokeRate)}spm<br />Drag factor: ${(dragFactors[dragFactors.length - 1])}`;
   titleTextConcept2pm.textContent = "Connected to: " + concept2pmDevice.getDeviceName();
   containerConcept2pm.style.display = "block";
   //save results to lists
-  strokes.push(concept2pmMeasurement.strokeRate);
-  paces.push(concept2pmMeasurement.currentPace);
+  strokes.push(concept2pmAddMeasurement.strokeRate);
+  paces.push(concept2pmAddMeasurement.currentPace);
+  concept2pmAddMeasurements.push(concept2pmAddMeasurement);
+  console.log('Concept2 PM array length: ', concept2pmAddMeasurements.length);
+}
+
+function updateConcept2pmMeasurements(concept2pmMeasurement) {
   concept2pmMeasurements.push(concept2pmMeasurement);
-  console.log('Concept2 PM array length: ', concept2pmMeasurements.length);
+  dragFactors.push(concept2pmMeasurement.dragFactor)
+}
+
+function updateConcept2pmAdd2Measurements(concept2pmAddMeasurement2) {
+  concept2pmAddMeasurements2.push(concept2pmAddMeasurement2);
 }
 
 function showToast(message, title) {
@@ -461,8 +520,8 @@ function updateSettingsModalContent() {
   if (treadmillDevice.device !== null) {
     deviceList.push('Treadmill: ' + treadmillDevice.getDeviceName());
   }
-  if (concept2pmDevice.device !== null){
-    deviceList.push('Ergometer: ' + concept2pmDevice.getDeviceName());
+  if (concept2pmDevice.device !== null) {
+    deviceList.push('Concept2 PM: ' + concept2pmDevice.getDeviceName());
   }
   if (deviceList.length !== 0) {
     settingsDevices.innerHTML = deviceList.join(' <br /> ');
@@ -520,8 +579,8 @@ function isDeviceConnected() {
   if (treadmillDevice.device !== null) {
     deviceList.push('Treadmill: ' + treadmillDevice.getDeviceName());
   }
-  if (concept2pmDevice.device !== null){
-    deviceList.push('Ergometer: ' + concept2pmDevice.getDeviceName());
+  if (concept2pmDevice.device !== null) {
+    deviceList.push('Concept2 PM: ' + concept2pmDevice.getDeviceName());
   }
   if (deviceList.length == 0) {
     return false;
@@ -556,10 +615,12 @@ function resetMeasurements(heartRate, treadmill, concept2pm) {
     heartRates = [];
     heartRateMeasurements = [];
   }
-  if(concept2pm){
+  if (concept2pm) {
     paces = [];
     strokes = [];
     concept2pmMeasurements = [];
+    concept2pmAddMeasurements = [];
+    concept2pmAddMeasurements2 = [];
   }
 }
 
@@ -586,6 +647,7 @@ function saveToFile() {
   var properties = { type: 'application/json' }; // Specify the file's mime-type.
   let heartRateSensor = null;
   let treadmill = null;
+  let concept2pm = null;
   let endTime = Date.now();
   let prettyRecordingStartTime = new Date(recordingStartTime).toISOString().slice(0, 19).replace(/-/g, "/").replace("T", " ");
   let prettyRecordingEndTime = new Date(endTime).toISOString().slice(0, 19).replace(/-/g, "/").replace("T", " ");
@@ -606,26 +668,17 @@ function saveToFile() {
     };
   }
   if (treadmillDevice.device !== null) {
-    //fix the distance and duration values to account only for the experiment.
-    //the treadmill does not allow control of distance and duration (counts from when the treadmill started)
-    let initialDistance = treadmillMeasurements[0].distance;
-    let initialDuration = treadmillMeasurements[0].duration;
-    const treadmillMeasurementsFixed = treadmillMeasurements.map(element => {
-      return {
-        ...element,
-        distance: element.distance - initialDistance,
-        duration: new Date(element.duration - initialDuration).toISOString().slice(11, 19),
-      };
-    });
     treadmill = {
       device: treadmillDevice.getDeviceName(),
-      measurements: treadmillMeasurementsFixed,
+      measurements: treadmillMeasurements,
     };
   }
   if (concept2pmDevice.device !== null) {
     concept2pm = {
       device: concept2pmDevice.getDeviceName(),
       measurements: concept2pmMeasurements,
+      measurementsAdditional: concept2pmAddMeasurements,
+      measurementsAdditional2: concept2pmAddMeasurements2,
     };
   }
   var myObj = { experiment, heartRateSensor, treadmill, concept2pm };

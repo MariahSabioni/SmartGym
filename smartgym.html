@@ -68,8 +68,9 @@
         </div>
     </div>
     <div class="card">
-        <h5 class="card-header" id="headingTreadmill" aria-expanded="true" aria-controls="collapseTreadmill">
-            <select id="selectionClickable" class="form-select" aria-label="select" style="width:auto;">
+        <h5 class="card-header" id="headingTreadmill" aria-expanded="true" aria-controls="collapseTreadmill" style="display: flex; align-items: center;">
+            <div style="width:auto; float:left; margin-right: 10px; height: 100%;">Fitness machine</div>
+            <select id="selectionClickable" class="form-select" aria-label="select" style="width:auto; ">
                 <option value="0" selected>Treadmill</option>
                 <option value="1">Concept2 PM5</option>
             </select>
@@ -167,9 +168,7 @@
                     </div>
                 </div>
             </div>
-        </div>
-        <div id="collapseConcept2pm" class="collapse show" aria-labelledby="headingConcept2pm" style="display: none;" >
-            <div id="selectedConcept2pm" class="card-body">
+            <div id="selectedConcept2pm" class="card-body" style="display: none;">
                 <div class="row">
                     <div class="col-3">
                         <h5 id="titleTextConcept2pm" class="card-title">Scan for Bluetooth Concept2 PM5</h5>
@@ -187,7 +186,7 @@
                             <li class="nav-item" role="presentation">
                                 <button class="nav-link" id="pills-controls-concept2pm-tab" data-bs-toggle="pill"
                                     data-bs-target="#pills-controls-concept2pm" type="button" role="tab"
-                                    aria-controls="pills-controls-concept2pm" aria-selected="false">Rounds</button>
+                                    aria-controls="pills-controls-concept2pm" aria-selected="false">Controls</button>
                             </li>
                         </ul>
                         <div class="tab-content" id="pills-tabContent-concept2pm">

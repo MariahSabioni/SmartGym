@@ -1,3 +1,8 @@
+/*
+Documentation: https://www.bluetooth.com/specifications/specs/heart-rate-profile-1-0/
+Code example:
+*/
+
 class HeartRateDevice {
     constructor() {
         this.device = null;

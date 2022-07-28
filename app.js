@@ -1,3 +1,10 @@
+/*
+Web bluetooth documentation: https://web.dev/bluetooth/
+Code example: https://googlechrome.github.io/samples/web-bluetooth/read-characteristic-value-changed.html
+Google charts documentation: https://developers.google.com/chart/interactive/docs/gallery/linechart
+Bootstrap documentation: https://getbootstrap.com/docs/5.0/getting-started/introduction/
+*/
+
 // ui hooks
 let resetChartsButton = document.getElementById('resetChartsButton');
 
@@ -17,7 +24,6 @@ let titleTextTreadmill = document.getElementById('titleTextTreadmill');
 let statusTextTreadmill = document.getElementById("statusTextTreadmill");
 let containerTreadmill = document.getElementById("containerTreadmill");
 let controlsTreadmill = document.getElementById("controlsTreadmill");
-//let canvasTreadmill = document.getElementById("canvasTreadmill");
 
 let speedUpButton = document.getElementById('speedUpButton');
 let speedDownButton = document.getElementById('speedDownButton');
@@ -39,9 +45,11 @@ let titleTextConcept2pm = document.getElementById('titleTextConcept2pm');
 let statusTextConcept2pm = document.getElementById("statusTextConcept2pm");
 let containerConcept2pm = document.getElementById("containerConcept2pm");
 let controlsConcept2pm = document.getElementById("controlsConcept2pm");
-//let canvasConcept2pm = document.getElementById("canvasConcept2pm");
+let startConcept2pmButton = document.getElementById('startConcept2pmButton');
+let stopConcept2pmButton = document.getElementById('stopConcept2pmButton');
+let selectionClickableDistance = document.getElementById('selectionClickableDistance');
 
-let connectButtoIMU = document.getElementById('connectButtoIMU');
+let connectButtonIMU = document.getElementById('connectButtonIMU');
 let disconnectButtonIMU = document.getElementById('disconnectButtonIMU');
 let titleTextIMU = document.getElementById('titleTextIMU');
 let statusTextIMU = document.getElementById("statusTextIMU");
@@ -77,6 +85,9 @@ let dragFactors = [];
 let concept2pmMeasurements = [];
 let concept2pmAddMeasurements = [];
 let concept2pmAddMeasurements2 = [];
+let combinedAcc = [];
+let combinedGyro = [];
+let imuMeasurements = [];
 //recording
 let fileName = null;
 let duration = null;
@@ -99,6 +110,7 @@ let formatter2;
 let treadmillDevice = new TreadmillDevice();
 let heartRateDevice = new HeartRateDevice();
 let concept2pmDevice = new Concept2pmDevice();
+let imuDevice = new ImuDevice();
 
 // initial ui settings
 statusTextHR.textContent = "No HR sensor connected";
@@ -237,8 +249,24 @@ connectButtonConcept2pm.addEventListener('click', function () {
 disconnectButtonConcept2pm.addEventListener('click', function () {
   concept2pmDevice.disconnect();
 });
+startConcept2pmButton.addEventListener('click', function () {
+  concept2pmDevice.startWorkoutConcept2pm();
+});
+stopConcept2pmButton.addEventListener('click', function () {
+  concept2pmDevice.resetConcept2pm();
+});
 stopRecordingButton.addEventListener('click', function () {
   stopRecording();
+});
+connectButtonIMU.addEventListener('click', function () {
+  imuDevice.connect()
+    .catch(error => {
+      statusTextIMU.textContent = error.message;
+      console.log(error);
+    })
+});
+disconnectButtonIMU.addEventListener('click', function () {
+  imuDevice.disconnect();
 });
 settingsModal.addEventListener('show.bs.modal', event => {
   updateSettingsModalContent();
@@ -257,10 +285,8 @@ selectionClickable.addEventListener('click', function (e) {
 selectionClickable.addEventListener('change', function () {
   if (this.value == 0) {
     showTreadmillCanva();
-    console.log('showTreadmillCanva');
   } else if (this.value == 1) {
     showConcept2pmCanva();
-    console.log('showConcept2pmCanva');
   }
 });
 
@@ -482,6 +508,16 @@ function updateHRUI(heartRateMeasurement) {
   heartRates.push(heartRateMeasurement.heartRate);
   heartRateMeasurements.push(heartRateMeasurement);
   console.log('HR array length: ', heartRateMeasurements.length);
+}
+
+function updateIMUUI(imuMeasurement) {
+  //UI
+  statusTextHR.innerHTML = `no measurement yet`;
+  titleTextHR.textContent = "Connected to: " + imuDevice.getDeviceName();
+  containerHR.style.display = "block";
+  //save results to lists
+  imuMeasurements.push(imuMeasurement);
+  console.log('IMU array length: ', imuMeasurements.length);
 }
 
 function updateConcept2pmUI(concept2pmAddMeasurement) {

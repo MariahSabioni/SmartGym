@@ -68,7 +68,8 @@
         </div>
     </div>
     <div class="card">
-        <h5 class="card-header" id="headingTreadmill" aria-expanded="true" aria-controls="collapseTreadmill" style="display: flex; align-items: center;">
+        <h5 class="card-header" id="headingTreadmill" aria-expanded="true" aria-controls="collapseTreadmill"
+            style="display: flex; align-items: center;">
             <div style="width:auto; float:left; margin-right: 10px; height: 100%;">Fitness machine</div>
             <select id="selectionClickable" class="form-select" aria-label="select" style="width:auto; ">
                 <option value="0" selected>Treadmill</option>
@@ -197,6 +198,35 @@
                             <div class="tab-pane fade" id="pills-controls-concept2pm" role="tabpanel"
                                 aria-labelledby="pills-controls-concept2pm-tab">
                                 <div id="controlsConcept2pm" class="myCanvas">
+                                    <div class="row d-flex align-items-center" style="height: 100%;">
+                                        <div class="col d-flex justify-content-center" style="height: fit-content;">
+                                            <div style="height:fit-content">
+                                                <div class="row justify-content-md-center "
+                                                    style="padding-bottom: 10px">
+                                                    <span style="width:auto; align-self: center;">Distance:</span>
+                                                    <select id="selectionClickableDistance" class="form-select"
+                                                        aria-label="select" style="width:auto; display: inline-block;">
+                                                        <option value="0" selected>1000 m</option>
+                                                        <option value="1">2000 m</option>
+                                                        <option value="2" selected>5000 m</option>
+                                                        <option value="3">10000 m</option>
+                                                    </select>
+                                                </div>
+                                                <div class="row justify-content-md-center" style="padding-top: 10px">
+                                                    <button id="startConcept2pmButton" type="button"
+                                                        class="btn btn-primary btn-lg"
+                                                        style="background-color: green;border-color: green; width: fit-content;">Start
+                                                        Workout</button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col d-flex justify-content-center">
+                                            <button id="stopConcept2pmButton" type="button"
+                                                class="btn btn-primary btn-lg"
+                                                style="background-color: red;border-color: red;">Reset
+                                                Concept2</button>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -312,6 +342,7 @@
     <script src="heartRateDevice.js"></script>
     <script src="treadmillDevice.js"></script>
     <script src="concept2pmDevice.js"></script>
+    <script src="imuDevice.js"></script>
     <script src="app.js"></script>
 
     <!-- jQuery first, then Popper.js, then Bootstrap JS -->

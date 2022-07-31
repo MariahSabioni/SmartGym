@@ -70,9 +70,6 @@ class HeartRateDevice {
         }
         this.device.removeEventListener('gattserverdisconnected', this.onDisconnected);
         this.device.gatt.disconnect();
-        for (var key in window.heartRateDevice) {
-            window.heartRateDevice[key] = null;
-        };
         updateDisconnectedHRUI();
         this.reset();
         resetMeasurements(true, false, false);

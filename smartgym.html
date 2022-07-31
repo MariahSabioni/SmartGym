@@ -248,9 +248,29 @@
                         <a id="disconnectButtonIMU" href="#" class="btn btn-primary">Disconnect</a>
                     </div>
                     <div class="col-9">
+                        <button id="test1IMU">get settings</button>
+                        <button id="test2IMU">start data</button>
+                        <button id="test3IMU">stop data</button>
                         <div id="canvasContainerIMU" class="card-body">
-                            <canvas id="canvasIMU"></canvas>
+                            <canvas id="canvasIMU">
+                            </canvas>
                         </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="card">
+        <h5 class="card-header" id="headingBle" data-bs-toggle="collapse" data-bs-target="#collapseBle"
+            aria-expanded="true" aria-controls="collapseBle">Discover services and characteristics</h5>
+        <div id="collapseBle" class="collapse show" aria-labelledby="headingBle">
+            <div class="card-body">
+                <div class="row">
+                    <div class="col">
+                        <h5 id="titleTextBle" class="card-title">Scan for Bluetooth devices</h5>
+                        <p id="statusTextBle" class="card-text">No BLE device connected</p>
+                        <a id="connectButtonBle" href="#" class="btn btn-primary">Connect</a>
+                        <a id="disconnectButtonBle" href="#" class="btn btn-primary">Disconnect</a>
                     </div>
                 </div>
             </div>
@@ -343,6 +363,7 @@
     <script src="treadmillDevice.js"></script>
     <script src="concept2pmDevice.js"></script>
     <script src="imuDevice.js"></script>
+    <script src="bleDevice.js"></script>
     <script src="app.js"></script>
 
     <!-- jQuery first, then Popper.js, then Bootstrap JS -->

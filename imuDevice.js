@@ -12,17 +12,20 @@ class ImuDevice {
         //characteristics
         this.dataChUUID = "fb005c82-02e7-f387-1cad-8acd2d8df0c8";
         this.controlChUUID = "fb005c81-02e7-f387-1cad-8acd2d8df0c8";
-        this.streamTypes = ["ECG", "PPG", "Acc", "PPInt", , "Gyro", "Magn",];
-        // this.streams = {
-        //     ECG: { name: 'ECG', id: 0, type: "electrocardiogram", code_start: [0x00, 0x01, 0x82, 0x00, 0x01, 0x01, 0x0E, 0x00] },
-        //     PPG: { name: 'PPG', id: 1, type: "photoplethysmogram", code_start: [0x00, 0x01, samplerate, 0x00, 0x01, 0x01, 0x16, 0x00, 0x04, 0x01, 0x04] },
-        //     Acc: { name: 'Acc', id: 2, type: "accelerometer", code_start: [0x02, 0x01, acc_range, 0x00, 0x00, 0x01, 0xA0, 0x01, 0x01, 0x01, acc_resolution, 0x00, 4, 1, 3] },
-        // };
+        this.streamTypes = [, "PPG", "Acc", "PPI", , "Gyr", "Mag",];
+        this.streams = [
+            { id: 1, name: 'PPG', type: "photoplethysmogram", code_settings: [0x01, 0x01], code_start: [0x02, 0x01, 0x00, 0x01, 0x34, 0x00, 0x01, 0x01, 0x10, 0x00, 0x02, 0x01, 0x08, 0x00, 0x04, 0x01, 0x03], code_stop: [0x03, 0x01] },
+            { id: 2, name: 'Acc', type: "accelerometer", code_settings: [0x01, 0x02], code_start: [0x02, 0x02, 0x00, 0x01, 0x34, 0x00, 0x01, 0x01, 0x10, 0x00, 0x02, 0x01, 0x08, 0x00, 0x04, 0x01, 0x03], code_stop: [0x03, 0x02] },
+            { id: 3, name: 'PPI', type: "pp interval", code_settings: [0x01, 0x03], code_start: [0x02, 0x03, 0x00, 0x01, 0x34, 0x00, 0x01, 0x01, 0x10, 0x00, 0x02, 0x01, 0x08, 0x00, 0x04, 0x01, 0x03], code_stop: [0x03, 0x03] },
+            { id: 5, name: 'Gyr', type: "gyroscope", code_settings: [0x01, 0x05], code_start: [0x02, 0x05, 0x00, 0x01, 0x34, 0x00, 0x01, 0x01, 0x10, 0x00, 0x02, 0x01, 0x08, 0x00, 0x04, 0x01, 0x03], code_stop: [0x03, 0x05] },
+            { id: 6, name: 'Mag', type: "magnetometer", code_settings: [0x01, 0x06], code_start: [0x02, 0x06, 0x00, 0x01, 0x34, 0x00, 0x01, 0x01, 0x10, 0x00, 0x02, 0x01, 0x08, 0x00, 0x04, 0x01, 0x03], code_stop: [0x03, 0x06] },
+
+        ];
     }
 
     connect() {
         return navigator.bluetooth.requestDevice({
-            filters: [{ namePrefix: "Polar Sense"}],
+            filters: [{ namePrefix: "Polar Sense" }],
             optionalServices: [this.serviceUUID],
         })
             .then(device => {
@@ -40,7 +43,7 @@ class ImuDevice {
                         }, 1000);
                     } else {
                         console.log('could not connect');
-                        showToast("Connection to imu failed. Try again.", "IMU device");
+                        showToast("Connection to IMU failed. Try again.", "IMU device");
                         //updateDisconnectedTreadmillUI();
                     }
                 }
@@ -70,18 +73,54 @@ class ImuDevice {
             });
     }
 
-    activateStream(obj, stream) {
-        // var Init = [0x02, stream.id];
-        // BytesToSend = Init.concat(stream.code_start);
-        // characteristic.writeValue(new Uint8Array(BytesToSend));
+    requestStreamSettings(streamId) {
+        let stream = this.streams.find(item => item.id === streamId);
+        let server = this.server;
+        server.getPrimaryService(this.serviceUUID)
+            .then(service => {
+                return service.getCharacteristic(this.controlChUUID);
+            })
+            .then(characteristic => {
+                // characteristic.writeValue(new Uint8Array(stream.code_start));
+                characteristic.writeValueWithResponse(new Uint8Array(stream.code_settings));
+            })
     }
 
+    requestStreamStart(streamId) {
+        let stream = this.streams.find(item => item.id === streamId);
+        let server = this.server;
+        server.getPrimaryService(this.serviceUUID)
+            .then(service => {
+                return service.getCharacteristic(this.controlChUUID);
+            })
+            .then(characteristic => {
+                characteristic.writeValue(new Uint8Array(stream.code_start));
+            })
+    }
+
+    requestStreamStop(streamId) {
+        let stream = this.streams.find(item => item.id === streamId);
+        let server = this.server;
+        server.getPrimaryService(this.serviceUUID)
+            .then(service => {
+                return service.getCharacteristic(this.controlChUUID);
+            })
+            .then(characteristic => {
+                characteristic.writeValue(new Uint8Array(stream.code_stop));
+            })
+    }
 
     findControlCharacteristic(service) {
         service.getCharacteristic(this.controlChUUID)
             .then(characteristic => {
                 console.log('characteristic found: ', characteristic);
-                characteristic.addEventListener('characteristicvaluechanged', this.printControlResponse);
+                return Promise.all([
+                    characteristic.readValue(),
+                    characteristic.startNotifications()
+                        .then(characteristic => {
+                            characteristic.addEventListener('characteristicvaluechanged', this.printControlResponse);
+                        }),
+                ]);
             })
             .catch(error => {
                 console.log(error);
@@ -91,22 +130,17 @@ class ImuDevice {
     printControlResponse(event) {
         let value = event.target.value;
         value = value.buffer ? value : new DataView(value); // In Chrome 50+, a DataView is returned instead of an ArrayBuffer.
-        controlResponse = value.getUint8(0);
-        console.log("control response: ", controlResponse);
-        supportedStreams = (value.getUint8(1));
-        supportedStreamsBin = (parseInt(supportedStreams, 16).toString(2)).padStart(8, '0');
-        console.log("suported streams: ", supportedStreamsBin);
+        console.log("control response: ", value);
     }
 
     onDisconnected(event) {
         let device = event.target;
         console.log('"' + device.name + '" bluetooth device disconnected');
-        showToast("Connection to treadmill lost. Try again.", "Treadmill device");
-        updateDisconnectedTreadmillUI();
-        imuDevice.reset();
-        resetMeasurements(false, true, false);
-        //chartTreadmill.clear(); //TODO test if this works
-        drawChartTreadmill();
+        showToast("Connection to IMU lost. Try again.", "IMU device");
+        // updateDisconnectedTreadmillUI();
+        // imuDevice.reset();
+        // resetMeasurements(false, true, false);
+        // drawChartTreadmill();
     }
 
     disconnect() {
@@ -116,60 +150,25 @@ class ImuDevice {
         }
         this.device.removeEventListener('gattserverdisconnected', this.onDisconnected);
         this.device.gatt.disconnect();
-        updateDisconnectedTreadmillUI();
-        this.reset();
-        resetMeasurements(false, true, false);
-        drawChartTreadmill();
+        // updateDisconnectedTreadmillUI();
+        // this.reset();
+        // resetMeasurements(false, true, false);
+        // drawChartTreadmill();
     }
 
     reset() {
         this.device = null;
         this.server = null;
-        this.serviceUUID = '00001826-0000-1000-8000-00805f9b34fb';
+        this.serviceUUID = "fb005c80-02e7-f387-1cad-8acd2d8df0c8";
         //characteristics
-        this.dataChUUID = "00002acd-0000-1000-8000-00805f9b34fb";
-        this.controlChUUID = "00002ad9-0000-1000-8000-00805f9b34fb";
-    }
-
-    changeTreadmillStatus(action) {
-        console.log(`${action} treadmill clicked`);
-        let server = this.server;
-        return server.getPrimaryService(this.serviceUUID)
-            .then(service => {
-                if (action == 'start') {
-                    this.startTreadmill(service);
-                } else if (action == 'stop') {
-                    this.stopTreadmill(service);
-                }
-            });
-    }
-
-    startTreadmill(service) {
-        service.getCharacteristic(this.controlChUUID)
-            .then(characteristic => {
-                console.log('characteristic found: ', characteristic);
-                let val = new Uint8Array(3);
-                val[0] = 7;
-                console.log('val', val);
-                characteristic.writeValue(val);
-            })
-            .catch(error => {
-                console.log(error);
-            });
-    }
-
-    stopTreadmill(service) {
-        service.getCharacteristic(this.controlChUUID)
-            .then(characteristic => {
-                console.log('characteristic found: ', characteristic);
-                let val = new Uint8Array(3);
-                val[0] = 8;
-                console.log('val', val);
-                characteristic.writeValue(val);
-            })
-            .catch(error => {
-                console.log(error);
-            });
+        this.dataChUUID = "fb005c82-02e7-f387-1cad-8acd2d8df0c8";
+        this.controlChUUID = "fb005c81-02e7-f387-1cad-8acd2d8df0c8";
+        this.streamTypes = ["ECG", "PPG", "Acc", "PPInt", , "Gyro", "Magn",];
+        this.streams = [
+            { name: 'ECG', code_settings: [0x01, 0x00], id: 0, type: "electrocardiogram", code_start: [0x00, 0x01, 0x82, 0x00, 0x01, 0x01, 0x0E, 0x00] },
+            { name: 'PPG', code_settings: [0x01, 0x01], id: 1, type: "photoplethysmogram", code_start: [0x02, 0x01, 0x00, 0x01, 0x34, 0x00, 0x01, 0x01, 0x10, 0x00, 0x02, 0x01, 0x08, 0x00, 0x04, 0x01, 0x03] },
+            { name: 'Acc', code_settings: [0x01, 0x02], id: 2, type: "accelerometer", code_start: [0x02, 0x02, 0x00, 0x01, 0x34, 0x00, 0x01, 0x01, 0x10, 0x00, 0x02, 0x01, 0x08, 0x00, 0x04, 0x01, 0x03] },
+        ];
     }
 
     /* Utils */
@@ -182,7 +181,9 @@ class ImuDevice {
         let measurementType = value.getUint8(2);
         let errorCode = value.getUint8(3);
         var dataType = value.getUint8(0);
-        console.log("data received", dataType);
+        console.log("data type: ", dataType);
+        console.log("data: ", value);
+
         // if (dataType == 2) {
         //     //accelerometer
         //     frame_type = value.getUint8(8);

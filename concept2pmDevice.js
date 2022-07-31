@@ -59,38 +59,6 @@ class Concept2pmDevice {
             })
     }
 
-    findAllCharacteristics() {
-        let server = this.server;
-        server.getPrimaryServices()
-            .then(services => {
-                console.log('Getting Characteristics...');
-                let queue = Promise.resolve();
-                services.forEach(service => {
-                    queue = queue.then(_ => service.getCharacteristics().then(characteristics => {
-                        console.log('> Service: ' + service.uuid);
-                        characteristics.forEach(characteristic => {
-                            console.log('>> Characteristic: ' + characteristic.uuid + ' ' +
-                                this.getSupportedProperties(characteristic));
-                        });
-                    }));
-                });
-                return queue;
-            })
-            .catch(error => {
-                console.log('Argh! ' + error);
-            });
-    }
-
-    getSupportedProperties(characteristic) {
-        let supportedProperties = [];
-        for (const p in characteristic.properties) {
-            if (characteristic.properties[p] === true) {
-                supportedProperties.push(p.toUpperCase());
-            }
-        }
-        return '[' + supportedProperties.join(', ') + ']';
-    }
-
     connectControlService() {
         let server = this.server;
         server.getPrimaryService(this.controlServiceUUID)
@@ -206,7 +174,7 @@ class Concept2pmDevice {
     hexToBytes(hexString) {
         if (hexString.length % 2 !== 0) {
             throw "Must have an even number of hex digits to convert to bytes";
-        }/* w w w.  jav  a2 s .  c o  m*/
+        }
         var numBytes = hexString.length / 2;
         var byteArray = new Uint8Array(numBytes);
         for (var i = 0; i < numBytes; i++) {

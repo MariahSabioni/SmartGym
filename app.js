@@ -56,6 +56,11 @@ let statusTextIMU = document.getElementById("statusTextIMU");
 let canvasContainerIMU = document.getElementById("canvasContainerIMU");
 let canvasIMU = document.getElementById("canvasIMU");
 
+let connectButtonBle = document.getElementById('connectButtonBle');
+let disconnectButtonBle = document.getElementById('disconnectButtonBle');
+let titleTextBle = document.getElementById('titleTextBle');
+let statusTextBle = document.getElementById("statusTextBle");
+
 let titleTextRecord = document.getElementById('titleTextRecord');
 let statusTextRecord = document.getElementById('statusTextRecord');
 let stopRecordingButton = document.getElementById('stopRecordingButton');
@@ -111,6 +116,7 @@ let treadmillDevice = new TreadmillDevice();
 let heartRateDevice = new HeartRateDevice();
 let concept2pmDevice = new Concept2pmDevice();
 let imuDevice = new ImuDevice();
+let bleDevice = new BleDevice();
 
 // initial ui settings
 statusTextHR.textContent = "No HR sensor connected";
@@ -130,6 +136,9 @@ containerConcept2pm.style.display = "none";
 statusTextIMU.textContent = "No IMU sensor connected";
 titleTextIMU.textContent = "Scan for Bluetooth IMU sensor";
 canvasContainerIMU.style.display = "none";
+
+statusTextBle.textContent = "No BLE device connected";
+titleTextBle.textContent = "Scan for Bluetooth devices";
 
 statusTextRecord.textContent = "Not recording";
 titleTextRecord.textContent = "Record and save data to .json file";
@@ -268,6 +277,16 @@ connectButtonIMU.addEventListener('click', function () {
 disconnectButtonIMU.addEventListener('click', function () {
   imuDevice.disconnect();
 });
+connectButtonBle.addEventListener('click', function () {
+  bleDevice.connect()
+    .catch(error => {
+      statusTextBle.textContent = error.message;
+      console.log(error);
+    })
+});
+disconnectButtonBle.addEventListener('click', function () {
+  bleDevice.disconnect();
+});
 settingsModal.addEventListener('show.bs.modal', event => {
   updateSettingsModalContent();
 })
@@ -288,6 +307,15 @@ selectionClickable.addEventListener('change', function () {
   } else if (this.value == 1) {
     showConcept2pmCanva();
   }
+});
+document.getElementById('test1IMU').addEventListener('click', function () {
+  imuDevice.requestStreamSettings(2);
+});
+document.getElementById('test2IMU').addEventListener('click', function () {
+  imuDevice.requestStreamStart(2);
+});
+document.getElementById('test3IMU').addEventListener('click', function () {
+  imuDevice.requestStreamStop(2);
 });
 
 function showTreadmillCanva() {
@@ -485,6 +513,17 @@ function updateDisconnectedConcept2pmUI() {
   containerConcept2pm.style.display = "none";
 }
 
+function updateDisconnectedIMUUI() {
+  statusTextIMU.textContent = "No IMU sensor connected";
+  titleTextIMU.textContent = "Scan for Bluetooth IMU sensor";
+  canvasContainerIMU.style.display = "none";
+}
+
+function updateDisconnectedBleUI() {
+  statusTextBle.textContent = "No BLE device connected";
+  titleTextBle.textContent = "Scan for Bluetooth devices";
+}
+
 function updateTreadmillUI(treadmillMeasurement) {
   //UI
   statusTextTreadmill.innerHTML = /*'&#x1F3C3;'*/ `&#x1F4A8; Speed: ${(treadmillMeasurement.speed < 10 ? '&nbsp;' : '')}${treadmillMeasurement.speed} km/h<br />&#x26F0; Inclination: ${(treadmillMeasurement.inclination < 0 ? '' : '&nbsp;')}${treadmillMeasurement.inclination} %`;
@@ -512,9 +551,9 @@ function updateHRUI(heartRateMeasurement) {
 
 function updateIMUUI(imuMeasurement) {
   //UI
-  statusTextHR.innerHTML = `no measurement yet`;
-  titleTextHR.textContent = "Connected to: " + imuDevice.getDeviceName();
-  containerHR.style.display = "block";
+  statusTextIMU.innerHTML = `no measurement yet`;
+  titleTextIMU.textContent = "Connected to: " + imuDevice.getDeviceName();
+  containerIMU.style.display = "block";
   //save results to lists
   imuMeasurements.push(imuMeasurement);
   console.log('IMU array length: ', imuMeasurements.length);
@@ -530,6 +569,11 @@ function updateConcept2pmUI(concept2pmAddMeasurement) {
   paces.push(concept2pmAddMeasurement.currentPace);
   concept2pmAddMeasurements.push(concept2pmAddMeasurement);
   console.log('Concept2 PM array length: ', concept2pmAddMeasurements.length);
+}
+
+function updateBleUI(response){
+  statusTextBle.textContent = response;
+  titleTextBle.textContent = "Connected to: " + bleDevice.getDeviceName();
 }
 
 function updateConcept2pmMeasurements(concept2pmMeasurement) {

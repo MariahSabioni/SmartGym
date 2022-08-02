@@ -308,14 +308,21 @@ selectionClickable.addEventListener('change', function () {
     showConcept2pmCanva();
   }
 });
+document.getElementById('test0IMU').addEventListener('click', function () {
+  imuDevice.sendCommand(9, 'start_measurement', null);
+});
+document.getElementById('test0_1IMU').addEventListener('click', function () {
+  imuDevice.sendCommand(9, 'stop_measurement', null);
+});
 document.getElementById('test1IMU').addEventListener('click', function () {
-  imuDevice.requestStreamSettings(2);
+  imuDevice.sendCommand(2, 'get_measurement_settings', null);
 });
 document.getElementById('test2IMU').addEventListener('click', function () {
-  imuDevice.requestStreamStart(2);
+
+  imuDevice.sendCommand(2, 'start_measurement', [52, 16, 8, 3]);
 });
 document.getElementById('test3IMU').addEventListener('click', function () {
-  imuDevice.requestStreamStop(2);
+  imuDevice.sendCommand(2, 'stop_measurement');
 });
 
 function showTreadmillCanva() {

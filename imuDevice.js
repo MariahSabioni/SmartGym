@@ -1,6 +1,6 @@
 /*
 Documentation: https://github.com/polarofficial/polar-ble-sdk/blob/master/technical_documentation/Polar_Measurement_Data_Specification.pdf
-Code example:
+Code example: https://webbluetoothcg.github.io/web-bluetooth/#dom-bluetoothremotegattcharacteristic-readvalue
 */
 
 class ImuDevice {
@@ -8,20 +8,55 @@ class ImuDevice {
     constructor() {
         this.device = null;
         this.server = null;
+        //services
         this.serviceUUID = "fb005c80-02e7-f387-1cad-8acd2d8df0c8";
         //characteristics
         this.dataChUUID = "fb005c82-02e7-f387-1cad-8acd2d8df0c8";
         this.controlChUUID = "fb005c81-02e7-f387-1cad-8acd2d8df0c8";
-        this.streamTypes = [, "PPG", "Acc", "PPI", , "Gyr", "Mag",];
-        this.streams = [
-            { id: 1, name: 'PPG', type: "photoplethysmogram", code_settings: [0x01, 0x01], code_start: [0x02, 0x01, 0x00, 0x01, 0x34, 0x00, 0x01, 0x01, 0x10, 0x00, 0x02, 0x01, 0x08, 0x00, 0x04, 0x01, 0x03], code_stop: [0x03, 0x01] },
-            { id: 2, name: 'Acc', type: "accelerometer", code_settings: [0x01, 0x02], code_start: [0x02, 0x02, 0x00, 0x01, 0x34, 0x00, 0x01, 0x01, 0x10, 0x00, 0x02, 0x01, 0x08, 0x00, 0x04, 0x01, 0x03], code_stop: [0x03, 0x02] },
-            { id: 3, name: 'PPI', type: "pp interval", code_settings: [0x01, 0x03], code_start: [0x02, 0x03, 0x00, 0x01, 0x34, 0x00, 0x01, 0x01, 0x10, 0x00, 0x02, 0x01, 0x08, 0x00, 0x04, 0x01, 0x03], code_stop: [0x03, 0x03] },
-            { id: 5, name: 'Gyr', type: "gyroscope", code_settings: [0x01, 0x05], code_start: [0x02, 0x05, 0x00, 0x01, 0x34, 0x00, 0x01, 0x01, 0x10, 0x00, 0x02, 0x01, 0x08, 0x00, 0x04, 0x01, 0x03], code_stop: [0x03, 0x05] },
-            { id: 6, name: 'Mag', type: "magnetometer", code_settings: [0x01, 0x06], code_start: [0x02, 0x06, 0x00, 0x01, 0x34, 0x00, 0x01, 0x01, 0x10, 0x00, 0x02, 0x01, 0x08, 0x00, 0x04, 0x01, 0x03], code_stop: [0x03, 0x06] },
+        this.errorTypes = [
+            { id: 0, hex: [0x00], value: 'SUCCESS' },
+            { id: 1, hex: [0x01], value: 'ERROR INVALID OP CODE' },
+            { id: 2, hex: [0x02], value: 'ERROR INVALID MEASUREMENT TYPE' },
+            { id: 3, hex: [0x03], value: 'ERROR NOT SUPPORTED' },
+            { id: 4, hex: [0x04], value: 'ERROR INVALID LENGTH' },
+            { id: 5, hex: [0x05], value: 'ERROR INVALID PARAMETER' },
+            { id: 6, hex: [0x06], value: 'ERROR ALREADY IN STATE' },
+            { id: 7, hex: [0x07], value: 'ERROR INVALID RESOLUTION' },
+            { id: 8, hex: [0x08], value: 'ERROR INVALID SAMPLE RATE' },
+            { id: 9, hex: [0x09], value: 'ERROR INVALID RANGE' },
+            { id: 10, hex: [0x0A], value: 'ERROR INVALID MTU' },
+            { id: 11, hex: [0x0B], value: 'ERROR INVALID NUMBER OF CHANNELS' },
+            { id: 12, hex: [0x0C], value: 'ERROR INVALID STATE' },
+            { id: 13, hex: [0x0D], value: 'ERROR DEVICE IN CHARGER' },]
+        this.measTypes = [
+            { id: 1, hex: [0x01], value: 'PPG', name: 'photoplethysmogram', unit: 'NA', sample_rate: [28, 44, 135, 176], resolution: [16], range: [2, 4, 8], channels: [3] },
+            { id: 2, hex: [0x02], value: 'Acc', name: 'accelerometer', unit: 'g', sample_rate: [26, 52, 104, 208, 416], resolution: [16], range: [2, 4, 8], channels: [3] },
+            { id: 3, hex: [0x03], value: 'PPI', name: 'pp interval', unit: 's' },
+            { id: 5, hex: [0x05], value: 'Gyr', name: 'gyroscope', unit: 'degrees/s', sample_rate: [26, 52, 104, 208, 416], resolution: [16], range: [2, 4, 8], channels: [3] },
+            { id: 6, hex: [0x06], value: 'Mag', name: 'magnetometer', unit: 'G', sample_rate: [26, 52, 104, 208, 416], resolution: [16], range: [2, 4, 8], channels: [3] },
+            { id: 9, hex: [0x09], value: 'SDK', name: 'SDK', unit: 'NA' },];
+        this.frameTypes = [
+            { id: 128, hex: [0x80], value: 'DELTA FRAME' }
+        ];
+        this.opCodes = [
+            { id: 1, hex: [0x01], value: 'get_measurement_settings' },
+            { id: 2, hex: [0x02], value: 'start_measurement' },
+            { id: 3, hex: [0x03], value: 'stop_measurement' },
 
         ];
+        this.controlCodes = [
+            { id: 15, hex: [0x0F], value: 'control_point_read' },
+            { id: 240, hex: [0xF0], value: 'control_point_response' },
+        ];
+        this.settingTypes = [
+            { id: 0, hex: [0x00], value: 'sample_rate' },
+            { id: 1, hex: [0x01], value: 'resolution' },
+            { id: 2, hex: [0x02], value: 'range' },
+            { id: 4, hex: [0x04], value: 'channels' },
+        ]
     }
+
+    /* FUNCTIONS TO HANDLE CONNECTION*/
 
     connect() {
         return navigator.bluetooth.requestDevice({
@@ -44,7 +79,7 @@ class ImuDevice {
                     } else {
                         console.log('could not connect');
                         showToast("Connection to IMU failed. Try again.", "IMU device");
-                        //updateDisconnectedTreadmillUI();
+                        updateDisconnectedIMUUI();
                     }
                 }
             })
@@ -54,8 +89,27 @@ class ImuDevice {
                 return server.getPrimaryService(this.serviceUUID);
             })
             .then(service => {
-                this.findControlCharacteristic(service);
-                this.findDataCharacteristic(service);
+                return Promise.all([
+                    this.findControlCharacteristic(service),
+                    this.findDataCharacteristic(service),
+                ]);
+            });
+    }
+
+    findControlCharacteristic(service) {
+        service.getCharacteristic(this.controlChUUID)
+            .then(characteristic => {
+                console.log('characteristic found: ', characteristic);
+                return Promise.all([
+                    characteristic.readValue(),
+                    characteristic.startNotifications()
+                        .then(characteristic => {
+                            characteristic.addEventListener('characteristicvaluechanged', this.parseControlResponse);
+                        }),
+                ]);
+            })
+            .catch(error => {
+                console.log(error);
             });
     }
 
@@ -73,71 +127,11 @@ class ImuDevice {
             });
     }
 
-    requestStreamSettings(streamId) {
-        let stream = this.streams.find(item => item.id === streamId);
-        let server = this.server;
-        server.getPrimaryService(this.serviceUUID)
-            .then(service => {
-                return service.getCharacteristic(this.controlChUUID);
-            })
-            .then(characteristic => {
-                // characteristic.writeValue(new Uint8Array(stream.code_start));
-                characteristic.writeValueWithResponse(new Uint8Array(stream.code_settings));
-            })
-    }
-
-    requestStreamStart(streamId) {
-        let stream = this.streams.find(item => item.id === streamId);
-        let server = this.server;
-        server.getPrimaryService(this.serviceUUID)
-            .then(service => {
-                return service.getCharacteristic(this.controlChUUID);
-            })
-            .then(characteristic => {
-                characteristic.writeValue(new Uint8Array(stream.code_start));
-            })
-    }
-
-    requestStreamStop(streamId) {
-        let stream = this.streams.find(item => item.id === streamId);
-        let server = this.server;
-        server.getPrimaryService(this.serviceUUID)
-            .then(service => {
-                return service.getCharacteristic(this.controlChUUID);
-            })
-            .then(characteristic => {
-                characteristic.writeValue(new Uint8Array(stream.code_stop));
-            })
-    }
-
-    findControlCharacteristic(service) {
-        service.getCharacteristic(this.controlChUUID)
-            .then(characteristic => {
-                console.log('characteristic found: ', characteristic);
-                return Promise.all([
-                    characteristic.readValue(),
-                    characteristic.startNotifications()
-                        .then(characteristic => {
-                            characteristic.addEventListener('characteristicvaluechanged', this.printControlResponse);
-                        }),
-                ]);
-            })
-            .catch(error => {
-                console.log(error);
-            });
-    }
-
-    printControlResponse(event) {
-        let value = event.target.value;
-        value = value.buffer ? value : new DataView(value); // In Chrome 50+, a DataView is returned instead of an ArrayBuffer.
-        console.log("control response: ", value);
-    }
-
     onDisconnected(event) {
         let device = event.target;
         console.log('"' + device.name + '" bluetooth device disconnected');
         showToast("Connection to IMU lost. Try again.", "IMU device");
-        // updateDisconnectedTreadmillUI();
+        updateDisconnectedIMUUI();
         // imuDevice.reset();
         // resetMeasurements(false, true, false);
         // drawChartTreadmill();
@@ -150,40 +144,105 @@ class ImuDevice {
         }
         this.device.removeEventListener('gattserverdisconnected', this.onDisconnected);
         this.device.gatt.disconnect();
-        // updateDisconnectedTreadmillUI();
+        updateDisconnectedIMUUI();
         // this.reset();
         // resetMeasurements(false, true, false);
         // drawChartTreadmill();
     }
 
     reset() {
-        this.device = null;
-        this.server = null;
-        this.serviceUUID = "fb005c80-02e7-f387-1cad-8acd2d8df0c8";
-        //characteristics
-        this.dataChUUID = "fb005c82-02e7-f387-1cad-8acd2d8df0c8";
-        this.controlChUUID = "fb005c81-02e7-f387-1cad-8acd2d8df0c8";
-        this.streamTypes = ["ECG", "PPG", "Acc", "PPInt", , "Gyro", "Magn",];
-        this.streams = [
-            { name: 'ECG', code_settings: [0x01, 0x00], id: 0, type: "electrocardiogram", code_start: [0x00, 0x01, 0x82, 0x00, 0x01, 0x01, 0x0E, 0x00] },
-            { name: 'PPG', code_settings: [0x01, 0x01], id: 1, type: "photoplethysmogram", code_start: [0x02, 0x01, 0x00, 0x01, 0x34, 0x00, 0x01, 0x01, 0x10, 0x00, 0x02, 0x01, 0x08, 0x00, 0x04, 0x01, 0x03] },
-            { name: 'Acc', code_settings: [0x01, 0x02], id: 2, type: "accelerometer", code_start: [0x02, 0x02, 0x00, 0x01, 0x34, 0x00, 0x01, 0x01, 0x10, 0x00, 0x02, 0x01, 0x08, 0x00, 0x04, 0x01, 0x03] },
-        ];
+
     }
 
-    /* Utils */
-    dec2bin(dec) {
-        return (dec >>> 0).toString(2);
+    /* FUNCTIONS TO SEND COMMANDS TO CONTROL CHARACTERISTIC*/
+
+    sendCommand(measId, action, settings) {
+        let server = this.server;
+        server.getPrimaryService(this.serviceUUID)
+            .then(service => {
+                return service.getCharacteristic(this.controlChUUID);
+            })
+            .then(characteristic => {
+                let measValue = this.measTypes.find(item => item.id === measId).value;
+                console.log(`> request sent to ${action} type ${measValue}`);
+                let val;
+                switch (action) {
+                    case 'get_measurement_settings':
+                        val = this.getMeasSettingsCommand(measId, action);
+                        break;
+                    case 'start_measurement':
+                        val = this.getMeasStartCommand(measId, action, settings);
+                        break;
+                    case 'stop_measurement':
+                        val = this.getMeasStopCommand(measId, action);
+                        break;
+                    default:
+                        val = this.getMeasSettingsCommand(measId, action);
+                }
+                characteristic.writeValueWithResponse(val);
+            })
     }
+
+    getMeasSettingsCommand(measId, action) {
+        let commandArray = Array(2);
+        commandArray[0] = this.opCodes.find(item => item.value === action).hex;
+        commandArray[1] = this.measTypes.find(item => item.id === measId).hex;
+        return new Uint8Array(commandArray);
+    }
+
+    getMeasStartCommand(measId, action, settings) {
+        // [opCode, streamType, settingType1, len1, val1, val1, settingType2, len2, val2, val2, ...]
+        let commandArray, commandView;
+        if (measId == 9) {
+            commandArray = new ArrayBuffer(2);
+            commandView = new DataView(commandArray);
+            commandView.setUint8(0, this.opCodes.find(item => item.value === action).hex);
+            commandView.setUint8(1, this.measTypes.find(item => item.id === measId).hex);
+        } else {
+            commandArray = new ArrayBuffer(17);
+            commandView = new DataView(commandArray);
+            commandView.setUint8(0, this.opCodes.find(item => item.value === action).hex);
+            commandView.setUint8(1, this.measTypes.find(item => item.id === measId).hex);
+            commandView.setUint8(2, this.settingTypes.find(item => item.value === 'sample_rate').hex);
+            commandView.setUint8(3, 0x01);
+            commandView.setUint16(4, settings[0], true);
+            commandView.setUint8(6, this.settingTypes.find(item => item.value === 'resolution').hex);
+            commandView.setUint8(7, 0x01);
+            commandView.setUint16(8, settings[1], true);
+            commandView.setUint8(10, this.settingTypes.find(item => item.value === 'range').hex);
+            commandView.setUint8(11, 0x01);
+            commandView.setUint16(12, settings[2], true);
+            commandView.setUint8(14, this.settingTypes.find(item => item.value === 'channels').hex);
+            commandView.setUint8(15, 0x01);
+            commandView.setUint8(16, settings[3], true);
+        }
+        let sendCommandHex = byteArrayToHexString(commandView);
+        console.log(`>> request: ${sendCommandHex}`);
+        let sendCommand = new Uint8Array(commandView.buffer);
+        return sendCommand;
+    }
+
+    getMeasStopCommand(measId, action) {
+        // [opCode, streamType]
+        let commandArray = Array(2);
+        commandArray[0] = this.opCodes.find(item => item.value === action).hex;
+        commandArray[1] = this.measTypes.find(item => item.id === measId).hex;
+        return new Uint8Array(commandArray);
+    }
+
+    /* FUNCTIONS TO READ COMMANDS FROM DATA CHARACTERISTIC*/
+
     parseIMUData(event) {
         let value = event.target.value;
         value = value.buffer ? value : new DataView(value); // In Chrome 50+, a DataView is returned instead of an ArrayBuffer.
-        let measurementType = value.getUint8(2);
-        let errorCode = value.getUint8(3);
-        var dataType = value.getUint8(0);
-        console.log("data type: ", dataType);
-        console.log("data: ", value);
+        let valueHexString = byteArrayToHexString(value);
+        let measurementType = imuDevice.measTypes.find(item => item.id === value.getUint8(0)).value;
+        let frameType = imuDevice.frameTypes.find(item => item.id === value.getUint8(9)).value;
+        console.log(`> ${measurementType} ${frameType} data received: ${valueHexString}`)
 
+        if (measurementType == 'Acc') {
+            //let refSampleSize = this.settings.resolution/8 * this.settings.channels; //define settings properti on constructor
+        }
         // if (dataType == 2) {
         //     //accelerometer
         //     frame_type = value.getUint8(8);
@@ -271,6 +330,68 @@ class ImuDevice {
         // updateTreadmillUI(result);
         // startLoopUpdate();
     }
+
+    /* FUNCTIONS TO READ COMMANDS FROM CONTROL CHARACTERISTIC*/
+    parseControlResponse(event) {
+        let value = event.target.value;
+        value = value.buffer ? value : new DataView(value); // In Chrome 50+, a DataView is returned instead of an ArrayBuffer.
+        let valueHexString = byteArrayToHexString(value);
+        let controlPoint = value.getUint8(0);
+        let controlAction = imuDevice.controlCodes.find(item => item.id === controlPoint).value;
+        console.log(`> response to ${controlAction}: ${valueHexString}`)
+        if (controlAction == 'control_point_read') {
+            let servicesAvailable = decIntTobinString(value.getUint8(1));
+            [...servicesAvailable].slice().reverse().forEach(function (binary, measId) {
+                let measurementAvailable = parseInt(binary);
+                let measurement = imuDevice.measTypes.find(item => item.id === measId);
+                if (measurement === undefined) {
+                    console.log('>> measurement index unknown');
+                    return;
+                }
+                if (measurementAvailable) {
+                    console.log(`>> measurement type ${measurement.value} available. subscribe to 0x0${measurement.hex}`);
+                } else {
+                    console.log(`>> measurement type ${measurement.value} not available. so sorry.`);
+                }
+            })
+        } else if (controlAction == 'control_point_response') {
+            let opCode = imuDevice.opCodes.find(item => item.id === value.getUint8(1)).value;
+            let measType = imuDevice.measTypes.find(item => item.id === value.getUint8(2)).value;
+            let errorType = imuDevice.errorTypes.find(item => item.id === value.getUint8(3)).value;
+            console.log(`>> status of ${measType} request ${opCode}: ${errorType} `);
+            if (opCode == 'get_measurement_settings' && errorType == 'SUCCESS') {
+                let index = 5;
+                let setting, settingSize;
+                console.log(imuDevice.measTypes.find(item => item.value === measType));
+                do {
+                    let settingValues = [];
+                    setting = imuDevice.settingTypes.find(item => item.id === value.getUint8(index)).value;
+                    settingSize = value.getUint8(index + 1);
+                    if (setting == 'channels') {
+                        for (let i = 0; i < settingSize; i++) {
+                            settingValues.push(value.getUint8(index + 2 + (i), true));
+                            i += 1;
+                        }
+                    } else {
+                        for (let i = 0; i < settingSize; i++) {
+                            settingValues.push(value.getUint16(index + 2 + (2 * i), true));
+                            i += 1;
+                        }
+                    }
+                    imuDevice.measTypes.find(item => item.value === measType)[setting] = settingValues;
+                    console.log(`>> measurement setting: ${setting} | number of values: ${settingSize} | values: ${settingValues}`)
+                    console.log(imuDevice.measTypes.find(item => item.value === measType));
+                    index += (2 + /*slide to next setting*/(settingSize * 2));
+                }
+                while (index < value.byteLength);
+            }
+        }
+        else {
+            console.log('> control response not recognized: ', valueHexString);
+        }
+    }
+
+    /* UTILS */
     getDeviceName() {
         return this.device.name;
     }

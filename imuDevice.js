@@ -13,47 +13,48 @@ class ImuDevice {
         //characteristics
         this.dataChUUID = "fb005c82-02e7-f387-1cad-8acd2d8df0c8";
         this.controlChUUID = "fb005c81-02e7-f387-1cad-8acd2d8df0c8";
-        this.errorTypes = [
-            { id: 0, hex: [0x00], value: 'SUCCESS' },
-            { id: 1, hex: [0x01], value: 'ERROR INVALID OP CODE' },
-            { id: 2, hex: [0x02], value: 'ERROR INVALID MEASUREMENT TYPE' },
-            { id: 3, hex: [0x03], value: 'ERROR NOT SUPPORTED' },
-            { id: 4, hex: [0x04], value: 'ERROR INVALID LENGTH' },
-            { id: 5, hex: [0x05], value: 'ERROR INVALID PARAMETER' },
-            { id: 6, hex: [0x06], value: 'ERROR ALREADY IN STATE' },
-            { id: 7, hex: [0x07], value: 'ERROR INVALID RESOLUTION' },
-            { id: 8, hex: [0x08], value: 'ERROR INVALID SAMPLE RATE' },
-            { id: 9, hex: [0x09], value: 'ERROR INVALID RANGE' },
-            { id: 10, hex: [0x0A], value: 'ERROR INVALID MTU' },
-            { id: 11, hex: [0x0B], value: 'ERROR INVALID NUMBER OF CHANNELS' },
-            { id: 12, hex: [0x0C], value: 'ERROR INVALID STATE' },
-            { id: 13, hex: [0x0D], value: 'ERROR DEVICE IN CHARGER' },]
-        this.measTypes = [
-            { id: 1, hex: [0x01], value: 'PPG', name: 'photoplethysmogram', unit: 'NA', sample_rate: [28, 44, 135, 176], resolution: [16], range: [2, 4, 8], channels: [3] },
-            { id: 2, hex: [0x02], value: 'Acc', name: 'accelerometer', unit: 'g', sample_rate: [26, 52, 104, 208, 416], resolution: [16], range: [2, 4, 8], channels: [3] },
-            { id: 3, hex: [0x03], value: 'PPI', name: 'pp interval', unit: 's' },
-            { id: 5, hex: [0x05], value: 'Gyr', name: 'gyroscope', unit: 'degrees/s', sample_rate: [26, 52, 104, 208, 416], resolution: [16], range: [2, 4, 8], channels: [3] },
-            { id: 6, hex: [0x06], value: 'Mag', name: 'magnetometer', unit: 'G', sample_rate: [26, 52, 104, 208, 416], resolution: [16], range: [2, 4, 8], channels: [3] },
-            { id: 9, hex: [0x09], value: 'SDK', name: 'SDK', unit: 'NA' },];
-        this.frameTypes = [
-            { id: 128, hex: [0x80], value: 'DELTA FRAME' }
-        ];
-        this.opCodes = [
-            { id: 1, hex: [0x01], value: 'get_measurement_settings' },
-            { id: 2, hex: [0x02], value: 'start_measurement' },
-            { id: 3, hex: [0x03], value: 'stop_measurement' },
-
-        ];
-        this.controlCodes = [
-            { id: 15, hex: [0x0F], value: 'control_point_read' },
-            { id: 240, hex: [0xF0], value: 'control_point_response' },
-        ];
-        this.settingTypes = [
-            { id: 0, hex: [0x00], value: 'sample_rate' },
-            { id: 1, hex: [0x01], value: 'resolution' },
-            { id: 2, hex: [0x02], value: 'range' },
-            { id: 4, hex: [0x04], value: 'channels' },
-        ]
+        this.errorTypes = {
+            0: 'SUCCESS',
+            1: 'ERROR INVALID OP CODE',
+            2: 'ERROR INVALID MEASUREMENT TYPE',
+            3: 'ERROR NOT SUPPORTED',
+            4: 'ERROR INVALID LENGTH',
+            5: 'ERROR INVALID PARAMETER',
+            6: 'ERROR ALREADY IN STATE',
+            7: 'ERROR INVALID RESOLUTION',
+            8: 'ERROR INVALID SAMPLE RATE',
+            9: 'ERROR INVALID RANGE',
+            10: 'ERROR INVALID MTU',
+            11: 'ERROR INVALID NUMBER OF CHANNELS',
+            12: 'ERROR INVALID STATE',
+            13: 'ERROR DEVICE IN CHARGER'
+        }
+        this.measTypes = {
+            1: { value: 'PPG', name: 'photoplethysmogram', unit: 'NA', sample_rate: [28, 44, 135, 176], resolution: [16] },
+            2: { value: 'Acc', name: 'accelerometer', unit: 'g', sample_rate: [26, 52, 104, 208, 416], resolution: [16], range: [2, 4, 8], channels: [3] },
+            3: { value: 'PPI', name: 'pp interval', unit: 's' },
+            5: { value: 'Gyr', name: 'gyroscope', unit: 'degrees/s', sample_rate: [26, 52, 104, 208, 416], resolution: [16], range: [2, 4, 8], channels: [3] },
+            6: { value: 'Mag', name: 'magnetometer', unit: 'G', sample_rate: [26, 52, 104, 208, 416], resolution: [16], range: [2, 4, 8], channels: [3] },
+            9: { value: 'SDK', name: 'SDK', unit: 'NA' },
+        };
+        this.frameTypes = {
+            128: 'delta_frame'
+        };
+        this.opCodes = {
+            1: 'get_measurement_settings',
+            2: 'start_measurement',
+            3: 'stop_measurement',
+        };
+        this.controlCodes = {
+            15: 'control_point_read',
+            240: 'control_point_response',
+        };
+        this.settingTypes = {
+            0: 'sample_rate',
+            1: 'resolution',
+            2: 'range',
+            4: 'channels',
+        };
         this.currentSetting = {
             sample_rate: 52,
             resolution: 16,
@@ -169,56 +170,57 @@ class ImuDevice {
                 return service.getCharacteristic(this.controlChUUID);
             })
             .then(characteristic => {
-                let measValue = this.measTypes.find(item => item.id === measId).value;
+                let measValue = imuDevice.measTypes[measId].value;
+                let actionId = getKeyByValue(imuDevice.opCodes, action);
                 console.log(`> request sent to ${action} type ${measValue}`);
                 let val;
                 switch (action) {
                     case 'get_measurement_settings':
-                        val = this.getMeasSettingsCommand(measId, action);
+                        val = this.getMeasSettingsCommand(measId, actionId);
                         break;
                     case 'start_measurement':
-                        val = this.getMeasStartCommand(measId, action, settings);
+                        val = this.getMeasStartCommand(measId, actionId, settings);
                         break;
                     case 'stop_measurement':
-                        val = this.getMeasStopCommand(measId, action);
+                        val = this.getMeasStopCommand(measId, actionId);
                         break;
                     default:
-                        val = this.getMeasSettingsCommand(measId, action);
+                        val = this.getMeasSettingsCommand(measId, actionId);
                 }
                 characteristic.writeValueWithResponse(val);
             })
     }
 
-    getMeasSettingsCommand(measId, action) {
+    getMeasSettingsCommand(measId, actionId) {
         let commandArray = Array(2);
-        commandArray[0] = this.opCodes.find(item => item.value === action).hex;
-        commandArray[1] = this.measTypes.find(item => item.id === measId).hex;
+        commandArray[0] = actionId; //how to access key from value??
+        commandArray[1] = measId;;
         return new Uint8Array(commandArray);
     }
 
-    getMeasStartCommand(measId, action, settings) {
+    getMeasStartCommand(measId, actionId, settings) {
         // [opCode, streamType, settingType1, len1, val1, val1, settingType2, len2, val2, val2, ...]
         let commandArray, commandView;
         if (measId == 9) {
             commandArray = new ArrayBuffer(2);
             commandView = new DataView(commandArray);
-            commandView.setUint8(0, this.opCodes.find(item => item.value === action).hex);
-            commandView.setUint8(1, this.measTypes.find(item => item.id === measId).hex);
+            commandView.setUint8(0, actionId);
+            commandView.setUint8(1, measId);
         } else {
             commandArray = new ArrayBuffer(17);
             commandView = new DataView(commandArray);
-            commandView.setUint8(0, this.opCodes.find(item => item.value === action).hex);
-            commandView.setUint8(1, this.measTypes.find(item => item.id === measId).hex);
-            commandView.setUint8(2, this.settingTypes.find(item => item.value === 'sample_rate').hex);
+            commandView.setUint8(0, actionId);
+            commandView.setUint8(1, measId);
+            commandView.setUint8(2, getKeyByValue(imuDevice.settingTypes, 'sample_rate'));
             commandView.setUint8(3, 0x01);
             commandView.setUint16(4, settings[0], true);
-            commandView.setUint8(6, this.settingTypes.find(item => item.value === 'resolution').hex);
+            commandView.setUint8(6, getKeyByValue(imuDevice.settingTypes, 'resolution'));
             commandView.setUint8(7, 0x01);
             commandView.setUint16(8, settings[1], true);
-            commandView.setUint8(10, this.settingTypes.find(item => item.value === 'range').hex);
+            commandView.setUint8(10, getKeyByValue(imuDevice.settingTypes, 'range'));
             commandView.setUint8(11, 0x01);
             commandView.setUint16(12, settings[2], true);
-            commandView.setUint8(14, this.settingTypes.find(item => item.value === 'channels').hex);
+            commandView.setUint8(14, getKeyByValue(imuDevice.settingTypes, 'channels'));
             commandView.setUint8(15, 0x01);
             commandView.setUint8(16, settings[3], true);
             imuDevice.currentSetting.sample_rate = settings[0];
@@ -232,11 +234,11 @@ class ImuDevice {
         return sendCommand;
     }
 
-    getMeasStopCommand(measId, action) {
+    getMeasStopCommand(measId, actionId) {
         // [opCode, streamType]
         let commandArray = Array(2);
-        commandArray[0] = this.opCodes.find(item => item.value === action).hex;
-        commandArray[1] = this.measTypes.find(item => item.id === measId).hex;
+        commandArray[0] = actionId;
+        commandArray[1] = measId;
         return new Uint8Array(commandArray);
     }
 
@@ -245,32 +247,64 @@ class ImuDevice {
     parseIMUData(event) {
         let value = event.target.value;
         value = value.buffer ? value : new DataView(value); // In Chrome 50+, a DataView is returned instead of an ArrayBuffer.
-        let valueHexString = byteArrayToHexString(value);
-        let measurementType = imuDevice.measTypes.find(item => item.id === value.getUint8(0)).value;
-        let frameType = imuDevice.frameTypes.find(item => item.id === value.getUint8(9)).value;
+
+        let measurementType = imuDevice.measTypes[value.getUint8(0)].value;
         let timestamp = value.getBigUint64(1, true)
-        console.log(`> ${measurementType} ${frameType} data received: ${valueHexString}`)
+        let frameType = imuDevice.frameTypes[value.getUint8(9)];
+        let frameSize = value.byteLength;
+        console.log(`> ${measurementType} ${frameType} data received length: ${frameSize} bytes at timestamp: ${timestamp}`)
+
         let imuMeasurements = [];
-        if (measurementType == 'Acc') {
-            let refSampleSize = imuDevice.currentSetting.resolution / 8 * imuDevice.currentSetting.channels;
-            let refSample = { timestamp: timestamp, x: value.getUint16(10, true), y: value.getUint16(12, true), z: value.getUint16(14, true), }
-            let deltaSize = value.getUint8(16);
-            let samplesCount = value.getUint8(17);
-            console.log(`>> refSampleSize: ${refSampleSize} | deltaSize: ${deltaSize} | samplesCount: ${samplesCount}`);
-            console.log(`>> refSample | timestamp: ${refSample.timestamp} | x: ${refSample.x} | y: ${refSample.y} | z: ${refSample.z}`)
-            for (let i = 0; i < samplesCount; i++) {
-                let indexFirstSample = 18;
-                let timeBetweenSamples = Math.round(1000000000 * (1 / imuDevice.currentSetting.sample_rate));
-                //This just works for 8bit sample size
-                let sample = {
-                    timestamp: timestamp - BigInt(timeBetweenSamples * (samplesCount - 1 - i)),
-                    x: value.getUint8(indexFirstSample + 3 * i) + refSample.x,
-                    y: value.getUint8(indexFirstSample + 3 * i + 1) + refSample.y,
-                    z: value.getUint8(indexFirstSample + 3 * i + 2) + refSample.z,
-                }
-                console.log(`>>> sample: ${i} | timestamp: ${sample.timestamp} | x: ${sample.x} | y: ${sample.y} | z: ${sample.z}`)
-                imuMeasurements.push(sample);
+        if ((measurementType == 'Acc' || measurementType == 'Gyr' || measurementType == 'Mag') && frameType == 'delta_frame') {
+
+            let numOfChannels = imuDevice.currentSetting.channels;
+            let refSampleSize = 2 * numOfChannels;
+            // ref sample is always full bytes, not according to documentation but according to https://github.com/polarofficial/polar-ble-sdk/issues/187
+            console.log(`>> refSampleSize: ${refSampleSize}`);
+            let refSample = {
+                timestamp: timestamp,
             }
+            let refSampleStr = '>> refSample | timestamp: ' + refSample.timestamp;
+            for (let i = 0; i < numOfChannels; i++) {
+                let channel = 'channel_' + i;
+                refSample[channel] = value.getUint16(10 + 2 * i, true);
+                refSampleStr += ' | ' + channel + ': ' + refSample[channel];
+            };
+            console.log(refSampleStr);
+
+            let offset = 10 + refSampleSize;
+            let frameSampleIndex = 0;
+
+            do {
+                let deltaSize = value.getUint8(offset);
+                let sampleCount = value.getUint8(offset + 1);
+                let deltaBytesCount = Math.ceil((sampleCount * deltaSize) * numOfChannels / 8);
+                console.log(`>> deltaSize: ${deltaSize} bits/value | sampleCount: ${sampleCount} samples | deltaBytesCount: ${deltaBytesCount} total bytes`);
+
+                let indexDeltaStart = offset + 2;
+                let indexDeltaStop = indexDeltaStart + deltaBytesCount;
+                let deltaData = value.buffer.slice(indexDeltaStart, indexDeltaStop);
+                let binDeltaData = bufferToBinString(deltaData);
+                for (let i = 0; i < sampleCount; i++) {
+                    let binSample = binDeltaData.slice(i);
+                    let sample = {
+                        id: frameSampleIndex,
+                        timestamp: timestamp,
+                    }
+                    let sampleStr = '>> sample | timestamp: ' + sample.timestamp;
+                    for (let j = 0; j < numOfChannels; j++) {
+                        let channel = 'channel_' + j;
+                        let channelSample = binSample.slice(j, deltaSize);
+                        sample[channel] = parseInt(channelSample.split("").reverse().join(""), 2) + refSample[channel];
+                        sampleStr += ' | ' + channel + ': ' + sample[channel];
+                    };
+                    console.log(sampleStr)
+                    imuMeasurements.push(sample);
+                    frameSampleIndex++;
+                }
+                offset = offset + 2 + deltaBytesCount;
+            } while (offset < value.byteLength);
+
             return imuMeasurements;
         }
         // if (dataType == 2) {
@@ -368,34 +402,35 @@ class ImuDevice {
         value = value.buffer ? value : new DataView(value); // In Chrome 50+, a DataView is returned instead of an ArrayBuffer.
         let valueHexString = byteArrayToHexString(value);
         let controlPoint = value.getUint8(0);
-        let controlAction = imuDevice.controlCodes.find(item => item.id === controlPoint).value;
+        let controlAction = imuDevice.controlCodes[controlPoint];
         console.log(`> response to ${controlAction}: ${valueHexString}`)
         if (controlAction == 'control_point_read') {
-            let servicesAvailable = decIntTobinString(value.getUint8(1));
+            let servicesAvailable = decIntToBinString(value.getUint8(1));
             [...servicesAvailable].slice().reverse().forEach(function (binary, measId) {
                 let measurementAvailable = parseInt(binary);
-                let measurement = imuDevice.measTypes.find(item => item.id === measId);
+                let measurement = imuDevice.measTypes[measId];
                 if (measurement === undefined) {
-                    console.log('>> measurement unknown');
+                    console.log('>> measurement unknown. so sorry.');
                     return;
                 }
                 if (measurementAvailable) {
-                    console.log(`>> measurement type ${measurement.value} available. subscribe to 0x0${measurement.hex}`);
+                    console.log(`>> measurement type ${measurement.value} available. subscribe to ${measId}.`);
                 } else {
                     console.log(`>> measurement type ${measurement.value} not available. so sorry.`);
                 }
-            })
+            });
+            updateIMUUI();
         } else if (controlAction == 'control_point_response') {
-            let opCode = imuDevice.opCodes.find(item => item.id === value.getUint8(1)).value;
-            let measType = imuDevice.measTypes.find(item => item.id === value.getUint8(2)).value;
-            let errorType = imuDevice.errorTypes.find(item => item.id === value.getUint8(3)).value;
+            let opCode = imuDevice.opCodes[value.getUint8(1)];
+            let measType = imuDevice.measTypes[value.getUint8(2)].value;
+            let errorType = imuDevice.errorTypes[value.getUint8(3)];
             console.log(`>> status of ${measType} request ${opCode}: ${errorType} `);
             if (opCode == 'get_measurement_settings' && errorType == 'SUCCESS') {
                 let index = 5;
                 let setting, settingSize;
-                do {
+                while (index < value.byteLength) {
                     let settingValues = [];
-                    setting = imuDevice.settingTypes.find(item => item.id === value.getUint8(index)).value;
+                    setting = imuDevice.settingTypes[value.getUint8(index)];
                     settingSize = value.getUint8(index + 1);
                     if (setting == 'channels') {
                         for (let i = 0; i < settingSize; i++) {
@@ -408,11 +443,10 @@ class ImuDevice {
                             i += 1;
                         }
                     }
-                    imuDevice.measTypes.find(item => item.value === measType)[setting] = settingValues;
+                    imuDevice.measTypes[value.getUint8(2)][setting] = settingValues;
                     console.log(`>> measurement setting: ${setting} | number of values: ${settingSize} | values: ${settingValues}`)
                     index += (2 + /*slide to next setting*/(settingSize * 2));
-                }
-                while (index < value.byteLength);
+                };
             }
         }
         else {

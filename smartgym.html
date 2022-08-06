@@ -241,21 +241,41 @@
         <div id="collapseIMU" class="collapse show" aria-labelledby="headingIMU">
             <div class="card-body">
                 <div class="row">
-                    <div class="col">
+                    <div class="col-3">
                         <h5 id="titleTextIMU" class="card-title">Scan for Bluetooth IMU sensors</h5>
                         <p id="statusTextIMU" class="card-text">No device connected</p>
                         <a id="connectButtonIMU" href="#" class="btn btn-primary">Connect</a>
                         <a id="disconnectButtonIMU" href="#" class="btn btn-primary">Disconnect</a>
                     </div>
-                    <div class="col-9">
-                        <button id="test0IMU">enable SDK</button>
-                        <button id="test0_1IMU">disable SDK</button>
-                        <button id="test1IMU">get settings</button>
-                        <button id="test2IMU">start data</button>
-                        <button id="test3IMU">stop data</button>
-                        <div id="canvasContainerIMU" class="card-body">
-                            <canvas id="canvasIMU">
-                            </canvas>
+                    <div id="containerIMU" class="col">
+                        <ul class="nav nav-pills mb-3" id="pills-tab-imu" role="tablist">
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link active" id="pills-chart-imu-tab" data-bs-toggle="pill"
+                                    data-bs-target="#pills-chart-imu" type="button" role="tab"
+                                    aria-controls="pills-chart-imu" aria-selected="true">Chart</button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link" id="pills-zones-imu-tab" data-bs-toggle="pill"
+                                    data-bs-target="#pills-zones-imu" type="button" role="tab"
+                                    aria-controls="pills-zones-imu" aria-selected="false">Zones</button>
+                            </li>
+                        </ul>
+                        <div class="tab-content" id="pills-tabContent-imu">
+                            <div class="tab-pane fade show active" id="pills-chart-imu" role="tabpanel"
+                                aria-labelledby="pills-chart-imu-tab">
+                                <div id="canvasIMU" class="myCanvas"></div>
+                            </div>
+                            <div class="tab-pane fade" id="pills-zones-imu" role="tabpanel"
+                                aria-labelledby="pills-zones-imu-tab">
+                                <div id="zonesIMU" class="myCanvas">
+                                    <input id="test0input">
+                                    <button id="test0IMU">enable SDK</button>
+                                    <button id="test0_1IMU">disable SDK</button>
+                                    <button id="test1IMU">get settings</button>
+                                    <button id="test2IMU">start data</button>
+                                    <button id="test3IMU">stop data</button>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -264,11 +284,16 @@
     </div>
     <div class="card">
         <h5 class="card-header" id="headingBle" data-bs-toggle="collapse" data-bs-target="#collapseBle"
-            aria-expanded="true" aria-controls="collapseBle">Discover services and characteristics</h5>
+            aria-expanded="true" aria-controls="collapseBle">Discover characteristics</h5>
         <div id="collapseBle" class="collapse show" aria-labelledby="headingBle">
             <div class="card-body">
                 <div class="row">
                     <div class="col">
+                        <h5 id="uuidTextBle" class="card-title">Enter service UUID</h5>
+                        <div class="input" style="width:50%; margin-bottom: 10px;">
+                            <input id="uuidInput" type="text" class="form-control" placeholder="UUID" aria-label="UUID"
+                                aria-describedby="basic-addon1">
+                        </div>
                         <h5 id="titleTextBle" class="card-title">Scan for Bluetooth devices</h5>
                         <p id="statusTextBle" class="card-text">No BLE device connected</p>
                         <a id="connectButtonBle" href="#" class="btn btn-primary">Connect</a>
@@ -340,11 +365,6 @@
                             </div>
                         </div>
                     </div>
-                    <div class="col-9">
-                        <div id="canvasContainerRecord" class="card-body">
-                            <canvas id="canvasRecord"></canvas>
-                        </div>
-                    </div>
                 </div>
             </div>
         </div>
@@ -366,7 +386,7 @@
     <script src="concept2pmDevice.js"></script>
     <script src="imuDevice.js"></script>
     <script src="bleDevice.js"></script>
-    <script src="converter.js"></script>
+    <script src="utils.js"></script>
     <script src="app.js"></script>
 
     <!-- jQuery first, then Popper.js, then Bootstrap JS -->

@@ -53,13 +53,14 @@ let connectButtonIMU = document.getElementById('connectButtonIMU');
 let disconnectButtonIMU = document.getElementById('disconnectButtonIMU');
 let titleTextIMU = document.getElementById('titleTextIMU');
 let statusTextIMU = document.getElementById("statusTextIMU");
-let canvasContainerIMU = document.getElementById("canvasContainerIMU");
+let containerIMU = document.getElementById("containerIMU");
 let canvasIMU = document.getElementById("canvasIMU");
 
 let connectButtonBle = document.getElementById('connectButtonBle');
 let disconnectButtonBle = document.getElementById('disconnectButtonBle');
 let titleTextBle = document.getElementById('titleTextBle');
 let statusTextBle = document.getElementById("statusTextBle");
+let uuidInput = document.getElementById("uuidInput");
 
 let titleTextRecord = document.getElementById('titleTextRecord');
 let statusTextRecord = document.getElementById('statusTextRecord');
@@ -135,14 +136,13 @@ containerConcept2pm.style.display = "none";
 
 statusTextIMU.textContent = "No IMU sensor connected";
 titleTextIMU.textContent = "Scan for Bluetooth IMU sensor";
-canvasContainerIMU.style.display = "none";
+containerIMU.style.display = "none";
 
 statusTextBle.textContent = "No BLE device connected";
 titleTextBle.textContent = "Scan for Bluetooth devices";
 
 statusTextRecord.textContent = "Not recording";
 titleTextRecord.textContent = "Record and save data to .json file";
-canvasContainerRecord.style.display = "none";
 
 // google chart
 google.charts.load('current', {
@@ -315,11 +315,11 @@ document.getElementById('test0_1IMU').addEventListener('click', function () {
   imuDevice.sendCommand(9, 'stop_measurement', null);
 });
 document.getElementById('test1IMU').addEventListener('click', function () {
-  imuDevice.sendCommand(2, 'get_measurement_settings', null);
+  let measval = parseInt(document.getElementById('test0input').value);
+  imuDevice.sendCommand(measval, 'get_measurement_settings', null);
 });
 document.getElementById('test2IMU').addEventListener('click', function () {
-
-  imuDevice.sendCommand(2, 'start_measurement', [52, 16, 8, 3]);
+  imuDevice.sendCommand(6, 'start_measurement', [50, 16, 50, 3]);
 });
 document.getElementById('test3IMU').addEventListener('click', function () {
   imuDevice.sendCommand(2, 'stop_measurement');
@@ -523,12 +523,13 @@ function updateDisconnectedConcept2pmUI() {
 function updateDisconnectedIMUUI() {
   statusTextIMU.textContent = "No IMU sensor connected";
   titleTextIMU.textContent = "Scan for Bluetooth IMU sensor";
-  canvasContainerIMU.style.display = "none";
+  containerIMU.style.display = "none";
 }
 
 function updateDisconnectedBleUI() {
   statusTextBle.textContent = "No BLE device connected";
   titleTextBle.textContent = "Scan for Bluetooth devices";
+  $("#uuidInput").removeAttr('disabled');
 }
 
 function updateTreadmillUI(treadmillMeasurement) {
@@ -556,14 +557,14 @@ function updateHRUI(heartRateMeasurement) {
   console.log('HR array length: ', heartRateMeasurements.length);
 }
 
-function updateIMUUI(imuMeasurement) {
+function updateIMUUI() {
   //UI
   statusTextIMU.innerHTML = `no measurement yet`;
   titleTextIMU.textContent = "Connected to: " + imuDevice.getDeviceName();
   containerIMU.style.display = "block";
-  //save results to lists
-  imuMeasurements.push(imuMeasurement);
-  console.log('IMU array length: ', imuMeasurements.length);
+  // //save results to lists
+  // imuMeasurements.push(imuMeasurement);
+  // console.log('IMU array length: ', imuMeasurements.length);
 }
 
 function updateConcept2pmUI(concept2pmAddMeasurement) {
@@ -579,7 +580,7 @@ function updateConcept2pmUI(concept2pmAddMeasurement) {
 }
 
 function updateBleUI(response){
-  statusTextBle.textContent = response;
+  statusTextBle.innerHTML = response;
   titleTextBle.textContent = "Connected to: " + bleDevice.getDeviceName();
 }
 

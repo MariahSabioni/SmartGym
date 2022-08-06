@@ -10,7 +10,14 @@ class BleDevice {
     }
 
     connect() {
-        return navigator.bluetooth.requestDevice({acceptAllDevices: true,})
+        let serviceUUID = this.getAndCheckUUID();
+        if (serviceUUID == null) {
+            return;
+        }
+        return navigator.bluetooth.requestDevice({
+            acceptAllDevices: true,
+            optionalServices: [serviceUUID],
+        })
             .then(device => {
                 this.device = device;
                 device.addEventListener('gattserverdisconnected', this.onDisconnected);
@@ -27,32 +34,50 @@ class BleDevice {
                     } else {
                         console.log('could not connect');
                         showToast("Connection to BLE device failed. Try again.", "BLE device");
-                        //updateDisconnectedHRUI();
+                        updateDisconnectedBleUI();
                     }
                 }
             })
             .then(server => {
                 this.server = server;
-                this.findAllCharacteristics(server);
+                this.findAllCharacteristics(server, serviceUUID);
             })
     }
 
-    findAllCharacteristics(server) {
-        let response;
-        server.getPrimaryServices()
+    getAndCheckUUID() {
+        //validate and get UUID input field
+        let uuid = uuidInput.value;
+        if (uuid == "" || uuid == undefined) {
+            console.log('empty input');
+            showToast("provide a service UUID", "BLE device");
+            return null;
+        } else {
+            console.log('correct input')
+        }
+        return uuid.toLowerCase();
+    }
+
+    findAllCharacteristics(server, serviceUUID) {
+        $("#uuidInput").attr('disabled', 'disabled');
+        let response = 'Services & Characteristics <br />';
+        server.getPrimaryServices(serviceUUID)
             .then(services => {
                 console.log('Getting Characteristics...');
                 let queue = Promise.resolve();
                 services.forEach(service => {
                     queue = queue.then(_ => service.getCharacteristics().then(characteristics => {
+                        console.log('> Service: ' + service.uuid);
                         response = response + '> Service: ' + service.uuid + '<br />';
                         characteristics.forEach(characteristic => {
-                           response = response + '>> Characteristic: ' + characteristic.uuid + ' ' +
+                            console.log('>> Characteristic: ' + characteristic.uuid + ' ' +
+                                bleDevice.getSupportedProperties(characteristic));
+                            response = response + '>> Characteristic: ' + characteristic.uuid + ' ' +
                                 this.getSupportedProperties(characteristic) + '<br />';
                         });
+                        console.log(response);
+                        updateBleUI(response);
                     }));
                 });
-                updateBleUI(response);
                 return queue;
             })
             .catch(error => {
@@ -83,9 +108,11 @@ class BleDevice {
         }
         this.device.removeEventListener('gattserverdisconnected', this.onDisconnected);
         this.device.gatt.disconnect();
-        for (var key in window.heartRateDevice) {
-            window.heartRateDevice[key] = null;
-        };
-        updateDisconnectedHRUI();
+        updateDisconnectedBleUI();
+    }
+
+    /* UTILS */
+    getDeviceName() {
+        return this.device.name;
     }
 }

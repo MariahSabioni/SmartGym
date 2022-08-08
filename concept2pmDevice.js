@@ -248,9 +248,8 @@ class Concept2pmDevice {
         console.log('"' + device.name + '" bluetooth device disconnected');
         showToast("Connection to concept2-PM5 lost. Try again.", "Fitness machine device");
         updateDisconnectedConcept2pmUI();
-        concept2pmDevice.reset();
         resetMeasurements(false, false, true);
-        drawChartConcept2PM();
+        drawChartConcept2pm();
     }
 
     disconnect() {
@@ -261,21 +260,8 @@ class Concept2pmDevice {
         this.device.removeEventListener('gattserverdisconnected', this.onDisconnected);
         this.device.gatt.disconnect();
         updateDisconnectedConcept2pmUI();
-        this.reset();
         resetMeasurements(false, false, true);
         drawChartConcept2pm();
-    }
-
-    reset() {
-        this.device = null;
-        this.server = null;
-        this.discoveryUUID = 'ce060000-43e5-11e4-916c-0800200c9a66'; //discovery service
-        this.serviceUUID = "ce060030-43e5-11e4-916c-0800200c9a66"; //rowing service
-        //characteristics
-        this.dataChUUID = "ce060031-43e5-11e4-916c-0800200c9a66"; //general status characteristic
-        this.addDataChUUID = "ce060032-43e5-11e4-916c-0800200c9a66"; //additional status characteristic
-        this.addData2ChUUID = "ce060033-43e5-11e4-916c-0800200c9a66"; //additional status characteristic 2
-        this.controlChUUID = "ce060020-43e5-11e4-916c-0800200c9a66";
     }
 
     /* Utils */

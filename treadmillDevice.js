@@ -79,7 +79,6 @@ class TreadmillDevice {
         console.log('"' + device.name + '" bluetooth device disconnected');
         showToast("Connection to treadmill lost. Try again.", "Treadmill device");
         updateDisconnectedTreadmillUI();
-        treadmillDevice.reset();
         resetMeasurements(false, true, false);
         //chartTreadmill.clear(); //TODO test if this works
         drawChartTreadmill();
@@ -93,18 +92,8 @@ class TreadmillDevice {
         this.device.removeEventListener('gattserverdisconnected', this.onDisconnected);
         this.device.gatt.disconnect();
         updateDisconnectedTreadmillUI();
-        this.reset();
         resetMeasurements(false, true, false);
         drawChartTreadmill();
-    }
-
-    reset() {
-        this.device = null;
-        this.server = null;
-        this.serviceUUID = '00001826-0000-1000-8000-00805f9b34fb';
-        //characteristics
-        this.dataChUUID = "00002acd-0000-1000-8000-00805f9b34fb";
-        this.controlChUUID = "00002ad9-0000-1000-8000-00805f9b34fb";
     }
 
     changeTreadmillStatus(action) {

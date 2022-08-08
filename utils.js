@@ -49,3 +49,8 @@ function bufferToBinString(buffer) {
 function getKeyByValue(object, value) {
     return Object.keys(object).find(key => object[key] === value);
 }
+
+//get object key from property value
+function getKeyByPropValue(object, value, property) {
+    return Object.keys(object).find(key => object[key][property] === value);
+}

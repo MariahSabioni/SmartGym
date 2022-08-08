@@ -99,6 +99,7 @@ class BleDevice {
         let device = event.target;
         console.log('"' + device.name + '" bluetooth device disconnected');
         showToast("Connection to BLE device lost. Try again.", "BLE device");
+        updateDisconnectedBleUI();
     }
 
     disconnect() {

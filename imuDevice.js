@@ -30,11 +30,11 @@ class ImuDevice {
             13: 'ERROR DEVICE IN CHARGER'
         }
         this.measTypes = {
-            1: { value: 'PPG', name: 'photoplethysmogram', unit: 'NA', sample_rate: [28, 44, 135, 176], resolution: [16] },
-            2: { value: 'Acc', name: 'accelerometer', unit: 'g', sample_rate: [26, 52, 104, 208, 416], resolution: [16], range: [2, 4, 8], channels: [3] },
+            1: { value: 'PPG', name: 'photoplethysmogram', unit: 'NA', sample_rate: [135], resolution: [22], range: ['N/A'], channels: [4] },
+            2: { value: 'Acc', name: 'accelerometer', unit: 'g', sample_rate: [52], resolution: [16], range: [8], channels: [3] },
             3: { value: 'PPI', name: 'pp interval', unit: 's' },
-            5: { value: 'Gyr', name: 'gyroscope', unit: 'degrees/s', sample_rate: [26, 52, 104, 208, 416], resolution: [16], range: [2, 4, 8], channels: [3] },
-            6: { value: 'Mag', name: 'magnetometer', unit: 'G', sample_rate: [26, 52, 104, 208, 416], resolution: [16], range: [2, 4, 8], channels: [3] },
+            5: { value: 'Gyr', name: 'gyroscope', unit: 'degrees/s', sample_rate: [52], resolution: [16], range: [2000], channels: [3] },
+            6: { value: 'Mag', name: 'magnetometer', unit: 'G', sample_rate: [50], resolution: [16], range: [50], channels: [3] },
             9: { value: 'SDK', name: 'SDK', unit: 'NA' },
         };
         this.frameTypes = {
@@ -68,7 +68,7 @@ class ImuDevice {
     connect() {
         return navigator.bluetooth.requestDevice({
             filters: [{ namePrefix: "Polar Sense" }],
-            optionalServices: [this.serviceUUID],
+            optionalServices: [this.serviceUUID, 'heart_rate'],
         })
             .then(device => {
                 this.device = device;
@@ -134,14 +134,50 @@ class ImuDevice {
             });
     }
 
+    findHeartRateCharacteristic() {
+        let server = this.server;
+        return server.getPrimaryService('heart_rate')
+            .then(service => {
+                service.getCharacteristic('heart_rate_measurement')
+                    .then(characteristic => {
+                        console.log('characteristic found: ', characteristic);
+                        return characteristic.startNotifications();
+                    })
+                    .then(characteristic => {
+                        characteristic.addEventListener('characteristicvaluechanged', this.parseHeartRate);
+                        console.log('> start notifications for HR');
+                    })
+                    .catch(error => {
+                        console.log(error);
+                    });
+            });
+    }
+
+    stopHeartRateCharacteristic() {
+        let server = this.server;
+        return server.getPrimaryService('heart_rate')
+            .then(service => {
+                service.getCharacteristic('heart_rate_measurement')
+                    .then(characteristic => {
+                        return characteristic.stopNotifications()
+                    })
+                    .then(characteristic => {
+                        characteristic.removeEventListener('characteristicvaluechanged', this.parseHeartRate);
+                        console.log('> stop notifications for HR');
+                    })
+                    .catch(error => {
+                        console.log(error);
+                    });
+            });
+    }
+
     onDisconnected(event) {
         let device = event.target;
         console.log('"' + device.name + '" bluetooth device disconnected');
         showToast("Connection to IMU lost. Try again.", "IMU device");
         updateDisconnectedIMUUI();
-        // imuDevice.reset();
         // resetMeasurements(false, true, false);
-        // drawChartTreadmill();
+        // drawChartImu();
     }
 
     disconnect() {
@@ -152,9 +188,8 @@ class ImuDevice {
         this.device.removeEventListener('gattserverdisconnected', this.onDisconnected);
         this.device.gatt.disconnect();
         updateDisconnectedIMUUI();
-        // this.reset();
         // resetMeasurements(false, true, false);
-        // drawChartTreadmill();
+        // drawChartImu();
     }
 
     reset() {
@@ -163,14 +198,15 @@ class ImuDevice {
 
     /* FUNCTIONS TO SEND COMMANDS TO CONTROL CHARACTERISTIC*/
 
-    sendCommand(measId, action, settings) {
+    sendCommand(measValue, action, settings) {
         let server = this.server;
+        let measId = getKeyByPropValue(this.measTypes, measValue, 'value');
         server.getPrimaryService(this.serviceUUID)
             .then(service => {
                 return service.getCharacteristic(this.controlChUUID);
             })
             .then(characteristic => {
-                let measValue = imuDevice.measTypes[measId].value;
+                //let measValue = imuDevice.measTypes[measId].value;
                 let actionId = getKeyByValue(imuDevice.opCodes, action);
                 console.log(`> request sent to ${action} type ${measValue}`);
                 let val;
@@ -193,7 +229,7 @@ class ImuDevice {
 
     getMeasSettingsCommand(measId, actionId) {
         let commandArray = Array(2);
-        commandArray[0] = actionId; //how to access key from value??
+        commandArray[0] = actionId;
         commandArray[1] = measId;;
         return new Uint8Array(commandArray);
     }
@@ -202,11 +238,32 @@ class ImuDevice {
         // [opCode, streamType, settingType1, len1, val1, val1, settingType2, len2, val2, val2, ...]
         let commandArray, commandView;
         if (measId == 9) {
+            //enable SDK
             commandArray = new ArrayBuffer(2);
             commandView = new DataView(commandArray);
             commandView.setUint8(0, actionId);
             commandView.setUint8(1, measId);
-        } else {
+        } else if (measId == 1) {
+            //PPG
+            commandArray = new ArrayBuffer(13);
+            commandView = new DataView(commandArray);
+            commandView.setUint8(0, actionId);
+            commandView.setUint8(1, measId);
+            commandView.setUint8(2, getKeyByValue(imuDevice.settingTypes, 'sample_rate'));
+            commandView.setUint8(3, 0x01);
+            commandView.setUint16(4, settings[0], true);
+            commandView.setUint8(6, getKeyByValue(imuDevice.settingTypes, 'resolution'));
+            commandView.setUint8(7, 0x01);
+            commandView.setUint16(8, settings[1], true);
+            commandView.setUint8(10, getKeyByValue(imuDevice.settingTypes, 'channels'));
+            commandView.setUint8(11, 0x01);
+            commandView.setUint8(12, settings[3], true);
+            imuDevice.currentSetting.sample_rate = settings[0];
+            imuDevice.currentSetting.resolution = settings[1];
+            imuDevice.currentSetting.range = null;
+            imuDevice.currentSetting.channels = settings[3];
+        }
+        else {
             commandArray = new ArrayBuffer(17);
             commandView = new DataView(commandArray);
             commandView.setUint8(0, actionId);
@@ -255,7 +312,7 @@ class ImuDevice {
         console.log(`> ${measurementType} ${frameType} data received length: ${frameSize} bytes at timestamp: ${timestamp}`)
 
         let imuMeasurements = [];
-        if ((measurementType == 'Acc' || measurementType == 'Gyr' || measurementType == 'Mag') && frameType == 'delta_frame') {
+        if ((measurementType == 'Acc' || measurementType == 'Gyr' || measurementType == 'Mag' || measurementType == 'PPG') && frameType == 'delta_frame') {
 
             let numOfChannels = imuDevice.currentSetting.channels;
             let refSampleSize = 2 * numOfChannels;
@@ -307,92 +364,45 @@ class ImuDevice {
 
             return imuMeasurements;
         }
-        // if (dataType == 2) {
-        //     //accelerometer
-        //     frame_type = value.getUint8(8);
-        //     resolution = (frame_type + 1) * 8;
-        //     step = resolution / 8;
-        //     if (frame_type == 1) {
-        //         samples = new Int16Array(value.slice(10,))
-        //         npoints = samples.byteLength / 2;
-        //         ACC = createArray(npoints, 3);
-        //         for (offset = 0; offset < npoints; offset += 3) { i = offset / 3; ACC[0][i] = samples[offset]; ACC[1][i] = samples[offset + 1]; ACC[2][i] = samples[offset + 2]; }
-        //         ACCtime = fillTimeArray(dataType, devicename, data.slice(1, 9), dataTime, ACC[0].length, acc_timestep);
-        //         for (i = 0; i < ACC[0].length; i++) { ACC[3][i] = Math.round(Math.sqrt(ACC[0][i] ** 2 + ACC[1][i] ** 2 + ACC[2][i] ** 2)) }
-        //     } else {
-        //         //if 128 frame type
-        //         updateacc = true;
-        //         ACC = completeDeltaFrame(data, 3, 2); //3 channels, 2 bytes (16bit)
-        //         ACCtime = fillTimeArray(dataType, devicename, data.slice(1, 9), dataTime, ACC[0].length, (1000 / acc2_rate));
-        //         ACC.push([])
-        //         for (i = 0; i < ACC[0].length; i++) { ACC[3][i] = Math.round(Math.sqrt(ACC[0][i] ** 2 + ACC[1][i] ** 2 + ACC[2][i] ** 2) / 16); }
-        //     }
-        // }
 
-        // if (dataType == 0) {
-        //     //ECG
-        //     samples = new Uint8Array(data.slice(10,))
-        //     npoints = samples.byteLength / 3; ECGdata = createArray(npoints);
-        //     for (offset = 0; offset < samples.byteLength; offset += 3) { i = offset / 3; ECGdata[i] = WordstoSignedInteger(samples.slice(offset, offset + 2), 8); }
-        //     ECGtime = fillTimeArray(dataType, devicename, data.slice(1, 9), dataTime, npoints, ecg_timestep);
-        //     pushData(['ECG'], ECGtime, [ECGdata]);
-        //     resolution = (layoutCombined.yaxis2.range[1] - layoutCombined.yaxis2.range[0]) / (document.getElementById("Combined").clientHeight - 100);
-        //     Reduce(dataobject, 'ECG', 'ECG_reduced', resolution)
-        //     detectQRS(dataobject)
-        //     updatecombined = true;
-        //     //traces.ECG.x.push(...ECGtime);traces.ECG.y.push(...ECGdata);
-        //     //Plotly.newPlot('ECGgraph', [traces.ECG], layoutECG);     
-        // }
-        // if (dataType == 1) {
-        //     //PPG
-        //     PPGsum = []; PPGsumfilter = [];
-        //     NewPPG = completeDeltaFrame(data, 4, 3);//4 channels
-        //     npoints = NewPPG[0].length;
-        //     for (i = 0; i < npoints; i++) { PPGsum[i] = NewPPG[0][i] + NewPPG[1][i] + NewPPG[2][i] }
-        //     PPGtime = fillTimeArray(dataType, devicename, data.slice(1, 9), dataTime, npoints, 1000 / samplerate);
-        //     //console.log(1000/samplerate,a)
-        //     PPGsumfilter = HPfilter(PPGsum, last_incom, last_filter)
-        //     last_filter = PPGsumfilter.slice(-1)[0]; last_incom = PPGsum.slice(-1)[0]
-        //     // ... is the spread operator which turns arrays into values
-        //     //if(time>(intime+duration)){intime=time;traces.PPGsum.x=[];traces.PPGsum.y=[];}
-        //     //traces['PPG0'].x.push(...PPGtime); traces['PPG0'].y.push(...NewPPG[0]);
-        //     //traces['PPG1'].x.push(...PPGtime); traces['PPG1'].y.push(...NewPPG[1]);   
-        //     //traces['PPG2'].x.push(...PPGtime); traces['PPG2'].y.push(...NewPPG[2]);
-        //     //traces['PPG3'].x.push(...PPGtime); traces['PPG3'].y.push(...NewPPG[3]);
-        //     pushData(['PPGsum'], PPGtime, [PPGsumfilter]);
-        //     //traces.PPGsum.x.push(...PPGtime); traces.PPGsum.y.push(...PPGsumfilter);
-        //     //layoutPPG.xaxis={range:[intime,intime+duration]};
-        //     //toplot=[traces.PPGsum]//[traces['PPG0'],traces['PPG1'], traces['PPG2'],traces['PPG3'],traces.PPGsum]
-        //     //layoutPPG.yaxis.range=[-yscale,yscale];
-        //     //Plotly.newPlot('PPGgraph', toplot, layoutPPG);
-
-        //     smoothPPG(dataobject, [0.025, 0.04, 0.07, 0.13, 0.2, 0.22, 0.2, 0.13, 0.07, 0.04, 0.025])
-        //     //smoothPPG(dataobject,[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1])
-        //     //linearReduce(dataobject,'PPGsum_f','PPG_f_reduced',(yscale*2)/50)
-        //     resolution = (layoutCombined.yaxis.range[1] - layoutCombined.yaxis.range[0]) / document.getElementById("Combined").clientHeight;
-        //     Reduce(dataobject, 'PPGsum_f', 'PPG_f_reduced', resolution);
-        //     ratePPG(dataobject)
-        //     Reduce(dataobject, 'PPGrate', 'PPGrate_reduced', resolution);
-        //     detectPPGpeak(dataobject);
-        //     updatecombined = true;
-        // }
-
-
-        // let result = {};
-        // let index_speed = 2;
-        // result.speed = Number(value.getUint16(index_speed, /*littleEndian=*/true) / 100).toFixed(1);
-        // let index_inclination = 9;
-        // result.inclination = Number(value.getInt16(index_inclination, /*littleEndian=*/true) / 10).toFixed(1);
-        // let index_distance = 6;
-        // result.distance = ((value.getUint16(index_distance, true)) << 8) + value.getUint8(2 + index_distance, true);
-        // let index_time = 14;
-        // let seconds = value.getUint16(index_time, /*littleEndian=*/true);
-        // result.duration = seconds * 1000;
-        // result.prettyDuration = new Date(seconds * 1000).toISOString().slice(11, 19);
-        // result.time = Date.now();
-        // console.log(`timestamp: ${result.time} | Treadmill: ${result.speed}km/h | ${result.inclination}% | ${result.distance}m | ${result.prettyDuration}`)
-        // updateTreadmillUI(result);
+        // updateImuDataUI(result);
         // startLoopUpdate();
+    }
+
+    parseHeartRate(event) {
+        let value = event.target.value;
+        value = value.buffer ? value : new DataView(value); // In Chrome 50+, a DataView is returned instead of an ArrayBuffer.
+        let flags = value.getUint8(0);
+        let rate16Bits = flags & 0x1;
+        let result = {};
+        let index = 1;
+        if (rate16Bits) {
+            result.heartRate = value.getUint16(index, /*littleEndian=*/true);
+            index += 2;
+        } else {
+            result.heartRate = value.getUint8(index);
+            index += 1;
+        }
+        let contactDetected = flags & 0x2;
+        let contactSensorPresent = flags & 0x4;
+        if (contactSensorPresent) {
+            result.contactDetected = !!contactDetected;
+        }
+        let energyPresent = flags & 0x8;
+        if (energyPresent) {
+            result.energyExpended = value.getUint16(index, /*littleEndian=*/true);
+            index += 2;
+        }
+        let rrIntervalPresent = flags & 0x10;
+        if (rrIntervalPresent) {
+            let rrIntervals = [];
+            for (; index + 1 < value.byteLength; index += 2) {
+                rrIntervals.push(value.getUint16(index, /*littleEndian=*/true));
+            }
+            result.rrIntervals = rrIntervals;
+        }
+        result.time = Date.now();
+        console.log(`>> sample | timestamp: ${result.time}| HR: ${result.heartRate}bpm`);
     }
 
     /* FUNCTIONS TO READ RESPONSES FROM CONTROL CHARACTERISTIC*/
@@ -422,7 +432,8 @@ class ImuDevice {
             updateIMUUI();
         } else if (controlAction == 'control_point_response') {
             let opCode = imuDevice.opCodes[value.getUint8(1)];
-            let measType = imuDevice.measTypes[value.getUint8(2)].value;
+            let measId = value.getUint8(2);
+            let measType = imuDevice.measTypes[measId].value;
             let errorType = imuDevice.errorTypes[value.getUint8(3)];
             console.log(`>> status of ${measType} request ${opCode}: ${errorType} `);
             if (opCode == 'get_measurement_settings' && errorType == 'SUCCESS') {
@@ -443,10 +454,11 @@ class ImuDevice {
                             i += 1;
                         }
                     }
-                    imuDevice.measTypes[value.getUint8(2)][setting] = settingValues;
+                    imuDevice.measTypes[measId][setting] = settingValues;
                     console.log(`>> measurement setting: ${setting} | number of values: ${settingSize} | values: ${settingValues}`)
                     index += (2 + /*slide to next setting*/(settingSize * 2));
                 };
+                updateImuSettingsUI(measType, measId);
             }
         }
         else {

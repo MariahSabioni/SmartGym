@@ -55,6 +55,10 @@ let titleTextIMU = document.getElementById('titleTextIMU');
 let statusTextIMU = document.getElementById("statusTextIMU");
 let containerIMU = document.getElementById("containerIMU");
 let canvasIMU = document.getElementById("canvasIMU");
+let checkboxAcc = document.getElementById("checkboxAcc");
+let containerAccSettings = document.getElementById("containerAccSettings");
+let switchHR = document.getElementById("switchHR");
+let switchSDK = document.getElementById("switchSDK");
 
 let connectButtonBle = document.getElementById('connectButtonBle');
 let disconnectButtonBle = document.getElementById('disconnectButtonBle');
@@ -308,21 +312,49 @@ selectionClickable.addEventListener('change', function () {
     showConcept2pmCanva();
   }
 });
-document.getElementById('test0IMU').addEventListener('click', function () {
-  imuDevice.sendCommand(9, 'start_measurement', null);
+switchSDK.addEventListener('change', function () {
+  if (switchSDK.checked) {
+    imuDevice.sendCommand('SDK', 'start_measurement', null);
+  } else {
+    imuDevice.sendCommand('SDK', 'stop_measurement', null);
+  }
 });
-document.getElementById('test0_1IMU').addEventListener('click', function () {
-  imuDevice.sendCommand(9, 'stop_measurement', null);
+let checkboxes = ['checkboxAcc', 'checkboxGyr', 'checkboxMag', 'checkboxPPG'];
+checkboxes.forEach(function (myCheckbox) {
+  let meas = myCheckbox.slice(8);
+  document.getElementById(myCheckbox).addEventListener('click', function () {
+    if (this.checked) {
+      imuDevice.sendCommand(meas, 'get_measurement_settings', null);
+    }
+  });
 });
-document.getElementById('test1IMU').addEventListener('click', function () {
-  let measval = parseInt(document.getElementById('test0input').value);
-  imuDevice.sendCommand(measval, 'get_measurement_settings', null);
+// checkboxAcc.addEventListener('click', function () {
+//   if (checkboxAcc.checked) {
+//     imuDevice.sendCommand('Acc', 'get_measurement_settings', null);
+//   }
+// });
+let switches = ['switchAcc', 'switchGyr', 'switchMag', 'switchPPG'];
+switches.forEach(function (mySwitch) {
+  let meas = mySwitch.slice(6);
+  document.getElementById(mySwitch).addEventListener('change', function () {
+    if (this.checked) {
+      let requestedSettings = [], settingsSelects = [];
+      settingsSelects = [meas + 'sample_rate', meas + 'resolution', meas + 'range', meas + 'channels'];
+      settingsSelects.forEach(function (select) {
+        requestedSettings.push(document.getElementById(select).value);
+      });
+      imuDevice.sendCommand(meas, 'start_measurement', requestedSettings);
+    } else {
+      imuDevice.sendCommand(meas, 'stop_measurement', null);
+    }
+  });
 });
-document.getElementById('test2IMU').addEventListener('click', function () {
-  imuDevice.sendCommand(6, 'start_measurement', [50, 16, 50, 3]);
-});
-document.getElementById('test3IMU').addEventListener('click', function () {
-  imuDevice.sendCommand(2, 'stop_measurement');
+switchHR.addEventListener('change', function () {
+  if (switchHR.checked) {
+    imuDevice.findHeartRateCharacteristic();
+  } else {
+    imuDevice.stopHeartRateCharacteristic();
+  }
 });
 
 function showTreadmillCanva() {
@@ -503,30 +535,35 @@ function updateChartAndRecording() {
 }
 
 function updateDisconnectedHRUI() {
+  heartRateDevice = new HeartRateDevice();
   statusTextHR.textContent = "No HR sensor connected";
   titleTextHR.textContent = "Scan for Bluetooth HR sensor";
   containerHR.style.display = "none";
 }
 
 function updateDisconnectedTreadmillUI() {
+  treadmillDevice = new TreadmillDevice();
   statusTextTreadmill.textContent = "No treadmill connected";
   titleTextTreadmill.textContent = "Scan for Bluetooth treadmill";
   containerTreadmill.style.display = "none";
 }
 
 function updateDisconnectedConcept2pmUI() {
+  concept2pmDevice = new Concept2pmDevice();
   statusTextConcept2pm.textContent = "No Concept2 PM connected";
   titleTextConcept2pm.textContent = "Scan for Bluetooth Concept2 PM";
   containerConcept2pm.style.display = "none";
 }
 
 function updateDisconnectedIMUUI() {
+  imuDevice = new ImuDevice();
   statusTextIMU.textContent = "No IMU sensor connected";
   titleTextIMU.textContent = "Scan for Bluetooth IMU sensor";
   containerIMU.style.display = "none";
 }
 
 function updateDisconnectedBleUI() {
+  bleDevice = new BleDevice();
   statusTextBle.textContent = "No BLE device connected";
   titleTextBle.textContent = "Scan for Bluetooth devices";
   $("#uuidInput").removeAttr('disabled');
@@ -559,7 +596,7 @@ function updateHRUI(heartRateMeasurement) {
 
 function updateIMUUI() {
   //UI
-  statusTextIMU.innerHTML = `no measurement yet`;
+  statusTextIMU.innerHTML = `Subscribe to a data stream to receive data.`;
   titleTextIMU.textContent = "Connected to: " + imuDevice.getDeviceName();
   containerIMU.style.display = "block";
   // //save results to lists
@@ -579,9 +616,25 @@ function updateConcept2pmUI(concept2pmAddMeasurement) {
   console.log('Concept2 PM array length: ', concept2pmAddMeasurements.length);
 }
 
-function updateBleUI(response){
+function updateBleUI(response) {
   statusTextBle.innerHTML = response;
   titleTextBle.textContent = "Connected to: " + bleDevice.getDeviceName();
+}
+
+function updateImuSettingsUI(measType, measId) {
+  Object.values(imuDevice.settingTypes).forEach(settingValue => {
+    let dropdownId = measType + settingValue;
+    [...document.getElementById(dropdownId).options].forEach(o => o.remove());
+    let settingList = imuDevice.measTypes[measId][settingValue];
+    Object.values(settingList).forEach(setting => {
+      var option = document.createElement("option");
+      option.setAttribute("value", setting);
+      var optionName = document.createTextNode(setting);
+      option.appendChild(optionName);
+      var currentOptions = document.querySelectorAll(dropdownId.id);
+      document.getElementById(dropdownId).appendChild(option);
+    });
+  });
 }
 
 function updateConcept2pmMeasurements(concept2pmMeasurement) {

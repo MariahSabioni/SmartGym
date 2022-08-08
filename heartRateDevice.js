@@ -58,7 +58,6 @@ class HeartRateDevice {
         let device = event.target;
         console.log('"' + device.name + '" bluetooth device disconnected');
         showToast("Connection to HR sensor lost. Try again.", "Heart rate sensor");
-        this.reset();
         resetMeasurements(true, false, false);
         drawChartHR();
     }
@@ -71,14 +70,8 @@ class HeartRateDevice {
         this.device.removeEventListener('gattserverdisconnected', this.onDisconnected);
         this.device.gatt.disconnect();
         updateDisconnectedHRUI();
-        this.reset();
         resetMeasurements(true, false, false);
         drawChartHR();
-    }
-
-    reset() {
-        this.device = null;
-        this.server = null;
     }
 
     /* Utils */

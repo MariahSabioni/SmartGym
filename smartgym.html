@@ -72,7 +72,7 @@
             style="display: flex; align-items: center;">
             <div style="width:auto; float:left; margin-right: 10px; height: 100%;">Fitness machine</div>
             <select id="selectionClickable" class="form-select" aria-label="select" style="width:auto; ">
-                <option value="0" selected>Treadmill</option>
+                <option value="0" selected>FTMS Treadmill</option>
                 <option value="1">Concept2 PM5</option>
             </select>
         </h5>
@@ -237,7 +237,7 @@
     </div>
     <div class="card">
         <h5 class="card-header" id="headingIMU" data-bs-toggle="collapse" data-bs-target="#collapseIMU"
-            aria-expanded="true" aria-controls="collapseIMU">IMU sensor</h5>
+            aria-expanded="true" aria-controls="collapseIMU">Polar Verity Sense IMU sensor</h5>
         <div id="collapseIMU" class="collapse show" aria-labelledby="headingIMU">
             <div class="card-body">
                 <div class="row">
@@ -250,31 +250,352 @@
                     <div id="containerIMU" class="col">
                         <ul class="nav nav-pills mb-3" id="pills-tab-imu" role="tablist">
                             <li class="nav-item" role="presentation">
-                                <button class="nav-link active" id="pills-chart-imu-tab" data-bs-toggle="pill"
-                                    data-bs-target="#pills-chart-imu" type="button" role="tab"
-                                    aria-controls="pills-chart-imu" aria-selected="true">Chart</button>
+                                <button class="nav-link active" id="pills-streams-imu-tab" data-bs-toggle="pill"
+                                    data-bs-target="#pills-streams-imu" type="button" role="tab"
+                                    aria-controls="pills-streams-imu" aria-selected="true">Data Streams</button>
                             </li>
                             <li class="nav-item" role="presentation">
-                                <button class="nav-link" id="pills-zones-imu-tab" data-bs-toggle="pill"
-                                    data-bs-target="#pills-zones-imu" type="button" role="tab"
-                                    aria-controls="pills-zones-imu" aria-selected="false">Zones</button>
+                                <button class="nav-link" id="pills-chart-imu-tab" data-bs-toggle="pill"
+                                    data-bs-target="#pills-chart-imu" type="button" role="tab"
+                                    aria-controls="pills-chart-imu" aria-selected="false">Chart</button>
                             </li>
                         </ul>
                         <div class="tab-content" id="pills-tabContent-imu">
-                            <div class="tab-pane fade show active" id="pills-chart-imu" role="tabpanel"
+                            <div class="tab-pane fade show active" id="pills-streams-imu" role="tabpanel"
+                                aria-labelledby="pills-streams-imu-tab">
+                                <div id="streamsIMU" class="myCanvas" style="height: auto;">
+                                    <form>
+                                        <div class="row mb-1">
+                                            <div class="col-sm-2">
+                                                <div class="form-check form-switch">
+                                                    <input class="form-check-input" type="checkbox" id="switchSDK">
+                                                    <label class="form-check-label" for="flexSwitchCheckDefault">SDK
+                                                        Mode</label>
+                                                </div>
+                                            </div>
+                                            <div class="col-sm-8">
+                                                <span style="font-size: small;vertical-align:middle;">SDK mode enables
+                                                    different stream settings. Unsubscribe to all streams no
+                                                    enable/disable SDK mode.</span>
+                                            </div>
+                                        </div>
+                                        <div class="row mb-1">
+                                            <div class="col-sm-2">
+                                                <div class="form-check form-check-inline">
+                                                    <input id="checkboxAcc" class="form-check-input" type="checkbox"
+                                                        id="inlineCheckboxAcc" value="option1" data-bs-toggle="collapse"
+                                                        data-bs-target="#containerAccSettings" aria-expanded="false"
+                                                        aria-controls="containerAccSettings">
+                                                    <label class="form-check-label"
+                                                        for="inlineCheckboxAcc">Acceleration</label>
+                                                </div>
+                                                <span></span>
+                                            </div>
+                                            <div class="col sm-10">
+                                                <div id="containerAccSettings" class="row g-3 collapse">
+                                                    <div class="col">
+                                                        <span style="font-size: small;">Sample rate:</span>
+                                                        <select id="Accsample_rate" class="form-select form-select-sm"
+                                                            aria-label=".form-select-sm example">
+                                                            <option selected>52</option>
+                                                        </select>
+                                                    </div>
+                                                    <div class="col">
+                                                        <span style="font-size: small;">Resolution:</span>
+                                                        <select id="Accresolution" class="form-select form-select-sm"
+                                                            aria-label=".form-select-sm example">
+                                                            <option selected>16</option>
+                                                        </select>
+                                                    </div>
+                                                    <div class="col">
+                                                        <span style="font-size: small;">Range:</span>
+                                                        <select id="Accrange" class="form-select form-select-sm"
+                                                            aria-label=".form-select-sm example">
+                                                            <option selected>8</option>
+                                                        </select>
+                                                    </div>
+                                                    <div class="col">
+                                                        <span style="font-size: small;">Channels:</span>
+                                                        <select id="Accchannels" class="form-select form-select-sm"
+                                                            aria-label=".form-select-sm example">
+                                                            <option selected>3</option>
+                                                        </select>
+                                                    </div>
+                                                    <div class="col-sm-3">
+                                                        <div class="form-check form-switch" style="margin-left: 10px;">
+                                                            <input class="form-check-input" type="checkbox"
+                                                                id="switchAcc">
+                                                            <label class="form-check-label"
+                                                                for="flexSwitchCheckDefault">Subscribe</label>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="row mb-1">
+                                            <div class="col-sm-2">
+                                                <div class="form-check form-check-inline">
+                                                    <input id="checkboxGyr" class="form-check-input" type="checkbox"
+                                                        id="inlineCheckboxGyr" value="option1" data-bs-toggle="collapse"
+                                                        data-bs-target="#containerGyrSettings" aria-expanded="false"
+                                                        aria-controls="containerGyrSettings">
+                                                    <label class="form-check-label"
+                                                        for="inlineCheckboxGyr">Gyroscope</label>
+                                                </div>
+                                            </div>
+                                            <div class="col sm-10">
+                                                <div id="containerGyrSettings" class="row g-3 collapse">
+                                                    <div class="col">
+                                                        <span style="font-size: small;">Sample rate:</span>
+                                                        <select id="Gyrsample_rate" class="form-select form-select-sm"
+                                                            aria-label=".form-select-sm example">
+                                                            <option selected>52</option>
+                                                        </select>
+                                                    </div>
+                                                    <div class="col">
+                                                        <span style="font-size: small;">Resolution:</span>
+                                                        <select id="Gyrresolution" class="form-select form-select-sm"
+                                                            aria-label=".form-select-sm example">
+                                                            <option selected>16</option>
+                                                        </select>
+                                                    </div>
+                                                    <div class="col">
+                                                        <span style="font-size: small;">Range:</span>
+                                                        <select id="Gyrrange" class="form-select form-select-sm"
+                                                            aria-label=".form-select-sm example">
+                                                            <option selected>2000</option>
+                                                        </select>
+                                                    </div>
+                                                    <div class="col">
+                                                        <span style="font-size: small;">Channels:</span>
+                                                        <select id="Gyrchannels" class="form-select form-select-sm"
+                                                            aria-label=".form-select-sm example">
+                                                            <option selected>3</option>
+                                                        </select>
+                                                    </div>
+                                                    <div class="col-sm-3">
+                                                        <div class="form-check form-switch" style="margin-left: 10px;">
+                                                            <input class="form-check-input" type="checkbox"
+                                                                id="switchGyr">
+                                                            <label class="form-check-label"
+                                                                for="flexSwitchCheckDefault">Subscribe</label>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="row mb-1">
+                                            <div class="col-sm-2">
+                                                <div class="form-check form-check-inline">
+                                                    <input id="checkboxMag" class="form-check-input" type="checkbox"
+                                                        id="inlineCheckboxMag" value="option1" data-bs-toggle="collapse"
+                                                        data-bs-target="#containerMagSettings" aria-expanded="false"
+                                                        aria-controls="containerMagSettings">
+                                                    <label class="form-check-label"
+                                                        for="inlineCheckboxMag">Magnetometer</label>
+                                                </div>
+                                            </div>
+                                            <div class="col sm-10">
+                                                <div id="containerMagSettings" class="row g-3 collapse">
+                                                    <div class="col">
+                                                        <span style="font-size: small;">Sample rate:</span>
+                                                        <select id="Magsample_rate" class="form-select form-select-sm"
+                                                            aria-label=".form-select-sm example">
+                                                            <option selected>50</option>
+                                                        </select>
+                                                    </div>
+                                                    <div class="col">
+                                                        <span style="font-size: small;">Resolution:</span>
+                                                        <select id="Magresolution" class="form-select form-select-sm"
+                                                            aria-label=".form-select-sm example">
+                                                            <option selected>16</option>
+                                                        </select>
+                                                    </div>
+                                                    <div class="col">
+                                                        <span style="font-size: small;">Range:</span>
+                                                        <select id="Magrange" class="form-select form-select-sm"
+                                                            aria-label=".form-select-sm example">
+                                                            <option selected>50</option>
+                                                        </select>
+                                                    </div>
+                                                    <div class="col">
+                                                        <span style="font-size: small;">Channels:</span>
+                                                        <select id="Magchannels" class="form-select form-select-sm"
+                                                            aria-label=".form-select-sm example">
+                                                            <option selected>3</option>
+                                                        </select>
+                                                    </div>
+                                                    <div class="col-sm-3">
+                                                        <div class="form-check form-switch" style="margin-left: 10px;">
+                                                            <input class="form-check-input" type="checkbox"
+                                                                id="switchMag">
+                                                            <label class="form-check-label"
+                                                                for="flexSwitchCheckDefault">Subscribe</label>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="row mb-1">
+                                            <div class="col-sm-2">
+                                                <div class="form-check form-check-inline">
+                                                    <input id="checkboxPPG" class="form-check-input" type="checkbox"
+                                                        id="inlineCheckboxPPG" value="option1" data-bs-toggle="collapse"
+                                                        data-bs-target="#containerPPGSettings" aria-expanded="false"
+                                                        aria-controls="containerPPGSettings">
+                                                    <label class="form-check-label" for="inlineCheckboxPPG">PPG</label>
+                                                </div>
+                                            </div>
+                                            <div class="col sm-10">
+                                                <div id="containerPPGSettings" class="row g-3 collapse">
+                                                    <div class="col">
+                                                        <span style="font-size: small;">Sample rate:</span>
+                                                        <select id="PPGsample_rate" class="form-select form-select-sm"
+                                                            aria-label=".form-select-sm example">
+                                                            <option selected>135</option>
+                                                        </select>
+                                                    </div>
+                                                    <div class="col">
+                                                        <span style="font-size: small;">Resolution:</span>
+                                                        <select id="PPGresolution" class="form-select form-select-sm"
+                                                            aria-label=".form-select-sm example">
+                                                            <option selected>22</option>
+                                                        </select>
+                                                    </div>
+                                                    <div class="col">
+                                                        <span style="font-size: small;">Range:</span>
+                                                        <select id="PPGrange" class="form-select form-select-sm"
+                                                            aria-label=".form-select-sm example" disabled>
+                                                            <option selected>N/A</option>
+                                                        </select>
+                                                    </div>
+                                                    <div class="col">
+                                                        <span style="font-size: small;">Channels:</span>
+                                                        <select id="PPGchannels" class="form-select form-select-sm"
+                                                            aria-label=".form-select-sm example">
+                                                            <option selected>4</option>
+                                                        </select>
+                                                    </div>
+                                                    <div class="col-sm-3">
+                                                        <div class="form-check form-switch" style="margin-left: 10px;">
+                                                            <input class="form-check-input" type="checkbox"
+                                                                id="switchPPG">
+                                                            <label class="form-check-label"
+                                                                for="flexSwitchCheckDefault">Subscribe</label>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="row mb-1">
+                                            <div class="col-sm-2">
+                                                <div class="form-check form-check-inline">
+                                                    <input id="checkboxPPI" class="form-check-input" type="checkbox"
+                                                        id="inlineCheckboxPPI" value="option1" data-bs-toggle="collapse"
+                                                        data-bs-target="#containerPPISettings" aria-expanded="false"
+                                                        aria-controls="containerPPISettings">
+                                                    <label class="form-check-label" for="inlineCheckboxPPI">PPI</label>
+                                                </div>
+                                            </div>
+                                            <div class="col sm-10">
+                                                <div id="containerPPISettings" class="row g-3 collapse">
+                                                    <div class="col">
+                                                        <span style="font-size: small;">Sample rate:</span>
+                                                        <select class="form-select form-select-sm"
+                                                            aria-label=".form-select-sm example" disabled>
+                                                            <option selected>N/A</option>
+                                                        </select>
+                                                    </div>
+                                                    <div class="col">
+                                                        <span style="font-size: small;">Resolution:</span>
+                                                        <select class="form-select form-select-sm"
+                                                            aria-label=".form-select-sm example" disabled>
+                                                            <option selected>N/A</option>
+                                                        </select>
+                                                    </div>
+                                                    <div class="col">
+                                                        <span style="font-size: small;">Range:</span>
+                                                        <select class="form-select form-select-sm"
+                                                            aria-label=".form-select-sm example" disabled>
+                                                            <option selected>N/A</option>
+                                                        </select>
+                                                    </div>
+                                                    <div class="col">
+                                                        <span style="font-size: small;">Channels:</span>
+                                                        <select class="form-select form-select-sm"
+                                                            aria-label=".form-select-sm example" disabled>
+                                                            <option selected>N/A</option>
+                                                        </select>
+                                                    </div>
+                                                    <div class="col-sm-3">
+                                                        <div class="form-check form-switch" style="margin-left: 10px;">
+                                                            <input class="form-check-input" type="checkbox"
+                                                                id="switchPPI">
+                                                            <label class="form-check-label"
+                                                                for="flexSwitchCheckDefault">Subscribe</label>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="row mb-1">
+                                            <div class="col-sm-2">
+                                                <div class="form-check form-check-inline">
+                                                    <input id="checkboxHR" class="form-check-input" type="checkbox"
+                                                        id="inlineCheckboxHR" value="option1" data-bs-toggle="collapse"
+                                                        data-bs-target="#containerHRSettings" aria-expanded="false"
+                                                        aria-controls="containerHRSettings">
+                                                    <label class="form-check-label" for="inlineCheckboxHR">Heart
+                                                        Rate</label>
+                                                </div>
+                                            </div>
+                                            <div class="col sm-10">
+                                                <div id="containerHRSettings" class="row g-3 collapse">
+                                                    <div class="col">
+                                                        <span style="font-size: small;">Sample rate:</span>
+                                                        <select class="form-select form-select-sm"
+                                                            aria-label=".form-select-sm example" disabled>
+                                                            <option selected>N/A</option>
+                                                        </select>
+                                                    </div>
+                                                    <div class="col">
+                                                        <span style="font-size: small;">Resolution:</span>
+                                                        <select class="form-select form-select-sm"
+                                                            aria-label=".form-select-sm example" disabled>
+                                                            <option selected>N/A</option>
+                                                        </select>
+                                                    </div>
+                                                    <div class="col">
+                                                        <span style="font-size: small;">Range:</span>
+                                                        <select class="form-select form-select-sm"
+                                                            aria-label=".form-select-sm example" disabled>
+                                                            <option selected>N/A</option>
+                                                        </select>
+                                                    </div>
+                                                    <div class="col">
+                                                        <span style="font-size: small;">Channels:</span>
+                                                        <select class="form-select form-select-sm"
+                                                            aria-label=".form-select-sm example" disabled>
+                                                            <option selected>N/A</option>
+                                                        </select>
+                                                    </div>
+                                                    <div class="col-sm-3">
+                                                        <div class="form-check form-switch" style="margin-left: 10px;">
+                                                            <input class="form-check-input" type="checkbox"
+                                                                id="switchHR">
+                                                            <label class="form-check-label"
+                                                                for="flexSwitchCheckDefault">Subscribe</label>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                            <div class="tab-pane fade" id="pills-chart-imu" role="tabpanel"
                                 aria-labelledby="pills-chart-imu-tab">
                                 <div id="canvasIMU" class="myCanvas"></div>
-                            </div>
-                            <div class="tab-pane fade" id="pills-zones-imu" role="tabpanel"
-                                aria-labelledby="pills-zones-imu-tab">
-                                <div id="zonesIMU" class="myCanvas">
-                                    <input id="test0input">
-                                    <button id="test0IMU">enable SDK</button>
-                                    <button id="test0_1IMU">disable SDK</button>
-                                    <button id="test1IMU">get settings</button>
-                                    <button id="test2IMU">start data</button>
-                                    <button id="test3IMU">stop data</button>
-                                </div>
                             </div>
                         </div>
                     </div>

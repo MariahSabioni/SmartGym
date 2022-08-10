@@ -54,3 +54,8 @@ function getKeyByValue(object, value) {
 function getKeyByPropValue(object, value, property) {
     return Object.keys(object).find(key => object[key][property] === value);
 }
+
+//remove element from list
+function removeElement(list, element){
+    return list.filter(item => item !== element);
+}

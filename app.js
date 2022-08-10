@@ -97,7 +97,7 @@ let concept2pmAddMeasurements = [];
 let concept2pmAddMeasurements2 = [];
 let combinedAcc = [];
 let combinedGyro = [];
-let imuMeasurements = [];
+let imuMeasurements = {};
 //recording
 let fileName = null;
 let duration = null;
@@ -140,7 +140,7 @@ containerConcept2pm.style.display = "none";
 
 statusTextIMU.textContent = "No IMU sensor connected";
 titleTextIMU.textContent = "Scan for Bluetooth IMU sensor";
-containerIMU.style.display = "none";
+//containerIMU.style.display = "none";
 
 statusTextBle.textContent = "No BLE device connected";
 titleTextBle.textContent = "Scan for Bluetooth devices";
@@ -312,13 +312,6 @@ selectionClickable.addEventListener('change', function () {
     showConcept2pmCanva();
   }
 });
-switchSDK.addEventListener('change', function () {
-  if (switchSDK.checked) {
-    imuDevice.sendCommand('SDK', 'start_measurement', null);
-  } else {
-    imuDevice.sendCommand('SDK', 'stop_measurement', null);
-  }
-});
 let checkboxes = ['checkboxAcc', 'checkboxGyr', 'checkboxMag', 'checkboxPPG'];
 checkboxes.forEach(function (myCheckbox) {
   let meas = myCheckbox.slice(8);
@@ -328,11 +321,17 @@ checkboxes.forEach(function (myCheckbox) {
     }
   });
 });
-// checkboxAcc.addEventListener('click', function () {
-//   if (checkboxAcc.checked) {
-//     imuDevice.sendCommand('Acc', 'get_measurement_settings', null);
-//   }
-// });
+switchSDK.addEventListener('change', function () {
+  if (switchSDK.checked) {
+    imuDevice.sendCommand('SDK', 'start_measurement', null);
+  } else {
+    imuDevice.sendCommand('SDK', 'stop_measurement', null);
+  }
+  checkboxes.forEach(function (myCheckbox) {
+    document.getElementById(myCheckbox).checked = false;
+    $('#container' + myCheckbox.slice(8) + 'Settings').collapse("hide");
+  });
+});
 let switches = ['switchAcc', 'switchGyr', 'switchMag', 'switchPPG'];
 switches.forEach(function (mySwitch) {
   let meas = mySwitch.slice(6);
@@ -344,8 +343,11 @@ switches.forEach(function (mySwitch) {
         requestedSettings.push(document.getElementById(select).value);
       });
       imuDevice.sendCommand(meas, 'start_measurement', requestedSettings);
+      document.getElementById('checkbox' + meas).checked = true;
+      document.getElementById('checkbox' + meas).disabled = true;
     } else {
       imuDevice.sendCommand(meas, 'stop_measurement', null);
+      document.getElementById('checkbox' + meas).disabled = false;
     }
   });
 });
@@ -494,7 +496,7 @@ function updateChartAndRecording() {
       fileName = null;
       duration = null;
       recordingStartTime = null;
-      resetMeasurements(true, true, true);
+      resetMeasurements(true, true, true, true);
       setTimeout(resetAllCharts(), 1000);
     }
   }
@@ -599,9 +601,21 @@ function updateIMUUI() {
   statusTextIMU.innerHTML = `Subscribe to a data stream to receive data.`;
   titleTextIMU.textContent = "Connected to: " + imuDevice.getDeviceName();
   containerIMU.style.display = "block";
+}
+
+function updateImuStreamUI(imuMeasurement) {
+  statusTextIMU.innerHTML = `Receiving data.`;
+  titleTextIMU.textContent = "Connected to: " + imuDevice.getDeviceName();
+  containerIMU.style.display = "block";
   // //save results to lists
-  // imuMeasurements.push(imuMeasurement);
-  // console.log('IMU array length: ', imuMeasurements.length);
+  let measurementType = imuMeasurement[0].measurementType;
+  if (imuMeasurements[measurementType] == undefined) {
+    imuMeasurements[measurementType] = []
+  }
+  imuMeasurement.forEach(function (sample) {
+    imuMeasurements[measurementType].push(sample);
+  });
+  console.log(`IMU ${measurementType} array length: ${imuMeasurements[measurementType].length}`);
 }
 
 function updateConcept2pmUI(concept2pmAddMeasurement) {
@@ -624,14 +638,13 @@ function updateBleUI(response) {
 function updateImuSettingsUI(measType, measId) {
   Object.values(imuDevice.settingTypes).forEach(settingValue => {
     let dropdownId = measType + settingValue;
-    [...document.getElementById(dropdownId).options].forEach(o => o.remove());
+    [...document.getElementById(dropdownId).options].forEach(o => o.remove())
     let settingList = imuDevice.measTypes[measId][settingValue];
     Object.values(settingList).forEach(setting => {
       var option = document.createElement("option");
       option.setAttribute("value", setting);
       var optionName = document.createTextNode(setting);
       option.appendChild(optionName);
-      var currentOptions = document.querySelectorAll(dropdownId.id);
       document.getElementById(dropdownId).appendChild(option);
     });
   });
@@ -723,6 +736,9 @@ function isDeviceConnected() {
   if (concept2pmDevice.device !== null) {
     deviceList.push('Concept2 PM: ' + concept2pmDevice.getDeviceName());
   }
+  if (imuDevice.device !== null) {
+    deviceList.push('IMU: ' + concept2pmDevice.getDeviceName());
+  }
   if (deviceList.length == 0) {
     return false;
   } else {
@@ -742,11 +758,11 @@ function startRecording() {
   isRecording = true;
   recordingStartTime = Date.now();
   settingsButton.disabled = true;
-  resetMeasurements(true, true, true);
+  resetMeasurements(true, true, true, true);
   setTimeout(resetAllCharts(), 500);
 }
 
-function resetMeasurements(heartRate, treadmill, concept2pm) {
+function resetMeasurements(heartRate, treadmill, concept2pm, imu) {
   if (treadmill) {
     speeds = [];
     inclinations = [];
@@ -763,6 +779,11 @@ function resetMeasurements(heartRate, treadmill, concept2pm) {
     concept2pmAddMeasurements = [];
     concept2pmAddMeasurements2 = [];
   }
+  if (imu) {
+    combinedAcc = [];
+    combinedGyro = [];
+    imuMeasurements = [];
+  }
 }
 
 function stopRecording() {
@@ -776,7 +797,7 @@ function stopRecording() {
     fileName = null;
     duration = null;
     recordingStartTime = null;
-    resetMeasurements(true, true, true);
+    resetMeasurements(true, true, true, true);
     setTimeout(resetAllCharts(), 1000)
   } else {
     showToast("Not recording!", "Record data");
@@ -789,6 +810,7 @@ function saveToFile() {
   let heartRateSensor = null;
   let treadmill = null;
   let concept2pm = null;
+  let imu = null;
   let endTime = Date.now();
   let prettyRecordingStartTime = new Date(recordingStartTime).toISOString().slice(0, 19).replace(/-/g, "/").replace("T", " ");
   let prettyRecordingEndTime = new Date(endTime).toISOString().slice(0, 19).replace(/-/g, "/").replace("T", " ");
@@ -822,7 +844,13 @@ function saveToFile() {
       measurementsAdditional2: concept2pmAddMeasurements2,
     };
   }
-  var myObj = { experiment, heartRateSensor, treadmill, concept2pm };
+  if (imuDevice.device !== null) {
+    imu = {
+      device: imuDevice.getDeviceName(),
+      measurements: imuMeasurements,
+    };
+  }
+  var myObj = { experiment, heartRateSensor, treadmill, concept2pm, imu };
   var myJSON = JSON.stringify(myObj);
   try {
     var downloadFileName = fileName.replace(/\s+/g, '-') + ".json";

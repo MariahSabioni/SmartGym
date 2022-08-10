@@ -61,6 +61,7 @@ class ImuDevice {
             range: 8,
             channels: 3,
         }
+        this.imuStreamList = [];
     }
 
     /* FUNCTIONS TO HANDLE CONNECTION*/
@@ -146,6 +147,7 @@ class ImuDevice {
                     .then(characteristic => {
                         characteristic.addEventListener('characteristicvaluechanged', this.parseHeartRate);
                         console.log('> start notifications for HR');
+                        this.imuStreamList.push('HR');
                     })
                     .catch(error => {
                         console.log(error);
@@ -164,6 +166,7 @@ class ImuDevice {
                     .then(characteristic => {
                         characteristic.removeEventListener('characteristicvaluechanged', this.parseHeartRate);
                         console.log('> stop notifications for HR');
+                        this.imuStreamList = removeElement(this.imuStreamList, 'HR');
                     })
                     .catch(error => {
                         console.log(error);
@@ -311,7 +314,7 @@ class ImuDevice {
         let frameSize = value.byteLength;
         console.log(`> ${measurementType} ${frameType} data received length: ${frameSize} bytes at timestamp: ${timestamp}`)
 
-        let imuMeasurements = [];
+        let results = [];
         if ((measurementType == 'Acc' || measurementType == 'Gyr' || measurementType == 'Mag' || measurementType == 'PPG') && frameType == 'delta_frame') {
 
             let numOfChannels = imuDevice.currentSetting.channels;
@@ -319,6 +322,7 @@ class ImuDevice {
             // ref sample is always full bytes, not according to documentation but according to https://github.com/polarofficial/polar-ble-sdk/issues/187
             console.log(`>> refSampleSize: ${refSampleSize}`);
             let refSample = {
+                measurementType: measurementType,
                 timestamp: timestamp,
             }
             let refSampleStr = '>> refSample | timestamp: ' + refSample.timestamp;
@@ -345,6 +349,7 @@ class ImuDevice {
                 for (let i = 0; i < sampleCount; i++) {
                     let binSample = binDeltaData.slice(i);
                     let sample = {
+                        measurementType: measurementType,
                         id: frameSampleIndex,
                         timestamp: timestamp,
                     }
@@ -352,20 +357,21 @@ class ImuDevice {
                     for (let j = 0; j < numOfChannels; j++) {
                         let channel = 'channel_' + j;
                         let channelSample = binSample.slice(j, deltaSize);
-                        sample[channel] = parseInt(channelSample.split("").reverse().join(""), 2) + refSample[channel];
+                        if (measurementType == 'Acc') {
+                            sample[channel] = 0.24399999 * parseInt(channelSample.split("").reverse().join(""), 2) + refSample[channel];
+                        } else {
+                            sample[channel] = parseInt(channelSample.split("").reverse().join(""), 2) + refSample[channel];
+                        }
                         sampleStr += ' | ' + channel + ': ' + sample[channel];
                     };
                     console.log(sampleStr)
-                    imuMeasurements.push(sample);
+                    results.push(sample);
                     frameSampleIndex++;
                 }
                 offset = offset + 2 + deltaBytesCount;
             } while (offset < value.byteLength);
-
-            return imuMeasurements;
         }
-
-        // updateImuDataUI(result);
+        updateImuStreamUI(results);
         // startLoopUpdate();
     }
 
@@ -401,8 +407,11 @@ class ImuDevice {
             }
             result.rrIntervals = rrIntervals;
         }
-        result.time = Date.now();
-        console.log(`>> sample | timestamp: ${result.time}| HR: ${result.heartRate}bpm`);
+        result.timestamp = Date.now();
+        result.measurementType = 'HR';
+        console.log(`>> sample | timestamp: ${result.timestamp}| HR: ${result.heartRate}bpm`);
+        updateImuStreamUI(result);
+        // startLoopUpdate();
     }
 
     /* FUNCTIONS TO READ RESPONSES FROM CONTROL CHARACTERISTIC*/
@@ -459,6 +468,12 @@ class ImuDevice {
                     index += (2 + /*slide to next setting*/(settingSize * 2));
                 };
                 updateImuSettingsUI(measType, measId);
+            } else if (opCode == 'start_measurement' && errorType == 'SUCCESS' && measType != 'SDK') {
+                imuDevice.imuStreamList.push(measType);
+                $("#switchSDK").attr('disabled', 'disabled');
+            } else if (opCode == 'stop_measurement' && errorType == 'SUCCESS' && measType != 'SDK') {
+                imuDevice.imuStreamList = removeElement(imuDevice.imuStreamList, measType);
+                if (imuDevice.imuStreamList.length == 0) { $("#switchSDK").removeAttr('disabled'); }
             }
         }
         else {

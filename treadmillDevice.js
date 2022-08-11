@@ -25,7 +25,7 @@ class TreadmillDevice {
                     return device.gatt.connect();
                 } catch (e) {
                     tries++;
-                    if (tries <= 3) {
+                    if (tries <= 5) {
                         console.log('attempting to connect');
                         setTimeout(function () {
                             connect();

@@ -10,7 +10,9 @@ class ImuDevice {
         this.server = null;
         //services
         this.serviceUUID = "fb005c80-02e7-f387-1cad-8acd2d8df0c8";
+        this.hrServiceUUID = 'heart_rate';
         //characteristics
+        this.hrDataChUUID = 'heart_rate_measurement';
         this.dataChUUID = "fb005c82-02e7-f387-1cad-8acd2d8df0c8";
         this.controlChUUID = "fb005c81-02e7-f387-1cad-8acd2d8df0c8";
         this.errorTypes = {
@@ -69,7 +71,7 @@ class ImuDevice {
     connect() {
         return navigator.bluetooth.requestDevice({
             filters: [{ namePrefix: "Polar Sense" }],
-            optionalServices: [this.serviceUUID, 'heart_rate'],
+            optionalServices: [this.serviceUUID, this.hrServiceUUID],
         })
             .then(device => {
                 this.device = device;
@@ -79,20 +81,19 @@ class ImuDevice {
                     return device.gatt.connect();
                 } catch (e) {
                     tries++;
-                    if (tries <= 3) {
-                        console.log('attempting to connect');
+                    if (tries <= 5) {
+                        console.log('> attempting to connect to', device.name);
                         setTimeout(function () {
                             connect();
                         }, 1000);
                     } else {
-                        console.log('could not connect');
-                        showToast("Connection to IMU failed. Try again.", "IMU device");
-                        updateDisconnectedIMUUI();
+                        console.log('> could not connect to ', device.name);
+                        updateDisconnectedIMU('failed_connection');
                     }
                 }
             })
             .then(server => {
-                console.log('connection successfull');
+                console.log('> connection successfull to: ', this.device.name);
                 this.server = server;
                 return server.getPrimaryService(this.serviceUUID);
             })
@@ -107,7 +108,7 @@ class ImuDevice {
     findControlCharacteristic(service) {
         service.getCharacteristic(this.controlChUUID)
             .then(characteristic => {
-                console.log('characteristic found: ', characteristic);
+                console.log(`> ${this.device.name} characteristic found: `, characteristic);
                 return Promise.all([
                     characteristic.readValue(),
                     characteristic.startNotifications()
@@ -124,7 +125,7 @@ class ImuDevice {
     findDataCharacteristic(service) {
         service.getCharacteristic(this.dataChUUID)
             .then(characteristic => {
-                console.log('characteristic found: ', characteristic);
+                console.log(`> ${this.device.name} characteristic found: `, characteristic);
                 return characteristic.startNotifications();
             })
             .then(characteristic => {
@@ -137,16 +138,16 @@ class ImuDevice {
 
     findHeartRateCharacteristic() {
         let server = this.server;
-        return server.getPrimaryService('heart_rate')
+        return server.getPrimaryService(this.hrServiceUUID)
             .then(service => {
-                service.getCharacteristic('heart_rate_measurement')
+                service.getCharacteristic(this.hrDataChUUID)
                     .then(characteristic => {
-                        console.log('characteristic found: ', characteristic);
+                        console.log(`> ${this.device.name} characteristic found: `, characteristic);
                         return characteristic.startNotifications();
                     })
                     .then(characteristic => {
                         characteristic.addEventListener('characteristicvaluechanged', this.parseHeartRate);
-                        console.log('> start notifications for HR');
+                        console.log(`> request sent to ${this.device.name} start notifications for HR`);
                         this.imuStreamList.push('HR');
                     })
                     .catch(error => {
@@ -157,15 +158,15 @@ class ImuDevice {
 
     stopHeartRateCharacteristic() {
         let server = this.server;
-        return server.getPrimaryService('heart_rate')
+        return server.getPrimaryService(this.hrServiceUUID)
             .then(service => {
-                service.getCharacteristic('heart_rate_measurement')
+                service.getCharacteristic(this.hrDataChUUID)
                     .then(characteristic => {
                         return characteristic.stopNotifications()
                     })
                     .then(characteristic => {
                         characteristic.removeEventListener('characteristicvaluechanged', this.parseHeartRate);
-                        console.log('> stop notifications for HR');
+                        console.log(`> request sent to ${this.device.name} stop notifications for HR`);
                         this.imuStreamList = removeElement(this.imuStreamList, 'HR');
                     })
                     .catch(error => {
@@ -176,21 +177,22 @@ class ImuDevice {
 
     onDisconnected(event) {
         let device = event.target;
-        console.log('"' + device.name + '" bluetooth device disconnected');
+        console.log(`> ${device.name} bluetooth device connection lost`);
         showToast("Connection to IMU lost. Try again.", "IMU device");
-        updateDisconnectedIMUUI();
+        updateDisconnectedIMU('lost_connection');
         // resetMeasurements(false, true, false);
         // drawChartImu();
     }
 
     disconnect() {
         if (this.device == null) {
-            console.log('The target device is null.');
+            console.log('> The target device is null.');
             return;
         }
         this.device.removeEventListener('gattserverdisconnected', this.onDisconnected);
         this.device.gatt.disconnect();
-        updateDisconnectedIMUUI();
+        console.log(`> ${this.device.name} bluetooth device disconnected`);
+        updateDisconnectedIMU('disconnected');
         // resetMeasurements(false, true, false);
         // drawChartImu();
     }
@@ -312,7 +314,7 @@ class ImuDevice {
         let timestamp = value.getBigUint64(1, true)
         let frameType = imuDevice.frameTypes[value.getUint8(9)];
         let frameSize = value.byteLength;
-        console.log(`> ${measurementType} ${frameType} data received length: ${frameSize} bytes at timestamp: ${timestamp}`)
+        console.log(`> ${measurementType} ${frameType} length: ${frameSize} bytes at timestamp: ${timestamp}`)
 
         let results = [];
         if ((measurementType == 'Acc' || measurementType == 'Gyr' || measurementType == 'Mag' || measurementType == 'PPG') && frameType == 'delta_frame') {
@@ -358,7 +360,7 @@ class ImuDevice {
                         let channel = 'channel_' + j;
                         let channelSample = binSample.slice(j, deltaSize);
                         if (measurementType == 'Acc') {
-                            sample[channel] = 0.24399999 * parseInt(channelSample.split("").reverse().join(""), 2) + refSample[channel];
+                            sample[channel] = 0.24399999 * (parseInt(channelSample.split("").reverse().join(""), 2) + refSample[channel]);
                         } else {
                             sample[channel] = parseInt(channelSample.split("").reverse().join(""), 2) + refSample[channel];
                         }
@@ -371,7 +373,7 @@ class ImuDevice {
                 offset = offset + 2 + deltaBytesCount;
             } while (offset < value.byteLength);
         }
-        updateImuStreamUI(results);
+        updateImuData(results);
         // startLoopUpdate();
     }
 
@@ -410,7 +412,7 @@ class ImuDevice {
         result.timestamp = Date.now();
         result.measurementType = 'HR';
         console.log(`>> sample | timestamp: ${result.timestamp}| HR: ${result.heartRate}bpm`);
-        updateImuStreamUI(result);
+        updateImuData(result);
         // startLoopUpdate();
     }
 
@@ -438,7 +440,7 @@ class ImuDevice {
                     console.log(`>> measurement type ${measurement.value} not available. so sorry.`);
                 }
             });
-            updateIMUUI();
+            updateConnectedIMU();
         } else if (controlAction == 'control_point_response') {
             let opCode = imuDevice.opCodes[value.getUint8(1)];
             let measId = value.getUint8(2);
@@ -467,7 +469,7 @@ class ImuDevice {
                     console.log(`>> measurement setting: ${setting} | number of values: ${settingSize} | values: ${settingValues}`)
                     index += (2 + /*slide to next setting*/(settingSize * 2));
                 };
-                updateImuSettingsUI(measType, measId);
+                updateImuSettings(measType, measId);
             } else if (opCode == 'start_measurement' && errorType == 'SUCCESS' && measType != 'SDK') {
                 imuDevice.imuStreamList.push(measType);
                 $("#switchSDK").attr('disabled', 'disabled');
@@ -482,6 +484,7 @@ class ImuDevice {
     }
 
     /* UTILS */
+
     getDeviceName() {
         return this.device.name;
     }

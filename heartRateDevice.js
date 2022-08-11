@@ -7,10 +7,14 @@ class HeartRateDevice {
     constructor() {
         this.device = null;
         this.server = null;
+        //services
+        this.serviceUUID ='heart_rate';
+        //characteristics
+        this.dataChUUID = 'heart_rate_measurement';
     }
 
     connect() {
-        return navigator.bluetooth.requestDevice({ filters: [{ services: ['heart_rate'] }] })
+        return navigator.bluetooth.requestDevice({ filters: [{ services: [this.serviceUUID] }] })
             .then(device => {
                 this.device = device;
                 device.addEventListener('gattserverdisconnected', this.onDisconnected);
@@ -19,21 +23,21 @@ class HeartRateDevice {
                     return device.gatt.connect();
                 } catch (e) {
                     tries++;
-                    if (tries <= 3) {
-                        console.log('attempting to connect');
+                    if (tries <= 5) {
+                        console.log('> attempting to connect to', device.name);
                         setTimeout(function () {
                             connect();
                         }, 1000);
                     } else {
-                        console.log('could not connect');
-                        showToast("Connection to HR sensor failed. Try again.", "Heart rate sensor");
-                        updateDisconnectedHRUI();
+                        console.log('> could not connect to ', device.name);
+                        updateDisconnectedHR('failed_connection');
                     }
                 }
             })
             .then(server => {
+                console.log('> connection successfull to: ', this.device.name);
                 this.server = server;
-                return server.getPrimaryService('heart_rate');
+                return server.getPrimaryService(this.serviceUUID);
             })
             .then(service => {
                 this.findDataCharacteristic(service);
@@ -41,40 +45,43 @@ class HeartRateDevice {
     }
 
     findDataCharacteristic(service) {
-        service.getCharacteristic('heart_rate_measurement')
+        service.getCharacteristic(this.dataChUUID)
             .then(characteristic => {
-                console.log('characteristic found: ', characteristic);
+                console.log(`> ${this.device.name} characteristic found: `, characteristic);
                 return characteristic.startNotifications();
             })
             .then(characteristic => {
                 characteristic.addEventListener('characteristicvaluechanged', this.parseHeartRate);
+                console.log(`> request sent to ${this.device.name} start notifications ${characteristic.uuid}`);
+            })
+            .then(_ => {
+                updateConnectedHR();
             })
             .catch(error => {
                 console.log(error);
             });
+
     }
-    
+
     onDisconnected(event) {
         let device = event.target;
-        console.log('"' + device.name + '" bluetooth device disconnected');
-        showToast("Connection to HR sensor lost. Try again.", "Heart rate sensor");
-        resetMeasurements(true, false, false);
-        drawChartHR();
+        console.log(`> ${device.name} bluetooth device connection lost`);
+        updateDisconnectedHR('lost_connection');
     }
 
     disconnect() {
         if (this.device == null) {
-            console.log('The target device is null.');
+            console.log('> The target device is null.');
             return;
         }
         this.device.removeEventListener('gattserverdisconnected', this.onDisconnected);
         this.device.gatt.disconnect();
-        updateDisconnectedHRUI();
-        resetMeasurements(true, false, false);
-        drawChartHR();
+        console.log(`> ${this.device.name} bluetooth device disconnected`);
+        updateDisconnectedHR('disconnected');
     }
 
-    /* Utils */
+    /* FUNCTIONS TO READ RESPONSES FROM DATA CHARACTERISTIC*/
+
     parseHeartRate(event) {
         let value = event.target.value;
         value = value.buffer ? value : new DataView(value); // In Chrome 50+, a DataView is returned instead of an ArrayBuffer.
@@ -108,10 +115,14 @@ class HeartRateDevice {
             result.rrIntervals = rrIntervals;
         }
         result.time = Date.now();
-        console.log(`timestamp: ${result.time}| HR: ${result.heartRate}bpm`);
-        updateHRUI(result);
+        console.log(`>> sample | timestamp: ${result.time}| HR: ${result.heartRate}bpm`);
+        heartRateMeasurements.push(result);
+        updateDataHR(result);
         startLoopUpdate();
     }
+
+    /* UTILS */
+
     getDeviceName() {
         return this.device.name;
     }

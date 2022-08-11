@@ -12,8 +12,6 @@
     <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet"
         integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
-    <!-- Google Chart API -->
-    <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
 </head>
 
 <body>
@@ -55,7 +53,9 @@
                         <div class="tab-content" id="pills-tabContent-hr">
                             <div class="tab-pane fade show active" id="pills-chart-hr" role="tabpanel"
                                 aria-labelledby="pills-chart-hr-tab">
-                                <div id="canvasHR" class="myCanvas"></div>
+                                <div class="myCanvas">
+                                    <canvas id="canvasHR"></canvas>
+                                </div>
                             </div>
                             <div class="tab-pane fade" id="pills-zones-hr" role="tabpanel"
                                 aria-labelledby="pills-zones-hr-tab">
@@ -71,7 +71,7 @@
         <h5 class="card-header" id="headingTreadmill" aria-expanded="true" aria-controls="collapseTreadmill"
             style="display: flex; align-items: center;">
             <div style="width:auto; float:left; margin-right: 10px; height: 100%;">Fitness machine</div>
-            <select id="selectionClickable" class="form-select" aria-label="select" style="width:auto; ">
+            <select id="selectionClickableFitnessMachine" class="form-select" aria-label="select" style="width:auto; ">
                 <option value="0" selected>FTMS Treadmill</option>
                 <option value="1">Concept2 PM5</option>
             </select>
@@ -669,6 +669,10 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.min.js"
         integrity="sha384-cVKIPhGWiC2Al4u+LWgxfKTRIcfu0JTxR+EQDz/bgldoEyl4H0zUF0QKbrJ0EcQF"
         crossorigin="anonymous"></script>
+    <!-- Chart JS -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
+
 </body>
 
 </html>

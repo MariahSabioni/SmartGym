@@ -1,4 +1,6 @@
-// Convert a hex string to a byte array
+/* DATA OPERATIONS*/
+
+// convert a hex string to a byte array
 function hexStringToByteArray(hexString) {
     if (hexString.length % 2 !== 0) {
         throw "Must have an even number of hex digits to convert to bytes";
@@ -11,7 +13,7 @@ function hexStringToByteArray(hexString) {
     return byteArray;
 }
 
-// Convert a byte array string to a hex string
+// convert a byte array string to a hex string
 function byteArrayToHexString(byteArray) {
     const hexParts = [];
     for (let i = 0; i < byteArray.byteLength; i++) {
@@ -26,12 +28,12 @@ function byteArrayToHexString(byteArray) {
     return hexParts.join('');
 }
 
-// Convert decimal to binary
+// convert decimal to binary
 function decIntToBinString(dec) {
     return (dec >>> 0).toString(2);
 }
 
-// Convert buffer array to binary
+// convert buffer array to binary
 function bufferToBinString(buffer) {
     array = new Uint8Array(buffer);
     let bin = [];
@@ -45,17 +47,29 @@ function bufferToBinString(buffer) {
     return bin.join('');
 }
 
-//get object key from value
+/* OBJECTS AND ARRAYS UTILS*/
+
+// get object key from value
 function getKeyByValue(object, value) {
     return Object.keys(object).find(key => object[key] === value);
 }
 
-//get object key from property value
+// get object key from property value
 function getKeyByPropValue(object, value, property) {
     return Object.keys(object).find(key => object[key][property] === value);
 }
 
-//remove element from list
-function removeElement(list, element){
+// remove element from list
+function removeElement(list, element) {
     return list.filter(item => item !== element);
+}
+
+/* USER INTERFACE*/
+
+// show toast
+function showToast(message, title) {
+    toastMessage.textContent = message;
+    toastTitle.textContent = title;
+    var toast = new bootstrap.Toast(toastDisconnection)
+    toast.show();
 }

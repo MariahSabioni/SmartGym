@@ -7,16 +7,18 @@ class BleDevice {
     constructor() {
         this.device = null;
         this.server = null;
+        //services
+        this.serviceUUID = null;
     }
 
     connect() {
-        let serviceUUID = this.getAndCheckUUID();
-        if (serviceUUID == null) {
+        this.serviceUUID = this.getAndCheckUUID();
+        if (this.serviceUUID == null) {
             return;
         }
         return navigator.bluetooth.requestDevice({
             acceptAllDevices: true,
-            optionalServices: [serviceUUID],
+            optionalServices: [this.serviceUUID],
         })
             .then(device => {
                 this.device = device;
@@ -26,21 +28,21 @@ class BleDevice {
                     return device.gatt.connect();
                 } catch (e) {
                     tries++;
-                    if (tries <= 3) {
-                        console.log('attempting to connect');
+                    if (tries <= 5) {
+                        console.log('> attempting to connect to', device.name);
                         setTimeout(function () {
                             connect();
                         }, 1000);
                     } else {
-                        console.log('could not connect');
+                        console.log('> could not connect to ', device.name);
                         showToast("Connection to BLE device failed. Try again.", "BLE device");
-                        updateDisconnectedBleUI();
+                        updateDisconnectedBle('failed_connection');
                     }
                 }
             })
             .then(server => {
                 this.server = server;
-                this.findAllCharacteristics(server, serviceUUID);
+                this.findAllCharacteristics(server, this.serviceUUID);
             })
     }
 
@@ -48,11 +50,9 @@ class BleDevice {
         //validate and get UUID input field
         let uuid = uuidInput.value;
         if (uuid == "" || uuid == undefined) {
-            console.log('empty input');
-            showToast("provide a service UUID", "BLE device");
+            console.log('> UUID empty input');
+            showToast("Provide a service UUID", "BLE device");
             return null;
-        } else {
-            console.log('correct input')
         }
         return uuid.toLowerCase();
     }
@@ -62,7 +62,7 @@ class BleDevice {
         let response = 'Services & Characteristics <br />';
         server.getPrimaryServices(serviceUUID)
             .then(services => {
-                console.log('Getting Characteristics...');
+                console.log('> Getting Characteristics for ', this.device.name);
                 let queue = Promise.resolve();
                 services.forEach(service => {
                     queue = queue.then(_ => service.getCharacteristics().then(characteristics => {
@@ -70,12 +70,11 @@ class BleDevice {
                         response = response + '> Service: ' + service.uuid + '<br />';
                         characteristics.forEach(characteristic => {
                             console.log('>> Characteristic: ' + characteristic.uuid + ' ' +
-                                bleDevice.getSupportedProperties(characteristic));
+                                this.getSupportedProperties(characteristic));
                             response = response + '>> Characteristic: ' + characteristic.uuid + ' ' +
                                 this.getSupportedProperties(characteristic) + '<br />';
                         });
-                        console.log(response);
-                        updateBleUI(response);
+                        updateConnectedBle(response);
                     }));
                 });
                 return queue;
@@ -97,19 +96,19 @@ class BleDevice {
 
     onDisconnected(event) {
         let device = event.target;
-        console.log('"' + device.name + '" bluetooth device disconnected');
-        showToast("Connection to BLE device lost. Try again.", "BLE device");
-        updateDisconnectedBleUI();
+        console.log(`> ${device.name} bluetooth device connection lost`);
+        updateDisconnectedBle('lost_connection');
     }
 
     disconnect() {
         if (this.device == null) {
-            console.log('The target device is null.');
+            console.log('> The target device is null.');
             return;
         }
         this.device.removeEventListener('gattserverdisconnected', this.onDisconnected);
         this.device.gatt.disconnect();
-        updateDisconnectedBleUI();
+        console.log(`> ${this.device.name} bluetooth device disconnected`);
+        updateDisconnectedBle('disconnected');
     }
 
     /* UTILS */

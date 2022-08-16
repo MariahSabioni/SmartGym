@@ -180,8 +180,6 @@ class ImuDevice {
         console.log(`> ${device.name} bluetooth device connection lost`);
         showToast("Connection to IMU lost. Try again.", "IMU device");
         updateDisconnectedIMU('lost_connection');
-        // resetMeasurements(false, true, false);
-        // drawChartImu();
     }
 
     disconnect() {
@@ -193,12 +191,6 @@ class ImuDevice {
         this.device.gatt.disconnect();
         console.log(`> ${this.device.name} bluetooth device disconnected`);
         updateDisconnectedIMU('disconnected');
-        // resetMeasurements(false, true, false);
-        // drawChartImu();
-    }
-
-    reset() {
-
     }
 
     /* FUNCTIONS TO SEND COMMANDS TO CONTROL CHARACTERISTIC*/
@@ -211,7 +203,6 @@ class ImuDevice {
                 return service.getCharacteristic(this.controlChUUID);
             })
             .then(characteristic => {
-                //let measValue = imuDevice.measTypes[measId].value;
                 let actionId = getKeyByValue(imuDevice.opCodes, action);
                 console.log(`> request sent to ${action} type ${measValue}`);
                 let val;
@@ -269,6 +260,7 @@ class ImuDevice {
             imuDevice.currentSetting.channels = settings[3];
         }
         else {
+            //Acc, Gyro and Magn
             commandArray = new ArrayBuffer(17);
             commandView = new DataView(commandArray);
             commandView.setUint8(0, actionId);
@@ -325,9 +317,9 @@ class ImuDevice {
             console.log(`>> refSampleSize: ${refSampleSize}`);
             let refSample = {
                 measurementType: measurementType,
-                timestamp: timestamp,
+                time: timestamp,
             }
-            let refSampleStr = '>> refSample | timestamp: ' + refSample.timestamp;
+            let refSampleStr = '>> refSample | timestamp: ' + refSample.time;
             for (let i = 0; i < numOfChannels; i++) {
                 let channel = 'channel_' + i;
                 refSample[channel] = value.getUint16(10 + 2 * i, true);
@@ -353,9 +345,9 @@ class ImuDevice {
                     let sample = {
                         measurementType: measurementType,
                         id: frameSampleIndex,
-                        timestamp: timestamp,
+                        time: timestamp,
                     }
-                    let sampleStr = '>> sample | timestamp: ' + sample.timestamp;
+                    let sampleStr = '>> sample | timestamp: ' + sample.time;
                     for (let j = 0; j < numOfChannels; j++) {
                         let channel = 'channel_' + j;
                         let channelSample = binSample.slice(j, deltaSize);
@@ -373,8 +365,8 @@ class ImuDevice {
                 offset = offset + 2 + deltaBytesCount;
             } while (offset < value.byteLength);
         }
-        updateImuData(results);
-        // startLoopUpdate();
+        updateDataIMU(results);
+        startLoopUpdate();
     }
 
     parseHeartRate(event) {
@@ -409,11 +401,11 @@ class ImuDevice {
             }
             result.rrIntervals = rrIntervals;
         }
-        result.timestamp = Date.now();
+        result.time = Date.now();
         result.measurementType = 'HR';
-        console.log(`>> sample | timestamp: ${result.timestamp}| HR: ${result.heartRate}bpm`);
-        updateImuData(result);
-        // startLoopUpdate();
+        console.log(`>> sample | timestamp: ${result.time}| HR: ${result.heartRate}bpm`);
+        updateDataIMU(result);
+        startLoopUpdate();
     }
 
     /* FUNCTIONS TO READ RESPONSES FROM CONTROL CHARACTERISTIC*/
@@ -473,6 +465,7 @@ class ImuDevice {
             } else if (opCode == 'start_measurement' && errorType == 'SUCCESS' && measType != 'SDK') {
                 imuDevice.imuStreamList.push(measType);
                 $("#switchSDK").attr('disabled', 'disabled');
+                updateConnectedStreamIMU(measType);
             } else if (opCode == 'stop_measurement' && errorType == 'SUCCESS' && measType != 'SDK') {
                 imuDevice.imuStreamList = removeElement(imuDevice.imuStreamList, measType);
                 if (imuDevice.imuStreamList.length == 0) { $("#switchSDK").removeAttr('disabled'); }

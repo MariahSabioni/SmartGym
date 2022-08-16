@@ -15,6 +15,8 @@ class TreadmillDevice {
         this.controlChUUID = "00002ad9-0000-1000-8000-00805f9b34fb";
     }
 
+    /* FUNCTIONS TO HANDLE CONNECTION*/
+
     connect() {
         return navigator.bluetooth.requestDevice({ filters: [{ services: [this.serviceUUID] }] })
             .then(device => {
@@ -26,36 +28,41 @@ class TreadmillDevice {
                 } catch (e) {
                     tries++;
                     if (tries <= 5) {
-                        console.log('attempting to connect');
+                        console.log('> attempting to connect to', device.name);
                         setTimeout(function () {
                             connect();
                         }, 1000);
                     } else {
-                        console.log('could not connect');
-                        showToast("Connection to treadmill failed. Try again.", "Treadmill device");
-                        updateDisconnectedTreadmillUI();
+                        console.log('> could not connect to ', device.name);
+                        updateDisconnectedTreadmill('failed_connection');
                     }
                 }
             })
             .then(server => {
-                console.log('connection successfull');
+                console.log('> connection successfull to: ', this.device.name);
                 this.server = server;
                 return server.getPrimaryService(this.serviceUUID);
             })
             .then(service => {
-                this.findDataCharacteristic(service);
-                this.findControlCharacteristic(service);
+                return Promise.all([
+                    this.findControlCharacteristic(service),
+                    this.findDataCharacteristic(service),
+                ]);
             });
     }
 
     findDataCharacteristic(service) {
         service.getCharacteristic(this.dataChUUID)
             .then(characteristic => {
-                console.log('characteristic found: ', characteristic);
+                console.log(`> ${this.device.name} characteristic found: `, characteristic);
                 return characteristic.startNotifications();
             })
             .then(characteristic => {
                 characteristic.addEventListener('characteristicvaluechanged', this.parseTreadmillData);
+                console.log(`> request sent to ${this.device.name} start notifications ${characteristic.uuid}`);
+            })
+            .then(_ => {
+                updateConnectedTredmill();
             })
             .catch(error => {
                 console.log(error);
@@ -65,9 +72,10 @@ class TreadmillDevice {
     findControlCharacteristic(service) {
         service.getCharacteristic(this.controlChUUID)
             .then(characteristic => {
-                console.log('characteristic found: ', characteristic);
+                console.log(`> ${this.device.name} characteristic found: `, characteristic);
                 const val = Uint8Array.of(0);
                 characteristic.writeValue(val);
+                console.log(`> request sent to ${this.device.name} control device ${characteristic.uuid}`);
             })
             .catch(error => {
                 console.log(error);
@@ -76,12 +84,8 @@ class TreadmillDevice {
 
     onDisconnected(event) {
         let device = event.target;
-        console.log('"' + device.name + '" bluetooth device disconnected');
-        showToast("Connection to treadmill lost. Try again.", "Treadmill device");
-        updateDisconnectedTreadmillUI();
-        resetMeasurements(false, true, false);
-        //chartTreadmill.clear(); //TODO test if this works
-        drawChartTreadmill();
+        console.log(`> ${device.name} bluetooth device connection lost`);
+        updateDisconnectedTreadmill('lost_connection');
     }
 
     disconnect() {
@@ -91,13 +95,14 @@ class TreadmillDevice {
         }
         this.device.removeEventListener('gattserverdisconnected', this.onDisconnected);
         this.device.gatt.disconnect();
-        updateDisconnectedTreadmillUI();
-        resetMeasurements(false, true, false);
-        drawChartTreadmill();
+        console.log(`> ${this.device.name} bluetooth device disconnected`);
+        updateDisconnectedTreadmill('disconnected');
     }
 
+    /* FUNCTIONS TO SEND COMMANDS TO CONTROL CHARACTERISTIC*/
+
     changeTreadmillStatus(action) {
-        console.log(`${action} treadmill clicked`);
+        console.log(`> Sending request to ${action} treadmill`);
         let server = this.server;
         return server.getPrimaryService(this.serviceUUID)
             .then(service => {
@@ -112,7 +117,7 @@ class TreadmillDevice {
     startTreadmill(service) {
         service.getCharacteristic(this.controlChUUID)
             .then(characteristic => {
-                console.log('characteristic found: ', characteristic);
+                console.log(`> ${this.device.name} characteristic found: `, characteristic);
                 let val = new Uint8Array(3);
                 val[0] = 7;
                 console.log('val', val);
@@ -126,7 +131,7 @@ class TreadmillDevice {
     stopTreadmill(service) {
         service.getCharacteristic(this.controlChUUID)
             .then(characteristic => {
-                console.log('characteristic found: ', characteristic);
+                console.log(`> ${this.device.name} characteristic found: `, characteristic);
                 let val = new Uint8Array(3);
                 val[0] = 8;
                 console.log('val', val);
@@ -138,7 +143,7 @@ class TreadmillDevice {
     }
 
     increaseSpeedStep(currSpeed, speedIncrement) {
-        console.log('speed increase clicked');
+        console.log(`> Speed increase clicked. Sending request to ${currSpeed} + ${speedIncrement}.`);
         console.log(currSpeed);
         var newSpeed = (parseFloat(currSpeed) + parseFloat(speedIncrement));
         console.log(newSpeed);
@@ -150,7 +155,7 @@ class TreadmillDevice {
     }
 
     decreaseSpeedStep(currSpeed, speedIncrement) {
-        console.log('speed decrease clicked');
+        console.log(`> Speed decrease clicked. Sending request to ${currSpeed} - ${speedIncrement}.`);
         console.log(currSpeed);
         var newSpeed = (parseFloat(currSpeed) - parseFloat(speedIncrement));
         console.log(newSpeed);
@@ -162,8 +167,7 @@ class TreadmillDevice {
     }
 
     increaseInclinationStep(currInclination, inclinationIncrement) {
-        console.log('inclination increase clicked');
-        console.log('current inclination is: ', currInclination);
+        console.log(`> Inclination increase clicked. Sending request to ${currInclination} + ${inclinationIncrement}.`);
         var newInclination = (parseFloat(currInclination) + parseFloat(inclinationIncrement));
         console.log('new inclination is: ', newInclination);
         let server = this.server;
@@ -174,7 +178,7 @@ class TreadmillDevice {
     }
 
     decreaseInclinationStep(currInclination, inclinationIncrement) {
-        console.log('inclination decrease clicked');
+        console.log(`> Inclination decrease clicked. Sending request to ${currInclination} - ${inclinationIncrement}.`);
         console.log(currInclination);
         var newInclination = (parseFloat(currInclination) - parseFloat(inclinationIncrement));
         console.log(newInclination);
@@ -188,7 +192,7 @@ class TreadmillDevice {
     setNewSpeed(service, newSpeed) {
         service.getCharacteristic(this.controlChUUID)
             .then(characteristic => {
-                console.log('characteristic found: ', characteristic);
+                console.log(`> ${this.device.name} characteristic found: `, characteristic);
                 let b = new Uint8Array(2);
                 let newSpeedInt = parseInt(newSpeed * 100);
                 for (var i = 0; i < b.length; i++) {
@@ -209,7 +213,7 @@ class TreadmillDevice {
     setNewInclination(service, newInclination) {
         service.getCharacteristic(this.controlChUUID)
             .then(characteristic => {
-                console.log('characteristic found: ', characteristic);
+                console.log(`> ${this.device.name} characteristic found: `, characteristic);
                 let b = new Uint8Array(2);
                 let newInclinationInt = parseInt(newInclination * 10);
                 for (var i = 0; i < b.length; i++) {
@@ -227,7 +231,8 @@ class TreadmillDevice {
             });
     }
 
-    /* Utils */
+    /* FUNCTIONS TO READ RESPONSES FROM DATA CHARACTERISTIC*/
+
     parseTreadmillData(event) {
         let value = event.target.value;
         value = value.buffer ? value : new DataView(value); // In Chrome 50+, a DataView is returned instead of an ArrayBuffer.
@@ -244,9 +249,12 @@ class TreadmillDevice {
         result.prettyDuration = new Date(seconds * 1000).toISOString().slice(11, 19);
         result.time = Date.now();
         console.log(`timestamp: ${result.time} | Treadmill: ${result.speed}km/h | ${result.inclination}% | ${result.distance}m | ${result.prettyDuration}`)
-        updateTreadmillUI(result);
+        updateDataTreadmill(result);
         startLoopUpdate();
     }
+
+    /* UTILS */
+
     getDeviceName() {
         return this.device.name;
     }

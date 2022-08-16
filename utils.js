@@ -63,13 +63,3 @@ function getKeyByPropValue(object, value, property) {
 function removeElement(list, element) {
     return list.filter(item => item !== element);
 }
-
-/* USER INTERFACE*/
-
-// show toast
-function showToast(message, title) {
-    toastMessage.textContent = message;
-    toastTitle.textContent = title;
-    var toast = new bootstrap.Toast(toastDisconnection)
-    toast.show();
-}

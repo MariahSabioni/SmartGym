@@ -33,7 +33,7 @@
                 <div class="row">
                     <div class="col-3">
                         <h5 id="titleTextHR" class="card-title">Scan for Bluetooth HR sensor</h5>
-                        <p id="statusTextHR" class="card-text">No device connected</p>
+                        <p id="statusTextHR" class="card-text" style="font-size:larger">No device connected</p>
                         <a id="connectButtonHR" href="#" class="btn btn-primary">Connect</a>
                         <a id="disconnectButtonHR" href="#" class="btn btn-primary">Disconnect</a>
                     </div>
@@ -81,7 +81,7 @@
                 <div class="row">
                     <div class="col-3">
                         <h5 id="titleTextTreadmill" class="card-title">Scan for Bluetooth treadmill</h5>
-                        <p id="statusTextTreadmill" class="card-text">No device connected</p>
+                        <p id="statusTextTreadmill" class="card-text" style="font-size:larger">No device connected</p>
                         <a id="connectButtonTreadmill" href="#" class="btn btn-primary">Connect</a>
                         <a id="disconnectButtonTreadmill" href="#" class="btn btn-primary">Disconnect</a>
                     </div>
@@ -101,7 +101,9 @@
                         <div class="tab-content" id="pills-tabContent-treadmill">
                             <div class="tab-pane fade show active" id="pills-chart-treadmill" role="tabpanel"
                                 aria-labelledby="pills-chart-treadmill-tab">
-                                <div id="canvasTreadmill" class="myCanvas"></div>
+                                <div class="myCanvas">
+                                    <canvas id="canvasTreadmill"></canvas>
+                                </div>
                             </div>
                             <div class="tab-pane fade" id="pills-controls-treadmill" role="tabpanel"
                                 aria-labelledby="pills-controls-treadmill-tab">
@@ -173,7 +175,7 @@
                 <div class="row">
                     <div class="col-3">
                         <h5 id="titleTextConcept2pm" class="card-title">Scan for Bluetooth Concept2 PM5</h5>
-                        <p id="statusTextConcept2pm" class="card-text">No device connected</p>
+                        <p id="statusTextConcept2pm" class="card-text" style="font-size:larger">No device connected</p>
                         <a id="connectButtonConcept2pm" href="#" class="btn btn-primary">Connect</a>
                         <a id="disconnectButtonConcept2pm" href="#" class="btn btn-primary">Disconnect</a>
                     </div>
@@ -193,7 +195,9 @@
                         <div class="tab-content" id="pills-tabContent-concept2pm">
                             <div class="tab-pane fade show active" id="pills-chart-concept2pm" role="tabpanel"
                                 aria-labelledby="pills-chart-concept2pm-tab">
-                                <div id="canvasConcept2pm" class="myCanvas"></div>
+                                <div class="myCanvas">
+                                    <canvas id="canvasConcept2pm"></canvas>
+                                </div>
                             </div>
                             <div class="tab-pane fade" id="pills-controls-concept2pm" role="tabpanel"
                                 aria-labelledby="pills-controls-concept2pm-tab">
@@ -243,7 +247,7 @@
                 <div class="row">
                     <div class="col-3">
                         <h5 id="titleTextIMU" class="card-title">Scan for Bluetooth IMU sensors</h5>
-                        <p id="statusTextIMU" class="card-text">No device connected</p>
+                        <p id="statusTextIMU" class="card-text" style="font-size:larger">No device connected</p>
                         <a id="connectButtonIMU" href="#" class="btn btn-primary">Connect</a>
                         <a id="disconnectButtonIMU" href="#" class="btn btn-primary">Disconnect</a>
                     </div>
@@ -327,7 +331,6 @@
                                                             <label class="form-check-label"
                                                                 for="flexSwitchCheckDefault">Subscribe</label>
                                                         </div>
-                                                        <div id="dataAcc" style="margin-left: 10px;">no data</div>
                                                     </div>
                                                 </div>
                                             </div>
@@ -544,7 +547,9 @@
                             </div>
                             <div class="tab-pane fade" id="pills-chart-imu" role="tabpanel"
                                 aria-labelledby="pills-chart-imu-tab">
-                                <div id="canvasIMU" class="myCanvas"></div>
+                                <div class="myCanvas">
+                                    <canvas id="canvasIMU"></canvas>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -671,8 +676,8 @@
         crossorigin="anonymous"></script>
     <!-- Chart JS -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
-
+    <script
+        src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
 </body>
 
 </html>

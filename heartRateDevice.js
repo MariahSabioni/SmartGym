@@ -8,10 +8,12 @@ class HeartRateDevice {
         this.device = null;
         this.server = null;
         //services
-        this.serviceUUID ='heart_rate';
+        this.serviceUUID = 'heart_rate';
         //characteristics
         this.dataChUUID = 'heart_rate_measurement';
     }
+    
+    /* FUNCTIONS TO HANDLE CONNECTION*/
 
     connect() {
         return navigator.bluetooth.requestDevice({ filters: [{ services: [this.serviceUUID] }] })
@@ -116,7 +118,6 @@ class HeartRateDevice {
         }
         result.time = Date.now();
         console.log(`>> sample | timestamp: ${result.time}| HR: ${result.heartRate}bpm`);
-        heartRateMeasurements.push(result);
         updateDataHR(result);
         startLoopUpdate();
     }

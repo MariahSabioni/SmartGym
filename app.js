@@ -118,7 +118,7 @@ let bleDevice = new BleDevice();
 // HR
 statusTextHR.textContent = "No HR sensor connected";
 titleTextHR.textContent = "Scan for Bluetooth HR sensor";
-//containerHR.style.display = "none";
+containerHR.style.display = "none";
 // treadmill
 statusTextTreadmill.textContent = "No treadmill connected";
 titleTextTreadmill.textContent = "Scan for Bluetooth treadmill";
@@ -132,7 +132,7 @@ containerConcept2pm.style.display = "none";
 // imu
 statusTextIMU.textContent = "No IMU sensor connected";
 titleTextIMU.textContent = "Scan for Bluetooth IMU sensor";
-//containerIMU.style.display = "none";
+containerIMU.style.display = "none";
 // ble chars
 statusTextBle.textContent = "No BLE device connected";
 titleTextBle.textContent = "Scan for Bluetooth devices";
@@ -347,39 +347,70 @@ saveSettingsButton.addEventListener('click', function () {
   $('#settingsModal').modal('hide'); // bootstrap methods require JQuery
 });
 
-/* SETTING UP CHARTS*/
+/* SET UP CHARTS*/
 
 function drawChartHR() {
   const labels = [];
   const data = {
     labels: labels,
-    datasets: [{
-      label: 'Heart Rate (bpm)',
-      backgroundColor: 'rgb(255, 99, 132)',
-      borderColor: 'rgb(255, 99, 132)',
-      data: [],
-    },]
+    datasets: [
+      {
+        label: 'Heart rate (bpm)',
+        backgroundColor: 'rgb(255, 99, 132)',
+        borderColor: 'rgba(255, 99, 132, 0.2)',
+        data: [],
+        yAxisID: 'y1',
+      },
+    ]
   };
   const config = {
     type: 'line',
     data: data,
     options: {
-      parsing: false,
+      spanGaps: true,
+      animation: { // for improved performance https://www.chartjs.org/docs/2.9.4/general/performance.html
+        duration: 0 // general animation time
+      },
+      hover: {
+        animationDuration: 0 // duration of animations when hovering an item
+      },
+      responsiveAnimationDuration: 0, // animation duration after a resize
       scales: {
-        y: {
-          beginAtZero: true
-        },
         x: {
           type: 'time',
           time: {
             unit: 'second'
+          },
+          ticks: {
+            maxRotation: 20, // for improved performance
+            minRotation: 20,
+            font: {
+              size: 10,
+            }
           }
-        }
+        },
+        y1: {
+          type: 'linear',
+          suggestedMax: 100,
+          suggestedMin: 50,
+          ticks: {
+            callback: function (val) {
+              return val.toFixed(0);
+            },
+            stepSize: 5
+          },
+          display: true,
+          position: 'left',
+          title: {
+            text: 'Heart rate (bpm)',
+            display: true,
+          }
+        },
       },
       plugins: {
         title: {
           display: true,
-          text: 'Heart rate', padding: {
+          text: 'Heart rate sensor', padding: {
             top: 5,
             bottom: 5
           }
@@ -397,33 +428,89 @@ function drawChartHR() {
     config
   );
 }
-
 function drawChartTreadmill() {
   const labels = [];
   const data = {
     labels: labels,
-    datasets: [{
-      label: measType,
-      backgroundColor: 'rgb(255, 99, 132)',
-      borderColor: 'rgb(255, 99, 132)',
-      data: [],
-    },]
+    datasets: [
+      {
+        label: 'Speed (km/h)',
+        backgroundColor: 'rgb(255, 99, 132)',
+        borderColor: 'rgba(255, 99, 132, 0.2)',
+        data: [],
+        yAxisID: 'y1',
+      },
+      {
+        label: 'Inclination (%)',
+        backgroundColor: 'rgb(122, 99, 255)',
+        borderColor: 'rgba(102, 99, 255, 0.2)',
+        data: [],
+        yAxisID: 'y2',
+      },
+    ]
   };
   const config = {
     type: 'line',
     data: data,
     options: {
+      spanGaps: true,
+      animation: { // for improved performance https://www.chartjs.org/docs/2.9.4/general/performance.html
+        duration: 0 // general animation time
+      },
+      hover: {
+        animationDuration: 0 // duration of animations when hovering an item
+      },
+      responsiveAnimationDuration: 0, // animation duration after a resize
       scales: {
-        y: {
-        },
         x: {
           type: 'time',
           time: {
             unit: 'second'
+          },
+          ticks: {
+            maxRotation: 20, // for improved performance
+            minRotation: 20,
+            font: {
+              size: 10,
+            }
           }
-        }
+        },
+        y1: {
+          type: 'linear',
+          ticks: {
+            callback: function (val) {
+              return val.toFixed(1);
+            },
+          },
+          display: true,
+          position: 'left',
+          title: {
+            text: 'Speed (km/h)',
+            display: true,
+          }
+        },
+        y2: {
+          type: 'linear',
+          ticks: {
+            callback: function (val, index) {
+              return val.toFixed(1);
+            },
+          },
+          display: true,
+          position: 'right',
+          title: {
+            text: 'Inclination (%)',
+            display: true,
+          },
+          grid: {
+            drawOnChartArea: false,
+          },
+        },
       },
       plugins: {
+        tooltip: {
+          enabled: false,
+        },
         title: {
           display: true,
           text: 'Treadmill', padding: {
@@ -444,14 +531,13 @@ function drawChartTreadmill() {
     config
   );
 }
-
 function drawChartConcept2pm() {
   const labels = [];
   const data = {
     labels: labels,
     datasets: [
       {
-        label: 'Strokes (spm)',
+        label: 'Stroke rate (spm)',
         backgroundColor: 'rgb(255, 99, 132)',
         borderColor: 'rgba(255, 99, 132, 0.2)',
         data: [],
@@ -470,12 +556,27 @@ function drawChartConcept2pm() {
     type: 'line',
     data: data,
     options: {
+      spanGaps: true,
+      animation: { // for improved performance https://www.chartjs.org/docs/2.9.4/general/performance.html
+        duration: 0 // general animation time
+      },
+      hover: {
+        animationDuration: 0 // duration of animations when hovering an item
+      },
+      responsiveAnimationDuration: 0, // animation duration after a resize
       scales: {
         x: {
           type: 'time',
           time: {
             unit: 'second'
           },
+          ticks: {
+            maxRotation: 20, // for improved performance
+            minRotation: 20,
+            font: {
+              size: 10,
+            }
+          }
         },
         y1: {
           type: 'linear',
@@ -486,10 +587,13 @@ function drawChartConcept2pm() {
           // },
           display: true,
           position: 'left',
+          title: {
+            text: 'Stroke rate (spm)',
+            display: true,
+          }
         },
         y2: {
           type: 'linear',
-          beginAtZero: true,
           ticks: {
             callback: function (val, index) {
               return index % 2 === 0 ? new Date(val * 1000).toISOString().slice(14, 19) : '';
@@ -497,6 +601,10 @@ function drawChartConcept2pm() {
           },
           display: true,
           position: 'right',
+          title: {
+            text: 'Pace (mm:ss/500m)',
+            display: true,
+          },
           grid: {
             drawOnChartArea: false,
           },
@@ -526,36 +634,78 @@ function drawChartConcept2pm() {
     config
   );
 }
-
-function drawChartIMU(measType) {
+function drawChartIMU(measType, numOfChannels) {
   const labels = [];
   const data = {
     labels: labels,
-    datasets: [{
-      label: measType,
-      backgroundColor: 'rgb(255, 99, 132)',
-      borderColor: 'rgb(255, 99, 132)',
-      data: [],
-    },]
+    datasets: [
+      {
+        label: measType,
+        backgroundColor: 'rgb(255, 99, 132)',
+        borderColor: 'rgba(255, 99, 132, 0.2)',
+        data: [],
+        yAxisID: 'y1',
+      },
+      {
+        label: measType,
+        backgroundColor: 'rgb(255, 99, 132)',
+        borderColor: 'rgba(255, 99, 132, 0.2)',
+        data: [],
+        yAxisID: 'y1',
+      },
+      {
+        label: measType,
+        backgroundColor: 'rgb(255, 99, 132)',
+        borderColor: 'rgba(255, 99, 132, 0.2)',
+        data: [],
+        yAxisID: 'y1',
+      },
+    ]
   };
   const config = {
     type: 'line',
     data: data,
     options: {
+      spanGaps: true,
+      animation: { // for improved performance https://www.chartjs.org/docs/2.9.4/general/performance.html
+        duration: 0 // general animation time
+      },
+      hover: {
+        animationDuration: 0 // duration of animations when hovering an item
+      },
+      responsiveAnimationDuration: 0, // animation duration after a resize
       scales: {
-        y: {
-        },
         x: {
           type: 'time',
           time: {
             unit: 'second'
+          },
+          ticks: {
+            maxRotation: 20, // for improved performance
+            minRotation: 20,
+            font: {
+              size: 10,
+            }
           }
-        }
+        },
+        y1: {
+          type: 'linear',
+          suggestedMax: 100,
+          suggestedMin: 50,
+          ticks: {
+            callback: function (val) {
+              return val.toFixed(0);
+            },
+            stepSize: 5
+          },
+          display: true,
+          position: 'left',
+        },
       },
       plugins: {
         title: {
           display: true,
-          text: 'IMU Measurement', padding: {
+          text: 'IMU sensor', padding: {
             top: 5,
             bottom: 5
           }
@@ -573,28 +723,27 @@ function drawChartIMU(measType) {
     config
   );
 }
-
 function resetAllCharts() {
   if (!isDeviceConnected()) {
     alert("No devices connected!");
     return;
   }
-  if (chartHR != undefined) {
+  try {
     removeAllData(chartHR);
     chartHR.reset();
-  }
-  if (chartTreadmill != undefined) {
+  } catch (e) { };
+  try {
     removeAllData(chartTreadmill);
     chartTreadmill.reset();
-  }
-  if (chartConcept2pm != undefined) {
+  } catch (e) { };
+  try {
     removeAllData(chartConcept2pm);
     chartConcept2pm.reset();
-  }
-  if (chartIMU != undefined) {
+  } catch (e) { };
+  try {
     removeAllData(chartIMU);
     chartIMU.reset();
-  }
+  } catch (e) { };
 }
 
 /* LOOP UPDATE UI INFO AND CHARTS*/
@@ -604,13 +753,10 @@ function startLoopUpdate() {
     nIntervId = setInterval(updateChartAndRecording, interval);
   }
 }
-
 function stopLoopUpdate() {
   clearInterval(nIntervId);
   nIntervId = null;
 }
-
-// loop function: we use only one setInterval since javascript is single threaded
 function updateChartAndRecording() {
   // part 0: stop loop if no device is connected
   if (!isDeviceConnected()) {
@@ -643,12 +789,14 @@ function updateChartAndRecording() {
   index = new Date(Date.now()); //not all data comes with timestamp so we use this to make it simpler.
   if (heartRateDevice.device !== null && heartRateMeasurements.length > 0) {
     let plotNewHR = heartRateMeasurements.at(-1).heartRate;
-    addData(chartHR, index, plotNewHR);
+    let plotNewData = [plotNewHR];
+    addData(chartHR, index, plotNewData);
   }
   if (treadmillDevice.device !== null && treadmillMeasurements.length > 0) {
     let plotNewSpeed = parseFloat(treadmillMeasurements.at(-1).speed);
     let plotNewInclination = parseFloat(treadmillMeasurements.at(-1).inclination);
-    addData(chartTreadmill, index, plotNewSpeed);
+    let plotNewData = [plotNewSpeed, plotNewInclination];
+    addData(chartTreadmill, index, plotNewData);
   }
   if (concept2pmDevice.device !== null) {
     if (concept2pmMeasurements.additional_status_1.length > 0) {
@@ -659,16 +807,17 @@ function updateChartAndRecording() {
     }
   }
   if (imuDevice.device !== null) {
-    if (imuMeasurements.Acc.length > 0) {
+    if (imuMeasurements != undefined) {
       let plotNewIMU = 0; //imuMeasurements.Acc.at(-1).channel_1;
       addData(chartIMU, index, plotNewIMU);
     }
   }
 }
-
 function addData(chart, label, data) {
   if (chart.data.labels.length > 3 * 60 * 1000 / interval) {
-    // chart will display 3 minutes of data
+    // for improved performance
+    chart.options.elements.point.radius = 0;
+    // chart will display 5 minutes of data
     chart.data.labels.shift();
     chart.data.datasets.forEach((dataset) => {
       dataset.data.shift();
@@ -680,23 +829,12 @@ function addData(chart, label, data) {
   });
   chart.update();
 }
-
 function removeAllData(chart) {
   chart.data.labels = [];
   chart.data.datasets.forEach((dataset) => {
     dataset.data = [];
   });
   chart.update();
-}
-
-/* UPDATE USER INTERFACE*/
-
-// show toast
-function showToast(message, title) {
-  toastMessage.textContent = message;
-  toastTitle.textContent = title;
-  var toast = new bootstrap.Toast(toastDisconnection)
-  toast.show();
 }
 
 // HR
@@ -742,7 +880,7 @@ function showConcept2pmCanva() {
 }
 
 // treadmill
-function updateDisconnectedTreadmill() {
+function updateDisconnectedTreadmill(reason) {
   statusTextTreadmill.textContent = "No treadmill connected";
   titleTextTreadmill.textContent = "Scan for Bluetooth treadmill";
   containerTreadmill.style.display = "none";
@@ -777,7 +915,7 @@ function updateDataTreadmill(treadmillMeasurement) {
 }
 
 // concept2 pm5
-function updateDisconnectedConcept2pm() {
+function updateDisconnectedConcept2pm(reason) {
   statusTextConcept2pm.textContent = "No Concept2 PM connected";
   titleTextConcept2pm.textContent = "Scan for Bluetooth Concept2 PM";
   containerConcept2pm.style.display = "none";
@@ -815,11 +953,11 @@ function updateDataConcept2pm(type, concept2pmMeasurement) {
   let printSpeed = (concept2pmMeasurements.additional_status_1 != undefined ? concept2pmMeasurements.additional_status_1.at(-1).speed : undefined);
   let printStrokeRate = (concept2pmMeasurements.additional_status_1 != undefined ? concept2pmMeasurements.additional_status_1.at(-1).strokeRate : undefined);
   let printDragFactor = (concept2pmMeasurements.general_status != undefined ? concept2pmMeasurements.general_status.at(-1).dragFactor : undefined);
-  statusTextConcept2pm.innerHTML = `Pace: ${printPace}/500m<br />Speed: ${printSpeed}m/s<br />Stroke rate: ${printStrokeRate}spm<br />Drag factor: ${printDragFactor}`;
+  statusTextConcept2pm.innerHTML = `> Pace: ${printPace}/500m<br />> Speed: ${printSpeed}m/s<br />> Stroke rate: ${printStrokeRate}spm<br />> Drag factor: ${printDragFactor}`;
 }
 
 // ble device
-function updateDisconnectedBle(reason) {
+function updateDisconnectedBle(reason, error) {
   statusTextBle.textContent = "No BLE device connected";
   titleTextBle.textContent = "Scan for Bluetooth devices";
   $("#uuidInput").removeAttr('disabled');
@@ -833,6 +971,10 @@ function updateDisconnectedBle(reason) {
       break;
     case 'disconnected':
       showToast("Disconnected from BLE device.", "BLE device");
+      break;
+    case 'invalid_uuid':
+      showToast("Disconnected from BLE device.", "BLE device");
+      statusTextBle.textContent = error.message;
       break;
     default:
       return;
@@ -913,7 +1055,7 @@ function isDeviceConnected() {
     deviceList.push('Concept2 PM: ' + concept2pmDevice.getDeviceName());
   }
   if (imuDevice.device !== null) {
-    deviceList.push('IMU: ' + concept2pmDevice.getDeviceName());
+    deviceList.push('IMU: ' + imuDevice.getDeviceName());
   }
   if (deviceList.length == 0) {
     return false;
@@ -921,7 +1063,6 @@ function isDeviceConnected() {
     return true;
   }
 }
-
 function resetMeasurements(heartRate, treadmill, concept2pm, imu) {
   if (treadmill) {
     treadmillMeasurements = [];
@@ -966,7 +1107,6 @@ function updateSettingsModalContent() {
   duration = 60;
   durationInput.value = duration;
 }
-
 function saveSettingsAndRecord() {
   if (!isDeviceConnected()) {
     alert('No devices connected. Connect a device to record data.');
@@ -1002,7 +1142,6 @@ function saveSettingsAndRecord() {
     startRecording();
   }
 }
-
 function startRecording() {
   if (fileName == null) {
     fileName = 'experiment_' + Date.now();
@@ -1018,7 +1157,6 @@ function startRecording() {
   resetMeasurements(true, true, true, true);
   setTimeout(resetAllCharts(), 500);
 }
-
 function stopRecording() {
   if (isRecording) {
     isRecording = false;
@@ -1036,7 +1174,6 @@ function stopRecording() {
     showToast("Not recording!", "Record data");
   }
 }
-
 function saveToFile() {
   var file;
   var properties = { type: 'application/json' }; // Specify the file's mime-type.

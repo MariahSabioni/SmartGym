@@ -79,8 +79,15 @@ class BleDevice {
                 });
                 return queue;
             })
-            .catch(error => {
-                console.log('Argh! ' + error);
+            .catch(e => {
+                if (e.name == 'NotFoundError') {
+                    this.device.removeEventListener('gattserverdisconnected', this.onDisconnected);
+                    this.device.gatt.disconnect();
+                    console.log(`> ${this.device.name} bluetooth device disconnected due to error ${e.name} : ${e.message}`);
+                    updateDisconnectedBle('invalid_uuid', e);
+                } else {
+                    console.log(e);
+                }
             });
     }
 

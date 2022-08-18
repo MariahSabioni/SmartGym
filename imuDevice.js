@@ -32,6 +32,7 @@ class ImuDevice {
             13: 'ERROR DEVICE IN CHARGER'
         }
         this.measTypes = {
+            0: { value: 'HR', name: 'heart rate', unit: 'bpm', channels: [1] },
             1: { value: 'PPG', name: 'photoplethysmogram', unit: 'NA', sample_rate: [135], resolution: [22], range: ['N/A'], channels: [4] },
             2: { value: 'Acc', name: 'accelerometer', unit: 'g', sample_rate: [52], resolution: [16], range: [8], channels: [3] },
             3: { value: 'PPI', name: 'pp interval', unit: 's' },
@@ -146,9 +147,12 @@ class ImuDevice {
                         return characteristic.startNotifications();
                     })
                     .then(characteristic => {
-                        characteristic.addEventListener('characteristicvaluechanged', this.parseHeartRate);
-                        console.log(`> request sent to ${this.device.name} start notifications for HR`);
-                        this.imuStreamList.push('HR');
+                        characteristic.addEventListener('characteristicvaluechanged', this.parseHeartRate.bind(this));
+                        let measId = 0;
+                        let measType = this.measTypes[measId].value;
+                        console.log(`> request sent to ${this.device.name} start notifications for ${measType}`);
+                        this.imuStreamList.push(measType);
+                        updateConnectedStreamIMU(measType, measId, this.measTypes[measId].channels);
                     })
                     .catch(error => {
                         console.log(error);
@@ -165,9 +169,12 @@ class ImuDevice {
                         return characteristic.stopNotifications()
                     })
                     .then(characteristic => {
-                        characteristic.removeEventListener('characteristicvaluechanged', this.parseHeartRate);
-                        console.log(`> request sent to ${this.device.name} stop notifications for HR`);
-                        this.imuStreamList = removeElement(this.imuStreamList, 'HR');
+                        characteristic.removeEventListener('characteristicvaluechanged', this.parseHeartRate.bind(this));
+                        let measId = 0;
+                        let measType = this.measTypes[measId].value;
+                        console.log(`> request sent to ${this.device.name} stop notifications for ${measType}`);
+                        this.imuStreamList = removeElement(this.imuStreamList, measType);
+                        updateDisconnectedStreamIMU(measType, measId);
                     })
                     .catch(error => {
                         console.log(error);
@@ -195,16 +202,16 @@ class ImuDevice {
 
     /* FUNCTIONS TO SEND COMMANDS TO CONTROL CHARACTERISTIC*/
 
-    sendCommand(measValue, action, settings) {
+    sendCommand(measType, action, settings) {
         let server = this.server;
-        let measId = getKeyByPropValue(this.measTypes, measValue, 'value');
+        let measId = getKeyByPropValue(this.measTypes, measType, 'value');
         server.getPrimaryService(this.serviceUUID)
             .then(service => {
                 return service.getCharacteristic(this.controlChUUID);
             })
             .then(characteristic => {
                 let actionId = getKeyByValue(this.opCodes, action);
-                console.log(`> request sent to ${action} type ${measValue}`);
+                console.log(`> request sent to ${action} type ${measType}`);
                 let val;
                 switch (action) {
                     case 'get_measurement_settings':
@@ -305,7 +312,7 @@ class ImuDevice {
 
         let measId = value.getUint8(0);
         let measType = this.measTypes[measId].value;
-        let timestamp = value.getBigUint64(1, true)
+        let timestamp = Math.round(Number(value.getBigUint64(1, true))/1000000);
         let frameType = this.frameTypes[value.getUint8(9)];
         let frameSize = value.byteLength;
         console.log(`> ${measType} ${frameType} length: ${frameSize} bytes at timestamp: ${timestamp}`)
@@ -377,6 +384,7 @@ class ImuDevice {
         let flags = value.getUint8(0);
         let rate16Bits = flags & 0x1;
         let result = {};
+        let results = [];
         let index = 1;
         if (rate16Bits) {
             result.heartRate = value.getUint16(index, /*littleEndian=*/true);
@@ -406,7 +414,8 @@ class ImuDevice {
         result.time = Date.now();
         result.measurementType = 'HR';
         console.log(`>> sample | timestamp: ${result.time}| HR: ${result.heartRate}bpm`);
-        updateDataIMU(result);
+        results.push(result);
+        updateDataIMU(results);
         startLoopUpdate();
     }
 
@@ -466,11 +475,10 @@ class ImuDevice {
                 updateImuSettings(measType, measId);
             } else if (opCode == 'start_measurement' && errorType == 'SUCCESS' && measType != 'SDK') {
                 this.imuStreamList.push(measType);
-                $("#switchSDK").attr('disabled', 'disabled');
-                updateConnectedStreamIMU(measType, this.currentSetting[measId].channels);
+                updateConnectedStreamIMU(measType, measId, this.currentSetting[measId].channels);
             } else if (opCode == 'stop_measurement' && errorType == 'SUCCESS' && measType != 'SDK') {
                 this.imuStreamList = removeElement(this.imuStreamList, measType);
-                if (this.imuStreamList.length == 0) { $("#switchSDK").removeAttr('disabled'); }
+                updateDisconnectedStreamIMU(measType, measId);
             }
         }
         else {

@@ -320,10 +320,25 @@ switches.forEach(function (mySwitch) {
 switchHR.addEventListener('change', function () {
   if (switchHR.checked) {
     imuDevice.findHeartRateCharacteristic();
+    document.getElementById('checkboxHR').checked = true;
+    document.getElementById('checkboxHR').disabled = true;
   } else {
     imuDevice.stopHeartRateCharacteristic();
+    document.getElementById('checkboxHR').disabled = false;
   }
 });
+// document.getElementById('pills-chart-imu-tab').addEventListener('click', function () {
+//   try {
+//     if (imuDevice.imuStreamList.length > 0) {
+//       imuDevice.imuStreamList.forEach((measType) => {
+//         measId = imuDevice.getKeyByPropValue(imuDevice.measTypes, measType, value);
+//         drawChartIMU(measType, imuDevice.currentSetting[measId].channels);
+//       });
+//     }
+//   } catch (e) {
+//     showToast("Subscribe to a data stream to get data", "IMU sensor");
+//   }
+// });
 // ble chars
 connectButtonBle.addEventListener('click', function () {
   bleDevice.connect()
@@ -634,34 +649,27 @@ function drawChartConcept2pm() {
     config
   );
 }
-function drawChartIMU(measType, numOfChannels) {
+function drawChartIMU(measType, measId, numOfChannels) {
   const labels = [];
   const data = {
     labels: labels,
-    datasets: [
-      {
-        label: measType,
-        backgroundColor: 'rgb(255, 99, 132)',
-        borderColor: 'rgba(255, 99, 132, 0.2)',
-        data: [],
-        yAxisID: 'y1',
-      },
-      {
-        label: measType,
-        backgroundColor: 'rgb(255, 99, 132)',
-        borderColor: 'rgba(255, 99, 132, 0.2)',
-        data: [],
-        yAxisID: 'y1',
-      },
-      {
-        label: measType,
-        backgroundColor: 'rgb(255, 99, 132)',
-        borderColor: 'rgba(255, 99, 132, 0.2)',
-        data: [],
-        yAxisID: 'y1',
-      },
-    ]
+    datasets: []
   };
+  const lineColors = {
+    0: { backgroundColor: 'rgb(255, 99, 132)', borderColor: 'rgba(255, 99, 132, 0.2)' },
+    1: { backgroundColor: 'rgb(122, 99, 255)', borderColor: 'rgba(102, 99, 255, 0.2)' },
+    2: { backgroundColor: 'rgb(70, 233, 100)', borderColor: 'rgba(70, 233, 100, 0.2)' },
+    3: { backgroundColor: 'rgb(255, 153, 51)', borderColor: 'rgba(255, 153, 51, 0.2)' },
+  };
+  for (let i = 0; i < numOfChannels; i++) {
+    data.datasets[i] = {
+      label: measType + "_channel_" + i,
+      backgroundColor: lineColors[i].backgroundColor,
+      borderColor: lineColors[i].borderColor,
+      data: [],
+      yAxisID: 'y1',
+    };
+  }
   const config = {
     type: 'line',
     data: data,
@@ -690,13 +698,10 @@ function drawChartIMU(measType, numOfChannels) {
         },
         y1: {
           type: 'linear',
-          suggestedMax: 100,
-          suggestedMin: 50,
           ticks: {
             callback: function (val) {
-              return val.toFixed(0);
+              return val.toFixed(1);
             },
-            stepSize: 5
           },
           display: true,
           position: 'left',
@@ -718,8 +723,10 @@ function drawChartIMU(measType, numOfChannels) {
       maintainAspectRatio: false,
     }
   };
-  chartIMU = new Chart(
-    document.getElementById('canvasIMU'),
+  let chartId = "chartIMU_" + measType;
+  let targetCtx = 'canvasIMU_' + measId;
+  window[chartId] = new Chart(
+    document.getElementById(targetCtx),
     config
   );
 }
@@ -809,12 +816,12 @@ function updateChartAndRecording() {
   if (imuDevice.device !== null) {
     if (imuMeasurements != undefined) {
       let plotNewIMU = 0; //imuMeasurements.Acc.at(-1).channel_1;
-      addData(chartIMU, index, plotNewIMU);
+      //addData(chartIMU, index, plotNewIMU);
     }
   }
 }
 function addData(chart, label, data) {
-  if (chart.data.labels.length > 3 * 60 * 1000 / interval) {
+  if (chart.data.labels.length > 30 * 60 * 1000 / interval) {
     // for improved performance
     chart.options.elements.point.radius = 0;
     // chart will display 5 minutes of data
@@ -921,7 +928,7 @@ function updateDisconnectedConcept2pm(reason) {
   containerConcept2pm.style.display = "none";
   concept2pmDevice = new Concept2pmDevice();
   resetMeasurements(false, false, true, false);
-  chartTreadmill.destroy();
+  chartConcept2pm.destroy();
   switch (reason) {
     case 'failed_connection':
       showToast("Connection to Concept2 PM failed. Try again.", "Concept2 PM device");
@@ -935,7 +942,6 @@ function updateDisconnectedConcept2pm(reason) {
     default:
       return;
   }
-
 }
 function updateConnectedConcept2pm() {
   titleTextConcept2pm.textContent = "Connected to: " + concept2pmDevice.getDeviceName();
@@ -989,10 +995,32 @@ function updateConnectedBle(response) {
 function updateDisconnectedIMU(reason) {
   statusTextIMU.textContent = "No IMU sensor connected";
   titleTextIMU.textContent = "Scan for Bluetooth IMU sensor";
+  //destroy charts and disable pills
+  $('#pills-streams-imu-tab').trigger('click');
   containerIMU.style.display = "none";
+  imuDevice.imuStreamList.forEach((measType) => {
+    try {
+      let chartId = "chartIMU_" + measType;
+      window[chartId].destroy();
+    } catch (e) { console.log(e) }
+    try {
+      let tabPillName = "#pills-chart-imu-tab-" + getKeyByPropValue(imuDevice.measTypes, measType, 'value');
+      $(tabPillName).attr('disabled', 'disabled');
+      $(tabPillName).addClass('disabled');
+    } catch (e) { console.log(e) }
+  });
+  // turn off all checkboxes and switches
+  let turnOffList = ['Acc', 'Gyr', 'Mag', 'PPG', 'HR'];
+  turnOffList.forEach((type) => {
+    $('#container' + type + 'Settings').collapse("hide");
+    document.getElementById('checkbox' + type).checked = false;
+    document.getElementById('checkbox' + type).disabled = false;
+    document.getElementById('switch' + type).checked = false;
+  });
+  // turn on SDK switch
+  $("#switchSDK").removeAttr('disabled');
   imuDevice = new ImuDevice();
   resetMeasurements(false, false, false, true);
-  chartIMU.destroy();
   switch (reason) {
     case 'failed_connection':
       showToast("Connection to IMU sensor failed. Try again.", "IMU sensor");
@@ -1026,17 +1054,40 @@ function updateImuSettings(measType, measId) {
     });
   });
 }
-function updateConnectedStreamIMU(measType) {
-  drawChartIMU(measType);
+function updateConnectedStreamIMU(measType, measId, numOfChannels) {
   statusTextIMU.innerHTML = `Receiving data types: ${imuDevice.imuStreamList}`;
-}
-function updateDataIMU(imuMeasurement) {
-  //statusTextIMU.innerHTML = `Receiving data types: ${imuDevice.imuStreamList}`;
-  let measurementType = imuMeasurement[0].measurementType;
-  if (imuMeasurements[measurementType] == undefined) {
-    imuMeasurements[measurementType] = []
+  let tabPillName = "#pills-chart-imu-tab-" + measId;
+  $(tabPillName).removeAttr('disabled');
+  $(tabPillName).removeClass('disabled');
+  if (measType != 'HR') {
+    $("#switchSDK").attr('disabled', 'disabled');
   }
-  imuMeasurement.forEach(function (sample) {
+  drawChartIMU(measType, measId, numOfChannels);
+}
+function updateDisconnectedStreamIMU(measType, measId) {
+  let tabPillName = "#pills-chart-imu-tab-" + measId;
+  $(tabPillName).attr('disabled', 'disabled');
+  $(tabPillName).addClass('disabled');
+  let chartId = "chartIMU_" + measType;
+  window[chartId].destroy();
+  if (imuDevice.imuStreamList.length == 0) {
+    try { $("#switchSDK").removeAttr('disabled'); } catch (e) { };
+    updateConnectedIMU();
+  } else {
+    statusTextIMU.innerHTML = `Receiving data types: ${imuDevice.imuStreamList}`;
+    if (imuDevice.imuStreamList.length == 1 && imuDevice.imuStreamList[0] == 'HR') {
+      try { $("#switchSDK").removeAttr('disabled'); } catch (e) { };
+    } else {
+      $("#switchSDK").attr('disabled', 'disabled');
+    }
+  }
+}
+function updateDataIMU(imuMeasurementArray) {
+  let measurementType = imuMeasurementArray[0].measurementType;
+  if (imuMeasurements[measurementType] == undefined) {
+    imuMeasurements[measurementType] = [];
+  }
+  imuMeasurementArray.forEach(function (sample) {
     imuMeasurements[measurementType].push(sample);
   });
 }
@@ -1076,7 +1127,7 @@ function resetMeasurements(heartRate, treadmill, concept2pm, imu) {
   if (imu) {
     combinedAcc = [];
     combinedGyro = [];
-    imuMeasurements = [];
+    imuMeasurements = {};
   }
 }
 

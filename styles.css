@@ -23,9 +23,18 @@
     margin-right: auto;
 }
 
+/* .nav-pills .nav-link {
+    background-color: white !important;
+    color: blue !important;
+}
+
 .nav-pills .nav-link.active {
     background-color: lightgray !important;
     color: black !important;
+} */
+
+.nav-pills .nav-link.disabled {
+    color: gray !important;
 }
 
 .card {

@@ -71,7 +71,8 @@
         <h5 class="card-header" id="headingTreadmill" aria-expanded="true" aria-controls="collapseTreadmill"
             style="display: flex; align-items: center;">
             <div style="width:auto; float:left; margin-right: 10px; height: 100%;">Fitness machine</div>
-            <select id="selectionClickableFitnessMachine" class="form-select" aria-label="select" style="width:auto; font-size:large; ">
+            <select id="selectionClickableFitnessMachine" class="form-select" aria-label="select"
+                style="width:auto; font-size:large; ">
                 <option value="0" selected>FTMS Treadmill</option>
                 <option value="1">Concept2 PM5</option>
             </select>
@@ -241,7 +242,7 @@
     </div>
     <div class="card">
         <h5 class="card-header" id="headingIMU" data-bs-toggle="collapse" data-bs-target="#collapseIMU"
-            aria-expanded="true" aria-controls="collapseIMU">Polar Verity Sense IMU sensor</h5>
+            aria-expanded="true" aria-controls="collapseIMU">Polar Verity Sense</h5>
         <div id="collapseIMU" class="collapse show" aria-labelledby="headingIMU">
             <div class="card-body">
                 <div class="row">
@@ -259,9 +260,29 @@
                                     aria-controls="pills-streams-imu" aria-selected="true">Data Streams</button>
                             </li>
                             <li class="nav-item" role="presentation">
-                                <button class="nav-link" id="pills-chart-imu-tab" data-bs-toggle="pill"
-                                    data-bs-target="#pills-chart-imu" type="button" role="tab"
-                                    aria-controls="pills-chart-imu" aria-selected="false">Chart</button>
+                                <button class="nav-link disabled" id="pills-chart-imu-tab-2" data-bs-toggle="pill"
+                                    data-bs-target="#pills-chart-imu-2" type="button" role="tab"
+                                    aria-controls="pills-chart-imu-2" aria-selected="false" disabled>Chart Acc</button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link disabled" id="pills-chart-imu-tab-5" data-bs-toggle="pill"
+                                    data-bs-target="#pills-chart-imu-5" type="button" role="tab"
+                                    aria-controls="pills-chart-imu-5" aria-selected="false" disabled>Chart Gyr</button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link disabled" id="pills-chart-imu-tab-6" data-bs-toggle="pill"
+                                    data-bs-target="#pills-chart-imu-6" type="button" role="tab"
+                                    aria-controls="pills-chart-imu-6" aria-selected="false" disabled>Chart Mag</button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link disabled" id="pills-chart-imu-tab-1" data-bs-toggle="pill"
+                                    data-bs-target="#pills-chart-imu-1" type="button" role="tab"
+                                    aria-controls="pills-chart-imu-1" aria-selected="false" disabled>Chart PPG</button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link disabled" id="pills-chart-imu-tab-0" data-bs-toggle="pill"
+                                    data-bs-target="#pills-chart-imu-0" type="button" role="tab"
+                                    aria-controls="pills-chart-imu-0" aria-selected="false" disabled>Chart HR</button>
                             </li>
                         </ul>
                         <div class="tab-content" id="pills-tabContent-imu">
@@ -545,10 +566,34 @@
                                     </form>
                                 </div>
                             </div>
-                            <div class="tab-pane fade" id="pills-chart-imu" role="tabpanel"
-                                aria-labelledby="pills-chart-imu-tab">
+                            <div class="tab-pane fade" id="pills-chart-imu-1" role="tabpanel"
+                                aria-labelledby="pills-chart-imu-tab-1">
                                 <div class="myCanvas">
-                                    <canvas id="canvasIMU"></canvas>
+                                    <canvas id="canvasIMU_1"></canvas>
+                                </div>
+                            </div>
+                            <div class="tab-pane fade" id="pills-chart-imu-2" role="tabpanel"
+                                aria-labelledby="pills-chart-imu-tab-2">
+                                <div class="myCanvas">
+                                    <canvas id="canvasIMU_2"></canvas>
+                                </div>
+                            </div>
+                            <div class="tab-pane fade" id="pills-chart-imu-5" role="tabpanel"
+                                aria-labelledby="pills-chart-imu-tab-5">
+                                <div class="myCanvas">
+                                    <canvas id="canvasIMU_5"></canvas>
+                                </div>
+                            </div>
+                            <div class="tab-pane fade" id="pills-chart-imu-6" role="tabpanel"
+                                aria-labelledby="pills-chart-imu-tab-6">
+                                <div class="myCanvas">
+                                    <canvas id="canvasIMU_6"></canvas>
+                                </div>
+                            </div>
+                            <div class="tab-pane fade" id="pills-chart-imu-0" role="tabpanel"
+                                aria-labelledby="pills-chart-imu-tab-0">
+                                <div class="myCanvas">
+                                    <canvas id="canvasIMU_0"></canvas>
                                 </div>
                             </div>
                         </div>

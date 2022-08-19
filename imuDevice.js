@@ -312,7 +312,7 @@ class ImuDevice {
 
         let measId = value.getUint8(0);
         let measType = this.measTypes[measId].value;
-        let timestamp = Math.round(Number(value.getBigUint64(1, true))/1000000);
+        let timestamp = Math.round(Number(value.getBigUint64(1, true)) / 1000000);
         let frameType = this.frameTypes[value.getUint8(9)];
         let frameSize = value.byteLength;
         console.log(`> ${measType} ${frameType} length: ${frameSize} bytes at timestamp: ${timestamp}`)
@@ -331,7 +331,7 @@ class ImuDevice {
             let refSampleStr = '>> refSample | timestamp: ' + refSample.time;
             for (let i = 0; i < numOfChannels; i++) {
                 let channel = 'channel_' + i;
-                refSample[channel] = value.getUint16(10 + 2 * i, true);
+                refSample[channel] = value.getInt16(10 + 2 * i, true);
                 refSampleStr += ' | ' + channel + ': ' + refSample[channel];
             };
             console.log(refSampleStr);
@@ -348,7 +348,7 @@ class ImuDevice {
                 let indexDeltaStart = offset + 2;
                 let indexDeltaStop = indexDeltaStart + deltaBytesCount;
                 let deltaData = value.buffer.slice(indexDeltaStart, indexDeltaStop);
-                let binDeltaData = bufferToBinString(deltaData);
+                let binDeltaData = bufferToReverseBinString(deltaData);
                 for (let i = 0; i < sampleCount; i++) {
                     let binSample = binDeltaData.slice(i);
                     let sample = {
@@ -359,15 +359,20 @@ class ImuDevice {
                     let sampleStr = '>> sample | timestamp: ' + sample.time;
                     for (let j = 0; j < numOfChannels; j++) {
                         let channel = 'channel_' + j;
-                        let channelSample = binSample.slice(j, deltaSize);
+                        let channelSample = binSample.slice(j, deltaSize).split("").reverse().join("");
+                        let unsignedInt = parseInt(channelSample, 2);
                         if (measType == 'Acc') {
-                            sample[channel] = 0.24399999 * (parseInt(channelSample.split("").reverse().join(""), 2) + refSample[channel]);
+                            sample[channel] = 0.24399999 * (intToUint(unsignedInt, deltaSize) + refSample[channel]);
                         } else {
-                            sample[channel] = parseInt(channelSample.split("").reverse().join(""), 2) + refSample[channel];
+                            sample[channel] = intToUint(unsignedInt, deltaSize) + refSample[channel];
                         }
                         sampleStr += ' | ' + channel + ': ' + sample[channel];
                     };
-                    console.log(sampleStr)
+                    if (measType == 'Acc' || measType == 'Gyr') {
+                        sample.combined = Math.sqrt(Math.pow(sample.channel_0, 2) + Math.pow(sample.channel_1, 2) + Math.pow(sample.channel_2, 2)) - (measType == 'Acc' ? 1000 : 0);
+                        sampleStr += ' | combined: ' + sample.combined;
+                    }
+                    console.log(sampleStr);
                     results.push(sample);
                     frameSampleIndex++;
                 }

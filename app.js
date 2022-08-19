@@ -327,18 +327,6 @@ switchHR.addEventListener('change', function () {
     document.getElementById('checkboxHR').disabled = false;
   }
 });
-// document.getElementById('pills-chart-imu-tab').addEventListener('click', function () {
-//   try {
-//     if (imuDevice.imuStreamList.length > 0) {
-//       imuDevice.imuStreamList.forEach((measType) => {
-//         measId = imuDevice.getKeyByPropValue(imuDevice.measTypes, measType, value);
-//         drawChartIMU(measType, imuDevice.currentSetting[measId].channels);
-//       });
-//     }
-//   } catch (e) {
-//     showToast("Subscribe to a data stream to get data", "IMU sensor");
-//   }
-// });
 // ble chars
 connectButtonBle.addEventListener('click', function () {
   bleDevice.connect()

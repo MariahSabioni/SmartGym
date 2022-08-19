@@ -47,6 +47,45 @@ function bufferToBinString(buffer) {
     return bin.join('');
 }
 
+function bufferToReverseBinString(buffer) {
+    array = new Uint8Array(buffer);
+    let bin = [];
+    array.forEach(function (element) {
+        let elementBin = (element >>> 0).toString(2).split();
+        for (let i = 0; i < 8 - elementBin.length; i++) {
+            elementBin.unshift("0");
+        }
+        bin.push(elementBin.reverse().join(''));
+    });
+    return bin.join('');
+}
+
+function intToUint(int, nbit) {
+    var u = new Uint32Array(1);
+    nbit = +nbit || 32;
+    if (nbit > 32) throw new RangeError('intToUint only supports ints up to 32 bits');
+    u[0] = int;
+    if (nbit < 32) { // don't accidentally sign again
+        int = Math.pow(2, nbit) - 1;
+        return u[0] & int;
+    } else {
+        return u[0];
+    }
+}
+
+function bufferToReverseBinArray(buffer) {
+    array = new Uint8Array(buffer);
+    let bin = [];
+    array.forEach(function (element) {
+        let elementBin = (element >>> 0).toString(2).split();
+        for (let i = 0; i < 8 - elementBin.length; i++) {
+            elementBin.unshift("0");
+        }
+        bin.push(elementBin.reverse().join(''));
+    });
+    return bin;
+}
+
 /* OBJECTS AND ARRAYS UTILS*/
 
 // get object key from value
@@ -72,4 +111,4 @@ function showToast(message, title) {
     toastTitle.textContent = title;
     var toast = new bootstrap.Toast(toastDisconnection)
     toast.show();
-  }
+}

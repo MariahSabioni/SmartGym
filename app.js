@@ -90,9 +90,8 @@ let treadmillMeasurements = [];
 // concept2 pm5
 let concept2pmMeasurements = [];
 // imu
-let combinedAcc = [];
-let combinedGyro = [];
 let imuMeasurements = {};
+let tempImuMeasurements = {};
 // recording data
 let fileName = null;
 let duration = null;
@@ -786,12 +785,14 @@ function updateChartAndRecording() {
     let plotNewHR = heartRateMeasurements.at(-1).heartRate;
     let plotNewData = [plotNewHR];
     addData(chartHR, index, plotNewData);
+    chartHR.update();
   }
   if (treadmillDevice.device !== null && treadmillMeasurements.length > 0) {
     let plotNewSpeed = parseFloat(treadmillMeasurements.at(-1).speed);
     let plotNewInclination = parseFloat(treadmillMeasurements.at(-1).inclination);
     let plotNewData = [plotNewSpeed, plotNewInclination];
     addData(chartTreadmill, index, plotNewData);
+    chartTreadmill.update();
   }
   if (concept2pmDevice.device !== null) {
     if (concept2pmMeasurements.additional_status_1.length > 0) {
@@ -799,20 +800,39 @@ function updateChartAndRecording() {
       let plotNewPace = (concept2pmMeasurements.additional_status_1.at(-1).currentPace);
       let plotNewData = [plotNewStroke, plotNewPace];
       addData(chartConcept2pm, index, plotNewData);
+      chartConcept2pm.update();
     }
   }
   if (imuDevice.device !== null) {
-    if (imuMeasurements != undefined) {
-      let plotNewIMU = 0; //imuMeasurements.Acc.at(-1).channel_1;
-      //addData(chartIMU, index, plotNewIMU);
+    if (tempImuMeasurements != undefined) {
+      Object.entries(tempImuMeasurements).forEach(([key, value]) => {
+        let chartId;
+        value.forEach((element) => {
+          let measType = element.measurementType;
+          let measId = element.measurementId;
+          chartId = "chartIMU_" + measType;
+          let numOfChannels = imuDevice.currentSetting[measId].channels;
+          let plotNewData = [];
+          for (let i = 0; i < numOfChannels; i++) {
+            plotNewData.push(element['channel_' + i]);
+          }
+          let refTimestamp = new Date('2017-01-01T10:00:00').getMilliseconds(); // reference date https://github.com/polarofficial/polar-ble-sdk/issues/154
+          let index = new Date(element.timeCorrected + refTimestamp);
+          addData(window[chartId], index, plotNewData);
+        });
+        window[chartId].update();
+      });
+      tempImuMeasurements = {};
     }
   }
 }
 function addData(chart, label, data) {
-  if (chart.data.labels.length > 30 * 60 * 1000 / interval) {
+  if (chart.data.labels.length > 5 * 60 * 1000 / interval) {
     // for improved performance
     chart.options.elements.point.radius = 0;
-    // chart will display 5 minutes of data
+  }
+  if (chart.data.labels.length > 10 * 60 * 1000 / interval) {
+    // chart will display 10 minutes of data
     chart.data.labels.shift();
     chart.data.datasets.forEach((dataset) => {
       dataset.data.shift();
@@ -822,7 +842,6 @@ function addData(chart, label, data) {
   chart.data.datasets.forEach((dataset, index) => {
     dataset.data.push(data[index]);
   });
-  chart.update();
 }
 function removeAllData(chart) {
   chart.data.labels = [];
@@ -1078,6 +1097,12 @@ function updateDataIMU(imuMeasurementArray) {
   imuMeasurementArray.forEach(function (sample) {
     imuMeasurements[measurementType].push(sample);
   });
+  if (tempImuMeasurements[measurementType] == undefined) {
+    tempImuMeasurements[measurementType] = [];
+  }
+  imuMeasurementArray.forEach(function (sample) {
+    tempImuMeasurements[measurementType].push(sample);
+  });
 }
 
 /* BLE DEVICE UTILS*/
@@ -1113,8 +1138,6 @@ function resetMeasurements(heartRate, treadmill, concept2pm, imu) {
     concept2pmMeasurements = [];
   }
   if (imu) {
-    combinedAcc = [];
-    combinedGyro = [];
     imuMeasurements = {};
   }
 }
@@ -1189,18 +1212,17 @@ function startRecording() {
     duration = 60;
   }
   duration = duration * 60 * 1000 //miliseconds
-
   isRecording = true;
   recordingStartTime = Date.now();
   settingsButton.disabled = true;
   resetMeasurements(true, true, true, true);
   setTimeout(resetAllCharts(), 500);
+  console.log('> Recording started');
 }
 function stopRecording() {
   if (isRecording) {
     isRecording = false;
     saveToFile();
-    //reset UI
     statusTextRecord.textContent = "Not recording";
     titleTextRecord.textContent = "Record and save data to .json file";
     settingsButton.disabled = false;
@@ -1208,7 +1230,8 @@ function stopRecording() {
     duration = null;
     recordingStartTime = null;
     resetMeasurements(true, true, true, true);
-    setTimeout(resetAllCharts(), 1000)
+    setTimeout(resetAllCharts(), 1000);
+    console.log('> Recording stopped');
   } else {
     showToast("Not recording!", "Record data");
   }

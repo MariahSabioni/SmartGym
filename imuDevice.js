@@ -65,6 +65,12 @@ class ImuDevice {
             6: { sample_rate: 50, resolution: 16, range: 50, channels: 3 },
         }
         this.imuStreamList = [];
+        this.previousTimeStamps = {
+            1: null,
+            2: null,
+            5: null,
+            6: null,
+        }
     }
 
     /* FUNCTIONS TO HANDLE CONNECTION*/
@@ -315,6 +321,7 @@ class ImuDevice {
         let timestamp = Math.round(Number(value.getBigUint64(1, true)) / 1000000);
         let frameType = this.frameTypes[value.getUint8(9)];
         let frameSize = value.byteLength;
+        //let sampleRate = this.currentSetting[measId].sample_rate;
         console.log(`> ${measType} ${frameType} length: ${frameSize} bytes at timestamp: ${timestamp}`)
 
         let results = [];
@@ -326,6 +333,7 @@ class ImuDevice {
             console.log(`>> refSampleSize: ${refSampleSize}`);
             let refSample = {
                 measurementType: measType,
+                measurementId: measId,
                 time: timestamp,
             }
             let refSampleStr = '>> refSample | timestamp: ' + refSample.time;
@@ -338,7 +346,6 @@ class ImuDevice {
 
             let offset = 10 + refSampleSize;
             let frameSampleIndex = 0;
-
             do {
                 let deltaSize = value.getUint8(offset);
                 let sampleCount = value.getUint8(offset + 1);
@@ -353,6 +360,7 @@ class ImuDevice {
                     let binSample = binDeltaData.slice(i);
                     let sample = {
                         measurementType: measType,
+                        measurementId: measId,
                         id: frameSampleIndex,
                         time: timestamp,
                     }
@@ -379,7 +387,15 @@ class ImuDevice {
                 offset = offset + 2 + deltaBytesCount;
             } while (offset < value.byteLength);
         }
+        if (this.previousTimeStamps[measId] != null) {
+            results.forEach((sample, index, array) => {
+                let timeCorrected = this.previousTimeStamps[measId] + (index + 1) * ((sample.time - this.previousTimeStamps[measId]) / (results.length));
+                let source = { timeCorrected: timeCorrected };
+                array[index] = Object.assign(sample, source);
+            });
+        }
         updateDataIMU(results);
+        this.previousTimeStamps[measId] = timestamp;
         startLoopUpdate();
     }
 
@@ -418,6 +434,7 @@ class ImuDevice {
         }
         result.time = Date.now();
         result.measurementType = 'HR';
+        result.measurementId = 0;
         console.log(`>> sample | timestamp: ${result.time}| HR: ${result.heartRate}bpm`);
         results.push(result);
         updateDataIMU(results);
@@ -483,6 +500,7 @@ class ImuDevice {
                 updateConnectedStreamIMU(measType, measId, this.currentSetting[measId].channels);
             } else if (opCode == 'stop_measurement' && errorType == 'SUCCESS' && measType != 'SDK') {
                 this.imuStreamList = removeElement(this.imuStreamList, measType);
+                this.previousTimeStamps[measId] = null;
                 updateDisconnectedStreamIMU(measType, measId);
             }
         }

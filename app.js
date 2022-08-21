@@ -64,6 +64,7 @@ let checkboxAcc = document.getElementById("checkboxAcc");
 let containerAccSettings = document.getElementById("containerAccSettings");
 let switchHR = document.getElementById("switchHR");
 let switchSDK = document.getElementById("switchSDK");
+let pillsTabIMU = document.getElementById('pills-tab-imu');
 // ble chars
 let connectButtonBle = document.getElementById('connectButtonBle');
 let disconnectButtonBle = document.getElementById('disconnectButtonBle');
@@ -91,7 +92,8 @@ let treadmillMeasurements = [];
 let concept2pmMeasurements = [];
 // imu
 let imuMeasurements = {};
-let tempImuMeasurements = {};
+//let tempImuMeasurements = {};
+let selectedIMUTabId;
 // recording data
 let fileName = null;
 let duration = null;
@@ -326,6 +328,15 @@ switchHR.addEventListener('change', function () {
     document.getElementById('checkboxHR').disabled = false;
   }
 });
+pillsTabIMU.addEventListener('shown.bs.tab', event => {
+  selectedIMUTabId = event.target.id.slice(-1);
+  console.log(selectedIMUTabId);
+  if (imuDevice.device !== null) {
+    imuDevice.imuStreamList.forEach((measType) => {
+      try { window["chartIMU_" + measType].update(); } catch (e) { };
+    });
+  }
+})
 // ble chars
 connectButtonBle.addEventListener('click', function () {
   bleDevice.connect()
@@ -370,13 +381,7 @@ function drawChartHR() {
     data: data,
     options: {
       spanGaps: true,
-      animation: { // for improved performance https://www.chartjs.org/docs/2.9.4/general/performance.html
-        duration: 0 // general animation time
-      },
-      hover: {
-        animationDuration: 0 // duration of animations when hovering an item
-      },
-      responsiveAnimationDuration: 0, // animation duration after a resize
+      animation: false,
       scales: {
         x: {
           type: 'time',
@@ -456,13 +461,7 @@ function drawChartTreadmill() {
     data: data,
     options: {
       spanGaps: true,
-      animation: { // for improved performance https://www.chartjs.org/docs/2.9.4/general/performance.html
-        duration: 0 // general animation time
-      },
-      hover: {
-        animationDuration: 0 // duration of animations when hovering an item
-      },
-      responsiveAnimationDuration: 0, // animation duration after a resize
+      animation: false,
       scales: {
         x: {
           type: 'time',
@@ -559,13 +558,7 @@ function drawChartConcept2pm() {
     data: data,
     options: {
       spanGaps: true,
-      animation: { // for improved performance https://www.chartjs.org/docs/2.9.4/general/performance.html
-        duration: 0 // general animation time
-      },
-      hover: {
-        animationDuration: 0 // duration of animations when hovering an item
-      },
-      responsiveAnimationDuration: 0, // animation duration after a resize
+      animation: false,
       scales: {
         x: {
           type: 'time',
@@ -662,13 +655,7 @@ function drawChartIMU(measType, measId, numOfChannels) {
     data: data,
     options: {
       spanGaps: true,
-      animation: { // for improved performance https://www.chartjs.org/docs/2.9.4/general/performance.html
-        duration: 0 // general animation time
-      },
-      hover: {
-        animationDuration: 0 // duration of animations when hovering an item
-      },
-      responsiveAnimationDuration: 0, // animation duration after a resize
+      animation: false,
       scales: {
         x: {
           type: 'time',
@@ -695,6 +682,9 @@ function drawChartIMU(measType, measId, numOfChannels) {
         },
       },
       plugins: {
+        tooltip: {
+          enabled: false,
+        },
         title: {
           display: true,
           text: 'IMU sensor', padding: {
@@ -803,40 +793,42 @@ function updateChartAndRecording() {
       chartConcept2pm.update();
     }
   }
-  if (imuDevice.device !== null) {
-    if (tempImuMeasurements != undefined) {
-      Object.entries(tempImuMeasurements).forEach(([key, value]) => {
-        let chartId;
-        value.forEach((element) => {
-          let measType = element.measurementType;
-          let measId = element.measurementId;
-          chartId = "chartIMU_" + measType;
-          let numOfChannels = imuDevice.currentSetting[measId].channels;
-          let plotNewData = [];
-          for (let i = 0; i < numOfChannels; i++) {
-            plotNewData.push(element['channel_' + i]);
-          }
-          let refTimestamp = new Date('2017-01-01T10:00:00').getMilliseconds(); // reference date https://github.com/polarofficial/polar-ble-sdk/issues/154
-          let index = new Date(element.timeCorrected + refTimestamp);
-          addData(window[chartId], index, plotNewData);
-        });
-        window[chartId].update();
-      });
-      tempImuMeasurements = {};
-    }
-  }
+  // if (imuDevice.device !== null) {
+  //   imuDevice.imuStreamList.forEach((measType) => {
+  //     try { window["chartIMU_" + measType].update(); } catch (e) { };
+  //   });
+
+    // if (tempImuMeasurements != undefined) {
+    //   Object.entries(tempImuMeasurements).forEach(([key, value]) => {
+    //     let chartId;
+    //     value.forEach((element) => {
+    //       let measType = element.measurementType;
+    //       let measId = element.measurementId;
+    //       chartId = "chartIMU_" + measType;
+    //       let numOfChannels = imuDevice.currentSetting[measId].channels;
+    //       let plotNewData = [];
+    //       for (let i = 0; i < numOfChannels; i++) {
+    //         plotNewData.push(element['channel_' + i]);
+    //       }
+    //       let index = new Date(element.timeCorrected);
+    //       addData(window[chartId], index, plotNewData);
+    //     });
+    //     window[chartId].update();
+    //   });
+    //   tempImuMeasurements = {};
+    // }
+  // }
 }
 function addData(chart, label, data) {
-  if (chart.data.labels.length > 5 * 60 * 1000 / interval) {
-    // for improved performance
-    chart.options.elements.point.radius = 0;
-  }
   if (chart.data.labels.length > 10 * 60 * 1000 / interval) {
-    // chart will display 10 minutes of data
+    // chart will display 10 minutes of data -> need fix for imu
     chart.data.labels.shift();
     chart.data.datasets.forEach((dataset) => {
       dataset.data.shift();
     });
+  }
+  if (chart.data.labels.length > 500) {
+    chart.options.elements.point.radius = 0.5;
   }
   chart.data.labels.push(label);
   chart.data.datasets.forEach((dataset, index) => {
@@ -1097,11 +1089,23 @@ function updateDataIMU(imuMeasurementArray) {
   imuMeasurementArray.forEach(function (sample) {
     imuMeasurements[measurementType].push(sample);
   });
-  if (tempImuMeasurements[measurementType] == undefined) {
-    tempImuMeasurements[measurementType] = [];
-  }
-  imuMeasurementArray.forEach(function (sample) {
-    tempImuMeasurements[measurementType].push(sample);
+  // if (tempImuMeasurements[measurementType] == undefined) {
+  //   tempImuMeasurements[measurementType] = [];
+  // }
+  // imuMeasurementArray.forEach(function (sample) {
+  //   tempImuMeasurements[measurementType].push(sample);
+  // });
+
+  let chartId = "chartIMU_" + measurementType;
+  imuMeasurementArray.forEach((element) => {
+    let measId = element.measurementId;
+    let numOfChannels = imuDevice.currentSetting[measId].channels;
+    let plotNewData = [];
+    for (let i = 0; i < numOfChannels; i++) {
+      plotNewData.push(element['channel_' + i]);
+    }
+    let index = new Date(element.timeCorrected);
+    addData(window[chartId], index, plotNewData);
   });
 }
 

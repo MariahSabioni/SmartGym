@@ -28,6 +28,21 @@ function byteArrayToHexString(byteArray) {
     return hexParts.join('');
 }
 
+// convert a byte array string to a hex string array
+function byteArrayToHexArray(byteArray) {
+    const hexParts = [];
+    for (let i = 0; i < byteArray.byteLength; i++) {
+        // convert value to hexadecimal
+        const hex = byteArray.getUint8(i).toString(16).toUpperCase();
+        // pad with zeros to length 2
+        const paddedHex = ('00' + hex).slice(-2);
+        // push to array
+        hexParts.push(paddedHex);
+    }
+    // join all the hex values of the elements into a single string
+    return hexParts;
+}
+
 // convert decimal to binary
 function decIntToBinString(dec) {
     return (dec >>> 0).toString(2);

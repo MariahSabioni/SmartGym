@@ -15,6 +15,7 @@ class ImuDevice {
         this.hrDataChUUID = 'heart_rate_measurement';
         this.dataChUUID = "fb005c82-02e7-f387-1cad-8acd2d8df0c8";
         this.controlChUUID = "fb005c81-02e7-f387-1cad-8acd2d8df0c8";
+        this.refTimeStamp = new Date('2000-01-01T00:00:00').getTime(); // reference date https://github.com/polarofficial/polar-ble-sdk/issues/192
         this.errorTypes = {
             0: 'SUCCESS',
             1: 'ERROR INVALID OP CODE',
@@ -59,6 +60,7 @@ class ImuDevice {
             4: 'channels',
         };
         this.currentSetting = {
+            0: { channels: 1 },
             1: { sample_rate: 135, resolution: 22, range: 'N/A', channels: 4 },
             2: { sample_rate: 52, resolution: 16, range: 8, channels: 3 },
             5: { sample_rate: 52, resolution: 16, range: 2000, channels: 3 },
@@ -66,6 +68,7 @@ class ImuDevice {
         }
         this.imuStreamList = [];
         this.previousTimeStamps = {
+            0: null,
             1: null,
             2: null,
             5: null,
@@ -316,12 +319,13 @@ class ImuDevice {
         let value = event.target.value;
         value = value.buffer ? value : new DataView(value); // In Chrome 50+, a DataView is returned instead of an ArrayBuffer.
 
+        console.log('received hex:', byteArrayToHexString(value));
         let measId = value.getUint8(0);
         let measType = this.measTypes[measId].value;
         let timestamp = Math.round(Number(value.getBigUint64(1, true)) / 1000000);
         let frameType = this.frameTypes[value.getUint8(9)];
         let frameSize = value.byteLength;
-        //let sampleRate = this.currentSetting[measId].sample_rate;
+        let sampleRate = this.currentSetting[measId].sample_rate;
         console.log(`> ${measType} ${frameType} length: ${frameSize} bytes at timestamp: ${timestamp}`)
 
         let results = [];
@@ -370,14 +374,14 @@ class ImuDevice {
                         let channelSample = binSample.slice(j, deltaSize).split("").reverse().join("");
                         let unsignedInt = parseInt(channelSample, 2);
                         if (measType == 'Acc') {
-                            sample[channel] = 0.24399999 * (intToUint(unsignedInt, deltaSize) + refSample[channel]);
+                            sample[channel] = 0.24399999 * (intToUint(unsignedInt, deltaSize) + refSample[channel]) * 0.00980665;
                         } else {
                             sample[channel] = intToUint(unsignedInt, deltaSize) + refSample[channel];
                         }
                         sampleStr += ' | ' + channel + ': ' + sample[channel];
                     };
                     if (measType == 'Acc' || measType == 'Gyr') {
-                        sample.combined = Math.sqrt(Math.pow(sample.channel_0, 2) + Math.pow(sample.channel_1, 2) + Math.pow(sample.channel_2, 2)) - (measType == 'Acc' ? 1000 : 0);
+                        sample.combined = Math.sqrt(Math.pow(sample.channel_0, 2) + Math.pow(sample.channel_1, 2) + Math.pow(sample.channel_2, 2)) - (measType == 'Acc' ? 9.80665 : 0);
                         sampleStr += ' | combined: ' + sample.combined;
                     }
                     console.log(sampleStr);
@@ -387,9 +391,18 @@ class ImuDevice {
                 offset = offset + 2 + deltaBytesCount;
             } while (offset < value.byteLength);
         }
-        if (this.previousTimeStamps[measId] != null) {
+        // correct the timestamp. the frame contains a single timestamp which refers to the last sample
+        if (this.previousTimeStamps[measId] == null) {
+            // use sample rate if we don't have a previous timestamp
             results.forEach((sample, index, array) => {
-                let timeCorrected = this.previousTimeStamps[measId] + (index + 1) * ((sample.time - this.previousTimeStamps[measId]) / (results.length));
+                let timeCorrected = sample.time + (index - results.length + 1) * (1000 / (sampleRate)) + this.refTimeStamp;
+                let source = { timeCorrected: timeCorrected };
+                array[index] = Object.assign(sample, source);
+            });
+        } else {
+            // distribute evenly the samples between 2 data frames using previous frame timestamp
+            results.forEach((sample, index, array) => {
+                let timeCorrected = this.previousTimeStamps[measId] + (index + 1) * ((sample.time - this.previousTimeStamps[measId]) / (results.length)) + this.refTimeStamp;
                 let source = { timeCorrected: timeCorrected };
                 array[index] = Object.assign(sample, source);
             });
@@ -408,10 +421,10 @@ class ImuDevice {
         let results = [];
         let index = 1;
         if (rate16Bits) {
-            result.heartRate = value.getUint16(index, /*littleEndian=*/true);
+            result.channel_0 = value.getUint16(index, /*littleEndian=*/true);
             index += 2;
         } else {
-            result.heartRate = value.getUint8(index);
+            result.channel_0 = value.getUint8(index);
             index += 1;
         }
         let contactDetected = flags & 0x2;
@@ -435,7 +448,8 @@ class ImuDevice {
         result.time = Date.now();
         result.measurementType = 'HR';
         result.measurementId = 0;
-        console.log(`>> sample | timestamp: ${result.time}| HR: ${result.heartRate}bpm`);
+        result.timeCorrected = result.time;
+        console.log(`>> sample | timestamp: ${result.time}| HR: ${result.channel_0}bpm`);
         results.push(result);
         updateDataIMU(results);
         startLoopUpdate();

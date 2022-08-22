@@ -104,9 +104,7 @@ let recordingDeviceList = [];
 // charts
 let interval = 500; //miliseconds
 let nIntervId;
-let indexHR;
-let indexTreadmill;
-let indexConcept2pm;
+let chartMaxTime = 1 * 60 * 1000 //miliseconds
 // devices
 let heartRateDevice = new HeartRateDevice();
 let treadmillDevice = new TreadmillDevice();
@@ -328,15 +326,6 @@ switchHR.addEventListener('change', function () {
     document.getElementById('checkboxHR').disabled = false;
   }
 });
-pillsTabIMU.addEventListener('shown.bs.tab', event => {
-  selectedIMUTabId = event.target.id.slice(-1);
-  console.log(selectedIMUTabId);
-  if (imuDevice.device !== null) {
-    imuDevice.imuStreamList.forEach((measType) => {
-      try { window["chartIMU_" + measType].update(); } catch (e) { };
-    });
-  }
-})
 // ble chars
 connectButtonBle.addEventListener('click', function () {
   bleDevice.connect()
@@ -725,8 +714,12 @@ function resetAllCharts() {
     chartConcept2pm.reset();
   } catch (e) { };
   try {
-    removeAllData(chartIMU);
-    chartIMU.reset();
+    imuDevice.imuStreamList.forEach((measType) => {
+      try {
+        removeAllData(window["chartIMU_" + measType]);
+        window["chartIMU_" + measType].reset();
+      } catch (e) { };
+    });
   } catch (e) { };
 }
 
@@ -770,70 +763,47 @@ function updateChartAndRecording() {
     }
   }
   // part 2: update the charts
-  index = new Date(Date.now()); //not all data comes with timestamp so we use this to make it simpler.
-  if (heartRateDevice.device !== null && heartRateMeasurements.length > 0) {
-    let plotNewHR = heartRateMeasurements.at(-1).heartRate;
-    let plotNewData = [plotNewHR];
-    addData(chartHR, index, plotNewData);
-    chartHR.update();
+  if (heartRateDevice.device !== null) {
+    try { chartHR.update(); } catch (e) { };
   }
-  if (treadmillDevice.device !== null && treadmillMeasurements.length > 0) {
-    let plotNewSpeed = parseFloat(treadmillMeasurements.at(-1).speed);
-    let plotNewInclination = parseFloat(treadmillMeasurements.at(-1).inclination);
-    let plotNewData = [plotNewSpeed, plotNewInclination];
-    addData(chartTreadmill, index, plotNewData);
-    chartTreadmill.update();
+  if (treadmillDevice.device !== null) {
+    try { chartTreadmill.update(); } catch (e) { };
   }
   if (concept2pmDevice.device !== null) {
-    if (concept2pmMeasurements.additional_status_1.length > 0) {
-      let plotNewStroke = ((concept2pmMeasurements.additional_status_1.at(-1).strokeRate));
-      let plotNewPace = (concept2pmMeasurements.additional_status_1.at(-1).currentPace);
-      let plotNewData = [plotNewStroke, plotNewPace];
-      addData(chartConcept2pm, index, plotNewData);
-      chartConcept2pm.update();
-    }
+    try { chartConcept2pm.update(); } catch (e) { };
   }
-  // if (imuDevice.device !== null) {
-  //   imuDevice.imuStreamList.forEach((measType) => {
-  //     try { window["chartIMU_" + measType].update(); } catch (e) { };
-  //   });
-
-    // if (tempImuMeasurements != undefined) {
-    //   Object.entries(tempImuMeasurements).forEach(([key, value]) => {
-    //     let chartId;
-    //     value.forEach((element) => {
-    //       let measType = element.measurementType;
-    //       let measId = element.measurementId;
-    //       chartId = "chartIMU_" + measType;
-    //       let numOfChannels = imuDevice.currentSetting[measId].channels;
-    //       let plotNewData = [];
-    //       for (let i = 0; i < numOfChannels; i++) {
-    //         plotNewData.push(element['channel_' + i]);
-    //       }
-    //       let index = new Date(element.timeCorrected);
-    //       addData(window[chartId], index, plotNewData);
-    //     });
-    //     window[chartId].update();
-    //   });
-    //   tempImuMeasurements = {};
-    // }
-  // }
-}
-function addData(chart, label, data) {
-  if (chart.data.labels.length > 10 * 60 * 1000 / interval) {
-    // chart will display 10 minutes of data -> need fix for imu
-    chart.data.labels.shift();
-    chart.data.datasets.forEach((dataset) => {
-      dataset.data.shift();
+  if (imuDevice.device !== null) {
+    imuDevice.imuStreamList.forEach((measType) => {
+      try { window["chartIMU_" + measType].update(); } catch (e) { };
     });
   }
-  if (chart.data.labels.length > 500) {
-    chart.options.elements.point.radius = 0.5;
-  }
+}
+function addData(chart, label, data) {
   chart.data.labels.push(label);
   chart.data.datasets.forEach((dataset, index) => {
     dataset.data.push(data[index]);
   });
+  let minLabel = chart.data.labels.at(-1).getTime() - chartMaxTime;
+  // if (chart.data.labels[0] < minLabel) {
+  //   let minIndex = chart.data.labels.findIndex((date) => { date.getTime() >= minLabel });
+  //   chart.data.labels = chart.data.labels.filter((element, index) => { index >= minIndex });
+  //   chart.data.datasets.forEach((dataset, index) => {
+  //     chart.data.datasets[index].data = dataset.data.filter((element, index) => { index >= minIndex });
+  //   });
+  // }
+  let counter = 0
+  chart.data.labels.forEach((label) => {
+    if (label < minLabel) {
+      counter++;
+    }
+  });
+  chart.data.labels.splice(0, counter);
+  chart.data.datasets.forEach((dataset, index) => {
+    dataset.data.splice(0, counter);
+  });
+  if (chart.data.labels.length > 500) {
+    chart.options.elements.point.radius = 0.5;
+  }
 }
 function removeAllData(chart) {
   chart.data.labels = [];
@@ -873,6 +843,10 @@ function updateConnectedHR() {
 function updateDataHR(heartRateMeasurement) {
   statusTextHR.innerHTML = `> Heart rate: ${heartRateMeasurement.heartRate}bpm`;
   heartRateMeasurements.push(heartRateMeasurement);
+  let plotNewHR = heartRateMeasurement.heartRate;
+  let plotNewData = [plotNewHR];
+  let index = new Date(heartRateMeasurement.time);
+  addData(chartHR, index, plotNewData);
 }
 
 // fitness machines
@@ -918,6 +892,11 @@ function updateDataTreadmill(treadmillMeasurement) {
   speedTextTreadmill.textContent = treadmillMeasurement.speed;
   inclinationTextTreadmill.textContent = treadmillMeasurement.inclination;
   treadmillMeasurements.push(treadmillMeasurement);
+  let plotNewSpeed = parseFloat(treadmillMeasurement.speed);
+  let plotNewInclination = parseFloat(treadmillMeasurement.inclination);
+  let plotNewData = [plotNewSpeed, plotNewInclination];
+  let index = new Date(treadmillMeasurement.time);
+  addData(chartTreadmill, index, plotNewData);
 }
 
 // concept2 pm5
@@ -954,11 +933,29 @@ function updateDataConcept2pm(type, concept2pmMeasurement) {
   }
   concept2pmMeasurements[measurementType].push(concept2pmMeasurement);
   //UI
+  let rowingState = (concept2pmMeasurements.general_status != undefined ? concept2pmMeasurements.general_status.at(-1).rowingState : undefined);
   let printPace = (concept2pmMeasurements.additional_status_1 != undefined ? concept2pmMeasurements.additional_status_1.at(-1).prettyCurrentPace : undefined);
   let printSpeed = (concept2pmMeasurements.additional_status_1 != undefined ? concept2pmMeasurements.additional_status_1.at(-1).speed : undefined);
   let printStrokeRate = (concept2pmMeasurements.additional_status_1 != undefined ? concept2pmMeasurements.additional_status_1.at(-1).strokeRate : undefined);
   let printDragFactor = (concept2pmMeasurements.general_status != undefined ? concept2pmMeasurements.general_status.at(-1).dragFactor : undefined);
-  statusTextConcept2pm.innerHTML = `> Pace: ${printPace}/500m<br />> Speed: ${printSpeed}m/s<br />> Stroke rate: ${printStrokeRate}spm<br />> Drag factor: ${printDragFactor}`;
+
+  if (rowingState == 1) {
+    if (measurementType == 'additional_status_1') {
+      let plotNewStroke = concept2pmMeasurement.strokeRate;
+      let plotNewPace = concept2pmMeasurement.currentPace;
+      let plotNewData = [plotNewStroke, plotNewPace];
+      let index = new Date(concept2pmMeasurement.time);
+      addData(chartConcept2pm, index, plotNewData);
+    }
+    statusTextConcept2pm.innerHTML = `ROWING STATE ACTIVE<br />> Pace: ${printPace}/500m<br />> Speed: ${printSpeed}m/s<br />> Stroke rate: ${printStrokeRate}spm<br />> Drag factor: ${printDragFactor}`;
+  } else {
+    if (measurementType == 'additional_status_1') {
+      let plotNewData = [0.0, 0.0];
+      let index = new Date(concept2pmMeasurement.time);
+      addData(chartConcept2pm, index, plotNewData);
+    }
+    statusTextConcept2pm.innerHTML = `ROWING STATE INACTIVE<br />(displaying last state)<br />> Pace: ${printPace}/500m<br />> Speed: ${printSpeed}m/s<br />> Stroke rate: ${printStrokeRate}spm<br />> Drag factor: ${printDragFactor}`;
+  }
 }
 
 // ble device
@@ -1089,13 +1086,6 @@ function updateDataIMU(imuMeasurementArray) {
   imuMeasurementArray.forEach(function (sample) {
     imuMeasurements[measurementType].push(sample);
   });
-  // if (tempImuMeasurements[measurementType] == undefined) {
-  //   tempImuMeasurements[measurementType] = [];
-  // }
-  // imuMeasurementArray.forEach(function (sample) {
-  //   tempImuMeasurements[measurementType].push(sample);
-  // });
-
   let chartId = "chartIMU_" + measurementType;
   imuMeasurementArray.forEach((element) => {
     let measId = element.measurementId;

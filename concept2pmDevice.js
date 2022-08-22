@@ -261,6 +261,7 @@ class Concept2pmDevice {
                 workoutDurationType: value.getUint8(17),
                 dragFactor: value.getUint8(18),
             }
+            console.log('rowingState: ', result.rowingState);
             console.log(`>> sample | timestamp: ${result.time} | Rower: ${result.elapsedTime}s | ${result.distance}m | ${result.dragFactor}drag`)
         } else if (type == 'additional_status_1'){
             result = {...result,

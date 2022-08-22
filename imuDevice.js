@@ -15,7 +15,7 @@ class ImuDevice {
         this.hrDataChUUID = 'heart_rate_measurement';
         this.dataChUUID = "fb005c82-02e7-f387-1cad-8acd2d8df0c8";
         this.controlChUUID = "fb005c81-02e7-f387-1cad-8acd2d8df0c8";
-        this.refTimeStamp = new Date('2000-01-01T00:00:00').getTime(); // reference date https://github.com/polarofficial/polar-ble-sdk/issues/192
+        this.refTimeStamp = new Date('2000-01-01T00:00:00Z').getTime(); // reference date https://github.com/polarofficial/polar-ble-sdk/issues/192
         this.errorTypes = {
             0: 'SUCCESS',
             1: 'ERROR INVALID OP CODE',

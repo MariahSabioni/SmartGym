@@ -371,6 +371,7 @@ function drawChartHR() {
     options: {
       spanGaps: true,
       animation: false,
+      normalized: true,
       scales: {
         x: {
           type: 'time',
@@ -451,6 +452,7 @@ function drawChartTreadmill() {
     options: {
       spanGaps: true,
       animation: false,
+      normalized: true,
       scales: {
         x: {
           type: 'time',
@@ -548,6 +550,7 @@ function drawChartConcept2pm() {
     options: {
       spanGaps: true,
       animation: false,
+      normalized: true,
       scales: {
         x: {
           type: 'time',
@@ -564,11 +567,6 @@ function drawChartConcept2pm() {
         },
         y1: {
           type: 'linear',
-          // ticks: {
-          //   callback: function (val, index) {
-          //     return val.toFixed(1);
-          //   },
-          // },
           display: true,
           position: 'left',
           title: {
@@ -630,6 +628,13 @@ function drawChartIMU(measType, measId, numOfChannels) {
     2: { backgroundColor: 'rgb(70, 233, 100)', borderColor: 'rgba(70, 233, 100, 0.2)' },
     3: { backgroundColor: 'rgb(255, 153, 51)', borderColor: 'rgba(255, 153, 51, 0.2)' },
   };
+  const yMinMax = {
+    HR: { min: 40, max: 220 },
+    PPG: { min: -2000, max: 16000},
+    Acc: { min: -20, max: 20 },
+    Gyr: { min: -1000, max: 1000 },
+    Mag: { min: -1000, max: 1000 },
+  };
   for (let i = 0; i < numOfChannels; i++) {
     data.datasets[i] = {
       label: measType + "_channel_" + i,
@@ -645,6 +650,7 @@ function drawChartIMU(measType, measId, numOfChannels) {
     options: {
       spanGaps: true,
       animation: false,
+      normalized: true,
       scales: {
         x: {
           type: 'time',
@@ -668,6 +674,8 @@ function drawChartIMU(measType, measId, numOfChannels) {
           },
           display: true,
           position: 'left',
+          min: yMinMax[measType].min,
+          max: yMinMax[measType].max,
         },
       },
       plugins: {
@@ -683,6 +691,11 @@ function drawChartIMU(measType, measId, numOfChannels) {
         },
         legend: {
           position: 'bottom',
+        }
+      },      
+      elements: {
+        point:{
+          radius: 2,
         }
       },
       responsive: true,
@@ -821,6 +834,7 @@ function updateDisconnectedHR(reason) {
   heartRateDevice = new HeartRateDevice();
   resetMeasurements(true, false, false, false);
   chartHR.destroy();
+  $(connectButtonHR).removeClass('disabled');
   switch (reason) {
     case 'failed_connection':
       showToast("Connection to HR sensor failed. Try again.", "Heart rate sensor");
@@ -839,6 +853,7 @@ function updateConnectedHR() {
   titleTextHR.textContent = "Connected to: " + heartRateDevice.getDeviceName();
   containerHR.style.display = "block";
   drawChartHR();
+  $(connectButtonHR).addClass('disabled');
 }
 function updateDataHR(heartRateMeasurement) {
   statusTextHR.innerHTML = `> Heart rate: ${heartRateMeasurement.heartRate}bpm`;
@@ -867,6 +882,7 @@ function updateDisconnectedTreadmill(reason) {
   treadmillDevice = new TreadmillDevice();
   resetMeasurements(false, true, false, false);
   chartTreadmill.destroy();
+  $(connectButtonTreadmill).removeClass('disabled');
   switch (reason) {
     case 'failed_connection':
       showToast("Connection to Treadmill failed. Try again.", "Treadmill device");
@@ -885,6 +901,7 @@ function updateConnectedTredmill() {
   titleTextTreadmill.textContent = "Connected to: " + treadmillDevice.getDeviceName();
   containerTreadmill.style.display = "block";
   drawChartTreadmill();
+  $(connectButtonTreadmill).addClass('disabled');
 }
 function updateDataTreadmill(treadmillMeasurement) {
   //UI
@@ -907,6 +924,7 @@ function updateDisconnectedConcept2pm(reason) {
   concept2pmDevice = new Concept2pmDevice();
   resetMeasurements(false, false, true, false);
   chartConcept2pm.destroy();
+  $(connectButtonConcept2pm).removeClass('disabled');
   switch (reason) {
     case 'failed_connection':
       showToast("Connection to Concept2 PM failed. Try again.", "Concept2 PM device");
@@ -925,6 +943,7 @@ function updateConnectedConcept2pm() {
   titleTextConcept2pm.textContent = "Connected to: " + concept2pmDevice.getDeviceName();
   containerConcept2pm.style.display = "block";
   drawChartConcept2pm();
+  $(connectButtonConcept2pm).addClass('disabled');
 }
 function updateDataConcept2pm(type, concept2pmMeasurement) {
   let measurementType = type;
@@ -1017,6 +1036,7 @@ function updateDisconnectedIMU(reason) {
   $("#switchSDK").removeAttr('disabled');
   imuDevice = new ImuDevice();
   resetMeasurements(false, false, false, true);
+  $(connectButtonIMU).removeClass('disabled');
   switch (reason) {
     case 'failed_connection':
       showToast("Connection to IMU sensor failed. Try again.", "IMU sensor");
@@ -1035,6 +1055,7 @@ function updateConnectedIMU() {
   statusTextIMU.innerHTML = `Subscribe to a data stream to receive data.`;
   titleTextIMU.textContent = "Connected to: " + imuDevice.getDeviceName();
   containerIMU.style.display = "block";
+  $(connectButtonIMU).addClass('disabled');
 }
 function updateImuSettings(measType, measId) {
   Object.values(imuDevice.settingTypes).forEach(settingValue => {

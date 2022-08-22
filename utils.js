@@ -53,7 +53,7 @@ function bufferToBinString(buffer) {
     array = new Uint8Array(buffer);
     let bin = [];
     array.forEach(function (element) {
-        let elementBin = (element >>> 0).toString(2).split();
+        let elementBin = (element >>> 0).toString(2).split('');
         for (let i = 0; i < 8 - elementBin.length; i++) {
             elementBin.unshift("0");
         }
@@ -66,11 +66,9 @@ function bufferToReverseBinString(buffer) {
     array = new Uint8Array(buffer);
     let bin = [];
     array.forEach(function (element) {
-        let elementBin = (element >>> 0).toString(2).split();
-        for (let i = 0; i < 8 - elementBin.length; i++) {
-            elementBin.unshift("0");
-        }
-        bin.push(elementBin.reverse().join(''));
+        let elementBin = (element >>> 0).toString(2);
+        let elementBin8 = elementBin.padStart(8, '0');
+        bin.push(elementBin8.split('').reverse().join(''));
     });
     return bin.join('');
 }
@@ -86,6 +84,17 @@ function intToUint(int, nbit) {
     } else {
         return u[0];
     }
+}
+
+function getSignedInteger(bits) {
+    var value = parseInt(bits, 2);
+    return value & (1 << 7)
+        ? value - (1 << 8)
+        : value;
+}
+
+function bitStringToSignedInt(binStr) {
+    return parseInt(binStr[0] === "1" ? binStr.padStart(32, "1") : binStr.padStart(32, "0"), 2) >> 0;
 }
 
 function bufferToReverseBinArray(buffer) {

@@ -319,7 +319,7 @@ class ImuDevice {
         let value = event.target.value;
         value = value.buffer ? value : new DataView(value); // In Chrome 50+, a DataView is returned instead of an ArrayBuffer.
 
-        console.log('received hex:', byteArrayToHexString(value));
+        console.log('> response to data request | received hex:', byteArrayToHexString(value));
         let measId = value.getUint8(0);
         let measType = this.measTypes[measId].value;
         let timestamp = Math.round(Number(value.getBigUint64(1, true)) / 1000000);
@@ -361,7 +361,7 @@ class ImuDevice {
                 let deltaData = value.buffer.slice(indexDeltaStart, indexDeltaStop);
                 let binDeltaData = bufferToReverseBinString(deltaData);
                 for (let i = 0; i < sampleCount; i++) {
-                    let binSample = binDeltaData.slice(i);
+                    let binSample = binDeltaData.slice(i * numOfChannels * deltaSize);
                     let sample = {
                         measurementType: measType,
                         measurementId: measId,
@@ -371,12 +371,12 @@ class ImuDevice {
                     let sampleStr = '>> sample | timestamp: ' + sample.time;
                     for (let j = 0; j < numOfChannels; j++) {
                         let channel = 'channel_' + j;
-                        let channelSample = binSample.slice(j, deltaSize).split("").reverse().join("");
-                        let unsignedInt = parseInt(channelSample, 2);
+                        let channelSample = binSample.slice(j * deltaSize, (j + 1) * deltaSize).split("").reverse().join("");
+                        let signedInt = bitStringToSignedInt(channelSample);
                         if (measType == 'Acc') {
-                            sample[channel] = 0.24399999 * (intToUint(unsignedInt, deltaSize) + refSample[channel]) * 0.00980665;
+                            sample[channel] = (signedInt + refSample[channel]) * 0.24399999 * 0.00980665;
                         } else {
-                            sample[channel] = intToUint(unsignedInt, deltaSize) + refSample[channel];
+                            sample[channel] = (signedInt + refSample[channel]);
                         }
                         sampleStr += ' | ' + channel + ': ' + sample[channel];
                     };

@@ -11,8 +11,8 @@ class BleDevice {
         this.serviceUUID = null;
     }
 
-    connect() {
-        this.serviceUUID = this.getAndCheckUUID();
+    connect(uuid) {
+        this.serviceUUID = this.getAndCheckUUID(uuid);
         if (this.serviceUUID == null) {
             return;
         }
@@ -46,9 +46,8 @@ class BleDevice {
             })
     }
 
-    getAndCheckUUID() {
+    getAndCheckUUID(uuid) {
         //validate and get UUID input field
-        let uuid = uuidInput.value;
         if (uuid == "" || uuid == undefined) {
             console.log('> UUID empty input');
             showToast("Provide a service UUID", "BLE device");

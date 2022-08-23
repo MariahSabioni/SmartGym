@@ -255,7 +255,7 @@
                     <div id="containerIMU" class="col">
                         <ul class="nav nav-pills mb-3" id="pills-tab-imu" role="tablist">
                             <li class="nav-item" role="presentation">
-                                <button class="nav-link active" id="pills-streams-imu-tab" data-bs-toggle="pill"
+                                <button class="nav-link active" id="pills-streams-imu-tab-A" data-bs-toggle="pill"
                                     data-bs-target="#pills-streams-imu" type="button" role="tab"
                                     aria-controls="pills-streams-imu" aria-selected="true">Data Streams</button>
                             </li>
@@ -287,7 +287,7 @@
                         </ul>
                         <div class="tab-content" id="pills-tabContent-imu">
                             <div class="tab-pane fade show active" id="pills-streams-imu" role="tabpanel"
-                                aria-labelledby="pills-streams-imu-tab">
+                                aria-labelledby="pills-streams-imu-tab-A">
                                 <div id="streamsIMU" class="myCanvas" style="height: auto;">
                                     <form>
                                         <div class="row mb-1">
@@ -575,13 +575,27 @@
                             <div class="tab-pane fade" id="pills-chart-imu-2" role="tabpanel"
                                 aria-labelledby="pills-chart-imu-tab-2">
                                 <div class="myCanvas">
-                                    <canvas id="canvasIMU_2"></canvas>
+                                    <select id="selectionClickableImuAccChart" class="form-select"
+                                        aria-label="select" style="width:auto; font-size:small; ">
+                                        <option value="0" selected>Raw data</option>
+                                        <option value="1">Combined</option>
+                                    </select>
+                                    <div class="imuChartCanvas">
+                                        <canvas id="canvasIMU_2"></canvas>
+                                    </div>
                                 </div>
                             </div>
                             <div class="tab-pane fade" id="pills-chart-imu-5" role="tabpanel"
                                 aria-labelledby="pills-chart-imu-tab-5">
                                 <div class="myCanvas">
-                                    <canvas id="canvasIMU_5"></canvas>
+                                    <select id="selectionClickableImuGyrChart" class="form-select"
+                                        aria-label="select" style="width:auto; font-size:small; ">
+                                        <option value="0" selected>Raw data</option>
+                                        <option value="1">Combined</option>
+                                    </select>
+                                    <div class="imuChartCanvas">
+                                        <canvas id="canvasIMU_5"></canvas>
+                                    </div>
                                 </div>
                             </div>
                             <div class="tab-pane fade" id="pills-chart-imu-6" role="tabpanel"

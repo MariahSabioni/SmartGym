@@ -73,27 +73,8 @@ function bufferToReverseBinString(buffer) {
     return bin.join('');
 }
 
-function intToUint(int, nbit) {
-    var u = new Uint32Array(1);
-    nbit = +nbit || 32;
-    if (nbit > 32) throw new RangeError('intToUint only supports ints up to 32 bits');
-    u[0] = int;
-    if (nbit < 32) { // don't accidentally sign again
-        int = Math.pow(2, nbit) - 1;
-        return u[0] & int;
-    } else {
-        return u[0];
-    }
-}
-
-function getSignedInteger(bits) {
-    var value = parseInt(bits, 2);
-    return value & (1 << 7)
-        ? value - (1 << 8)
-        : value;
-}
-
 function bitStringToSignedInt(binStr) {
+    if (binStr.length >64) throw new RangeError('parsing only supports ints up to 32 bits');
     return parseInt(binStr[0] === "1" ? binStr.padStart(32, "1") : binStr.padStart(32, "0"), 2) >> 0;
 }
 

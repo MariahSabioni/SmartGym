@@ -188,7 +188,7 @@ class Concept2pmDevice {
             });
     }
 
-    startWorkoutConcept2pm() {
+    startWorkoutConcept2pm(setDistance) {
         let server = this.server;
         return server.getPrimaryService(this.controlServiceUUID)
             .then(service => {
@@ -196,7 +196,6 @@ class Concept2pmDevice {
                 return service.getCharacteristic(this.controlRequestChUUID);
             })
             .then(characteristic => {
-                let setDistance = selectionClickableDistance.value;
                 console.log(setDistance);
                 let distanceHex, checkSumInt = 0, checkSumHex, checkSumArray, val;
                 switch (setDistance) {

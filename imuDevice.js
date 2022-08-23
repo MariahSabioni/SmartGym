@@ -326,6 +326,8 @@ class ImuDevice {
         let frameType = this.frameTypes[value.getUint8(9)];
         let frameSize = value.byteLength;
         let sampleRate = this.currentSetting[measId].sample_rate;
+        let range = this.currentSetting[measId].range;
+        let resolution = this.currentSetting[measId].resolution;
         console.log(`> ${measType} ${frameType} length: ${frameSize} bytes at timestamp: ${timestamp}`)
 
         let results = [];
@@ -365,8 +367,11 @@ class ImuDevice {
                     let sample = {
                         measurementType: measType,
                         measurementId: measId,
-                        id: frameSampleIndex,
+                        sampleIndexOfDataPackage: frameSampleIndex,
                         time: timestamp,
+                        sampleRate: sampleRate,
+                        resolution: resolution,
+                        range: range
                     }
                     let sampleStr = '>> sample | timestamp: ' + sample.time;
                     for (let j = 0; j < numOfChannels; j++) {

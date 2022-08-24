@@ -124,6 +124,7 @@ class BleDevice {
     }
 
     /* UTILS */
+    
     getDeviceName() {
         return this.device.name;
     }

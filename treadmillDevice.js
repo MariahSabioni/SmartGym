@@ -2,7 +2,8 @@
 /*
 > Description:
 This class constructs the bluetooth Treadmill device.
-It was designed to read data following the FTMS protocol provided by treadmill rpi (see other references). It has not been tested with other Treadmill devices.
+It was designed to read data following the FTMS protocol provided by treadmill rpi (see other references).
+It has not been tested with other Treadmill devices.
 > Documentation:
 https://www.bluetooth.com/specifications/specs/fitness-machine-service-1-0/
 > Other references:

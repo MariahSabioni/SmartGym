@@ -38,7 +38,6 @@ let switchSDK = document.getElementById("switchSDK");
 // ble chars
 let titleTextBle = document.getElementById('titleTextBle');
 let statusTextBle = document.getElementById("statusTextBle");
-let uuidInput = document.getElementById("uuidInput");
 // recording
 let titleTextRecord = document.getElementById('titleTextRecord');
 let statusTextRecord = document.getElementById('statusTextRecord');
@@ -70,9 +69,9 @@ let recordingStartTime = null;
 let recordingDuration = null;
 let recordingDeviceList = [];
 // charts
-let interval = 500; //miliseconds
+let interval = 500; //miliseconds between updates
 let nIntervId;
-let chartMaxTime = 1 * 60 * 1000 //miliseconds
+let chartMaxTime = 1 * 60 * 1000 //miliseconds range x axis
 let currentImuActiveTab;
 // devices
 let heartRateDevice = new HeartRateDevice();
@@ -645,9 +644,10 @@ function drawChartIMU(measType, measId, numOfChannels, hasCombined) {
     type: 'line',
     data: data,
     options: {
-      spanGaps: true,
+      spanGaps: true, 
       animation: false,
       normalized: true,
+      events:[],
       scales: {
         x: {
           type: 'time',
@@ -857,7 +857,6 @@ function updateDataHR(heartRateMeasurement) {
   let index = new Date(heartRateMeasurement.time);
   addData(chartHR, index, plotNewData);
 }
-
 // fitness machines
 function showTreadmillCanva() {
   selectedConcept2pm.style.display = "none";
@@ -867,7 +866,6 @@ function showConcept2pmCanva() {
   selectedTreadmill.style.display = "none";
   selectedConcept2pm.style.display = "block";
 }
-
 // treadmill
 function updateDisconnectedTreadmill(reason) {
   statusTextTreadmill.textContent = "No treadmill connected";
@@ -909,7 +907,6 @@ function updateDataTreadmill(treadmillMeasurement) {
   let index = new Date(treadmillMeasurement.time);
   addData(chartTreadmill, index, plotNewData);
 }
-
 // concept2 pm5
 function updateDisconnectedConcept2pm(reason) {
   statusTextConcept2pm.textContent = "No Concept2 PM connected";
@@ -970,7 +967,6 @@ function updateDataConcept2pm(type, concept2pmMeasurement) {
     statusTextConcept2pm.innerHTML = `ROWING STATE INACTIVE<br />(displaying last state)<br />> Pace: ${printPace}/500m<br />> Speed: ${printSpeed}m/s<br />> Stroke rate: ${printStrokeRate}spm<br />> Drag factor: ${printDragFactor}`;
   }
 }
-
 // ble device
 function updateDisconnectedBle(reason, error) {
   statusTextBle.textContent = "No BLE device connected";
@@ -999,7 +995,6 @@ function updateConnectedBle(response) {
   statusTextBle.innerHTML = response;
   titleTextBle.textContent = "Connected to: " + bleDevice.getDeviceName();
 }
-
 // imu
 function updateDisconnectedIMU(reason) {
   statusTextIMU.textContent = "No IMU sensor connected";

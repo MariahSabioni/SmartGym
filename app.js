@@ -1,8 +1,16 @@
 /*
-Web bluetooth documentation: https://web.dev/bluetooth/
-Code example: https://googlechrome.github.io/samples/web-bluetooth/read-characteristic-value-changed.html
+> Description:
+This is the main JS file which interacts with the bluetooth device classes and UI.
+Vanilla JS was preferred but some bootstrap methods are easier to implement with JQuery.
+> Web bluetooth documentation:
+https://web.dev/bluetooth/
+> Code example:
+https://googlechrome.github.io/samples/web-bluetooth/read-characteristic-value-changed.html
+> Other references:
 Charts JS documentation: https://www.chartjs.org/docs/3.3.0/
 Bootstrap documentation: https://getbootstrap.com/docs/5.0/getting-started/introduction/
+Improving performance of charts: https://www.chartjs.org/docs/latest/general/performance.html
+Data decimation (IMU): https://www.chartjs.org/docs/latest/configuration/decimation.html#decimation-algorithms
 */
 
 /* UI HOOKS*/
@@ -69,9 +77,9 @@ let recordingStartTime = null;
 let recordingDuration = null;
 let recordingDeviceList = [];
 // charts
-let interval = 500; //miliseconds between updates
+let interval = 500; //miliseconds between updates of Charts and recording UI
 let nIntervId;
-let chartMaxTime = 1 * 60 * 1000 //miliseconds range x axis
+let chartMaxTime = 1 * 60 * 1000 //range of charts x axis, in miliseconds
 let currentImuActiveTab;
 // devices
 let heartRateDevice = new HeartRateDevice();
@@ -137,85 +145,64 @@ document.getElementById('disconnectButtonTreadmill').addEventListener('click', f
 });
 document.getElementById('startTreadmillButton').addEventListener('click', function () {
   treadmillDevice.changeTreadmillStatus('start')
-    .catch(error => {
-      console.log(error);
-    });
+    .catch(error => { console.log(error); });
 });
 document.getElementById('stopTreadmillButton').addEventListener('click', function () {
   treadmillDevice.changeTreadmillStatus('stop')
-    .catch(error => {
-      console.log(error);
-    });
+    .catch(error => { console.log(error); });
 });
 document.getElementById('speedUpButton').addEventListener('click', function () {
   currSpeed = treadmillMeasurements.at(-1).speed;
   treadmillDevice.increaseSpeedStep(currSpeed, 0.1)
-    .catch(error => {
-      console.log(error);
-    });
+    .catch(error => { console.log(error); });
 });
 document.getElementById('speedDownButton').addEventListener('click', function () {
   currSpeed = treadmillMeasurements.at(-1).speed;
   treadmillDevice.decreaseSpeedStep(currSpeed, 0.1)
-    .catch(error => {
-      console.log(error);
-    });
+    .catch(error => { console.log(error); });
 });
 document.getElementById('speedUp2Button').addEventListener('click', function () {
   currSpeed = treadmillMeasurements.at(-1).speed;
   treadmillDevice.increaseSpeedStep(currSpeed, 1.0)
-    .catch(error => {
-      console.log(error);
-    });
+    .catch(error => { console.log(error); });
 });
 document.getElementById('speedDown2Button').addEventListener('click', function () {
   currSpeed = treadmillMeasurements.at(-1).speed;
   treadmillDevice.decreaseSpeedStep(currSpeed, 1.0)
-    .catch(error => {
-      console.log(error);
-    });
+    .catch(error => { console.log(error); });
 });
 document.getElementById('inclinationUpButton').addEventListener('click', function () {
   currInclination = treadmillMeasurements.at(-1).inclination;
   treadmillDevice.increaseInclinationStep(currInclination, 0.5)
-    .catch(error => {
-      console.log(error);
-    });
+    .catch(error => { console.log(error); });
 });
 document.getElementById('inclinationDownButton').addEventListener('click', function () {
   currInclination = treadmillMeasurements.at(-1).inclination;
   treadmillDevice.decreaseInclinationStep(currInclination, 0.5)
-    .catch(error => {
-      console.log(error);
-    });
+    .catch(error => { console.log(error); });
 });
 document.getElementById('inclinationUp2Button').addEventListener('click', function () {
   currInclination = treadmillMeasurements.at(-1).inclination;
   treadmillDevice.increaseInclinationStep(currInclination, 1.0)
-    .catch(error => {
-      console.log(error);
-    });
+    .catch(error => { console.log(error); });
 });
 document.getElementById('inclinationDown2Button').addEventListener('click', function () {
   currInclination = treadmillMeasurements.at(-1).inclination;
   treadmillDevice.decreaseInclinationStep(currInclination, 1.0)
-    .catch(error => {
-      console.log(error);
-    });
+    .catch(error => { console.log(error); });
 });
 document.getElementById('headingTreadmill').addEventListener('click', function (event) {
   $('#collapseTreadmill').collapse('toggle');
 });
 selectionClickableFitnessMachine.addEventListener('click', function (e) {
+  // prevent the fitness machine select to toggle the container state
   e.stopPropagation();
   $('.selectionClickableFitnessMachine').trigger('change');
 });
 selectionClickableFitnessMachine.addEventListener('change', function () {
   if (this.value == 0) {
     showTreadmillCanva();
-  } else if (this.value == 1) {
-    showConcept2pmCanva();
-  }
+  } else if (this.value == 1) { showConcept2pmCanva(); }
 });
 // concept2 pm5
 document.getElementById('connectButtonConcept2pm').addEventListener('click', function () {
@@ -248,19 +235,17 @@ document.getElementById('disconnectButtonIMU').addEventListener('click', functio
 });
 let checkboxes = ['checkboxAcc', 'checkboxGyr', 'checkboxMag', 'checkboxPPG'];
 checkboxes.forEach(function (myCheckbox) {
+  // get the measurement settings when the measurement checkbox is selected
   let meas = myCheckbox.slice(8);
   document.getElementById(myCheckbox).addEventListener('click', function () {
-    if (this.checked) {
-      imuDevice.sendCommand(meas, 'get_measurement_settings', null);
-    }
+    if (this.checked) { imuDevice.sendCommand(meas, 'get_measurement_settings', null); }
   });
 });
 switchSDK.addEventListener('change', function () {
+  // model SDK state: can only be changed when no data is streaming
   if (switchSDK.checked) {
     imuDevice.sendCommand('SDK', 'start_measurement', null);
-  } else {
-    imuDevice.sendCommand('SDK', 'stop_measurement', null);
-  }
+  } else { imuDevice.sendCommand('SDK', 'stop_measurement', null); }
   checkboxes.forEach(function (myCheckbox) {
     document.getElementById(myCheckbox).checked = false;
     $('#container' + myCheckbox.slice(8) + 'Settings').collapse("hide");
@@ -271,6 +256,7 @@ switches.forEach(function (mySwitch) {
   let meas = mySwitch.slice(6);
   document.getElementById(mySwitch).addEventListener('change', function () {
     if (this.checked) {
+      // get the selected settings for the measurement and start streaming
       let requestedSettings = [], settingsSelects = [];
       settingsSelects = [meas + 'sample_rate', meas + 'resolution', meas + 'range', meas + 'channels'];
       settingsSelects.forEach(function (select) {
@@ -286,6 +272,7 @@ switches.forEach(function (mySwitch) {
   });
 });
 switchHR.addEventListener('change', function () {
+  // HR measurement does not interfere with SDK
   if (switchHR.checked) {
     imuDevice.findHeartRateCharacteristic();
     document.getElementById('checkboxHR').checked = true;
@@ -302,6 +289,7 @@ document.getElementById('selectionClickableImuGyrChart').addEventListener('chang
   switchRawAndCombined('Gyr', parseInt(this.value));
 });
 document.getElementById('pills-tab-imu').addEventListener('shown.bs.tab', function (e) {
+  //update only the chart being shown to improve performance
   let measId = e.target.id.slice(-1);
   if (measId == 'A') { currentImuActiveTab = 'default' } else {
     let measType = imuDevice.measTypes[measId].value;
@@ -331,7 +319,7 @@ settingsModal.addEventListener('show.bs.modal', event => {
 })
 saveSettingsButton.addEventListener('click', function () {
   saveSettingsAndRecord();
-  $('#settingsModal').modal('hide'); // bootstrap methods require JQuery
+  $('#settingsModal').modal('hide');
 });
 
 /* SET UP CHARTS*/
@@ -614,11 +602,11 @@ function drawChartIMU(measType, measId, numOfChannels, hasCombined) {
     3: { backgroundColor: 'rgb(255, 153, 51)', borderColor: 'rgba(255, 153, 51, 0.2)' },
   };
   const yMinMax = {
-    HR: { min: 40, max: 220 },
+    HR: { min: 0, max: 220 },
     PPG: { min: -20000, max: 20000 },
-    Acc: { min: -20, max: 20 },
-    Gyr: { min: -1000, max: 1000 },
-    Mag: { min: -1000, max: 1000 },
+    Acc: { min: -40, max: 40 },
+    Gyr: { min: -2000, max: 2000 },
+    Mag: { min: -50, max: 50 },
   };
   for (let i = 0; i < numOfChannels; i++) {
     data.datasets[i] = {
@@ -644,10 +632,10 @@ function drawChartIMU(measType, measId, numOfChannels, hasCombined) {
     type: 'line',
     data: data,
     options: {
-      spanGaps: true, 
+      spanGaps: true,
       animation: false,
       normalized: true,
-      events:[],
+      events: [],
       scales: {
         x: {
           type: 'time',
@@ -689,7 +677,7 @@ function drawChartIMU(measType, measId, numOfChannels, hasCombined) {
         legend: {
           position: 'bottom',
         },
-        decimation:{
+        decimation: {
           enabled: true,
           algorithm: 'lttb',
           threshold: 1000,
@@ -778,25 +766,19 @@ function updateChartAndRecording() {
     }
   }
   // part 2: update the charts
-  if (heartRateDevice.device !== null) {
-    try { chartHR.update(); } catch (e) { };
-  }
-  if (treadmillDevice.device !== null) {
-    try { chartTreadmill.update(); } catch (e) { };
-  }
-  if (concept2pmDevice.device !== null) {
-    try { chartConcept2pm.update(); } catch (e) { };
-  }
+  if (heartRateDevice.device !== null) { try { chartHR.update(); } catch (e) { }; }
+  if (treadmillDevice.device !== null) { try { chartTreadmill.update(); } catch (e) { }; }
+  if (concept2pmDevice.device !== null) { try { chartConcept2pm.update(); } catch (e) { }; }
   if (imuDevice.device !== null && imuDevice.imuStreamList.length != 0 && currentImuActiveTab != 'none') {
     // update only active tab to improve performance
     try { window["chartIMU_" + currentImuActiveTab].update(); } catch (e) { };
   }
 }
 function addData(chart, label, data) {
+  // adds data to chart without updating it
   chart.data.labels.push(label);
-  chart.data.datasets.forEach((dataset, index) => {
-    dataset.data.push(data[index]);
-  });
+  chart.data.datasets.forEach((dataset, index) => { dataset.data.push(data[index]); });
+  // display only data within the time range defined by chartMaxTime
   let minLabel = chart.data.labels.at(-1).getTime() - chartMaxTime;
   let counter = 0
   chart.data.labels.forEach((label) => {
@@ -805,19 +787,23 @@ function addData(chart, label, data) {
     }
   });
   chart.data.labels.splice(0, counter);
-  chart.data.datasets.forEach((dataset, index) => {
-    dataset.data.splice(0, counter);
-  });
+  chart.data.datasets.forEach((dataset, index) => { dataset.data.splice(0, counter); });
+  // reduce radius size when too many points are displayed
   if (chart.data.labels.length > 500) {
     chart.options.elements.point.radius = 0.5;
   }
 }
 function removeAllData(chart) {
   chart.data.labels = [];
-  chart.data.datasets.forEach((dataset) => {
-    dataset.data = [];
-  });
+  chart.data.datasets.forEach((dataset) => { dataset.data = []; });
   chart.update();
+}
+// show toast
+function showToast(message, title) {
+  toastMessage.textContent = message;
+  toastTitle.textContent = title;
+  var toast = new bootstrap.Toast(toastDisconnection);
+  toast.show();
 }
 
 // HR
@@ -896,7 +882,6 @@ function updateConnectedTredmill() {
   $('#connectButtonTreadmill').addClass('disabled');
 }
 function updateDataTreadmill(treadmillMeasurement) {
-  //UI
   statusTextTreadmill.innerHTML = /*'&#x1F3C3;'*/ `> Speed: ${(treadmillMeasurement.speed < 10 ? '&nbsp;' : '')}${treadmillMeasurement.speed} km/h<br />> Inclination: ${(treadmillMeasurement.inclination < 0 ? '' : '&nbsp;')}${treadmillMeasurement.inclination} %`;
   speedTextTreadmill.textContent = treadmillMeasurement.speed;
   inclinationTextTreadmill.textContent = treadmillMeasurement.inclination;
@@ -937,18 +922,19 @@ function updateConnectedConcept2pm() {
   $('#connectButtonConcept2pm').addClass('disabled');
 }
 function updateDataConcept2pm(type, concept2pmMeasurement) {
+  // add measurement
   let measurementType = type;
   if (concept2pmMeasurements[measurementType] == undefined) {
     concept2pmMeasurements[measurementType] = []
   }
   concept2pmMeasurements[measurementType].push(concept2pmMeasurement);
-  //UI
+  // update UI
   let rowingState = (concept2pmMeasurements.general_status != undefined ? concept2pmMeasurements.general_status.at(-1).rowingState : undefined);
   let printPace = (concept2pmMeasurements.additional_status_1 != undefined ? concept2pmMeasurements.additional_status_1.at(-1).prettyCurrentPace : undefined);
   let printSpeed = (concept2pmMeasurements.additional_status_1 != undefined ? concept2pmMeasurements.additional_status_1.at(-1).speed : undefined);
   let printStrokeRate = (concept2pmMeasurements.additional_status_1 != undefined ? concept2pmMeasurements.additional_status_1.at(-1).strokeRate : undefined);
   let printDragFactor = (concept2pmMeasurements.general_status != undefined ? concept2pmMeasurements.general_status.at(-1).dragFactor : undefined);
-
+  // the PM5 continues to send out data from previous active state even if the state is inactive => correct chart to 0
   if (rowingState == 1) {
     if (measurementType == 'additional_status_1') {
       let plotNewStroke = concept2pmMeasurement.strokeRate;
@@ -1047,6 +1033,7 @@ function updateConnectedIMU() {
   $('#connectButtonIMU').addClass('disabled');
 }
 function updateImuSettings(measType, measId) {
+  // updates the select options for the stream settings
   Object.values(imuDevice.settingTypes).forEach(settingValue => {
     let dropdownId = measType + settingValue;
     [...document.getElementById(dropdownId).options].forEach(o => o.remove())
@@ -1065,9 +1052,7 @@ function updateConnectedStreamIMU(measType, measId, numOfChannels) {
   let tabPillName = "#pills-chart-imu-tab-" + measId;
   $(tabPillName).removeAttr('disabled');
   $(tabPillName).removeClass('disabled');
-  if (measType != 'HR') {
-    $("#switchSDK").attr('disabled', 'disabled');
-  }
+  if (measType != 'HR') { $("#switchSDK").attr('disabled', 'disabled'); }
   let hasCombined;
   (measType == 'Acc' || measType == 'Gyr') ? hasCombined = true : hasCombined = false;
   drawChartIMU(measType, measId, numOfChannels, hasCombined);
@@ -1092,20 +1077,14 @@ function updateDisconnectedStreamIMU(measType, measId) {
 }
 function updateDataIMU(imuMeasurementArray) {
   let measType = imuMeasurementArray[0].measurementType;
-  if (imuMeasurements[measType] == undefined) {
-    imuMeasurements[measType] = [];
-  }
-  imuMeasurementArray.forEach(function (sample) {
-    imuMeasurements[measType].push(sample);
-  });
+  if (imuMeasurements[measType] == undefined) { imuMeasurements[measType] = []; }
+  imuMeasurementArray.forEach(function (sample) { imuMeasurements[measType].push(sample); });
   let chartId = "chartIMU_" + measType;
   imuMeasurementArray.forEach((element) => {
     let measId = element.measurementId;
     let numOfChannels = imuDevice.currentSetting[measId].channels;
     let plotNewData = [];
-    for (let i = 0; i < numOfChannels; i++) {
-      plotNewData.push(element['channel_' + i]);
-    }
+    for (let i = 0; i < numOfChannels; i++) { plotNewData.push(element['channel_' + i]); }
     if (element.hasOwnProperty('combined')) { plotNewData.push(element['combined']); }
     let index = new Date(element.timeCorrected);
     addData(window[chartId], index, plotNewData);
@@ -1114,15 +1093,11 @@ function updateDataIMU(imuMeasurementArray) {
 function switchRawAndCombined(measType, showCombined) {
   chartId = 'chartIMU_' + measType;
   if (showCombined) {
-    for (let i = 0; i < window[chartId].data.datasets.length - 1; i++) {
-      window[chartId].hide(i);
-    }
+    for (let i = 0; i < window[chartId].data.datasets.length - 1; i++) { window[chartId].hide(i); }
     window[chartId].show(window[chartId].data.datasets.length - 1);
   } else {
     window[chartId].hide(window[chartId].data.datasets.length - 1);
-    for (let i = 0; i < window[chartId].data.datasets.length - 1; i++) {
-      window[chartId].show(i);
-    }
+    for (let i = 0; i < window[chartId].data.datasets.length - 1; i++) { window[chartId].show(i); }
   }
 }
 
@@ -1142,48 +1117,26 @@ function isDeviceConnected() {
   if (imuDevice.device !== null) {
     deviceList.push('IMU: ' + imuDevice.getDeviceName());
   }
-  if (deviceList.length == 0) {
-    return false;
-  } else {
-    return true;
-  }
+  if (deviceList.length == 0) { return false; } else { return true; }
 }
 function resetMeasurements(heartRate, treadmill, concept2pm, imu) {
-  if (treadmill) {
-    treadmillMeasurements = [];
-  }
-  if (heartRate) {
-    heartRateMeasurements = [];
-  }
-  if (concept2pm) {
-    concept2pmMeasurements = [];
-  }
-  if (imu) {
-    imuMeasurements = {};
-  }
+  if (treadmill) { treadmillMeasurements = []; }
+  if (heartRate) { heartRateMeasurements = []; }
+  if (concept2pm) { concept2pmMeasurements = []; }
+  if (imu) { imuMeasurements = {}; }
 }
 
 /* RECORDING DATA*/
 
 function updateSettingsModalContent() {
   let deviceList = [];
-  if (heartRateDevice.device !== null) {
-    deviceList.push('HR sensor: ' + heartRateDevice.getDeviceName());
-  }
-  if (treadmillDevice.device !== null) {
-    deviceList.push('Treadmill: ' + treadmillDevice.getDeviceName());
-  }
-  if (concept2pmDevice.device !== null) {
-    deviceList.push('Concept2 PM: ' + concept2pmDevice.getDeviceName());
-  }
-  if (imuDevice.device !== null) {
-    deviceList.push('IMU sensor: ' + imuDevice.getDeviceName());
-  }
+  if (heartRateDevice.device !== null) { deviceList.push('HR sensor: ' + heartRateDevice.getDeviceName()); }
+  if (treadmillDevice.device !== null) { deviceList.push('Treadmill: ' + treadmillDevice.getDeviceName()); }
+  if (concept2pmDevice.device !== null) { deviceList.push('Concept2 PM: ' + concept2pmDevice.getDeviceName()); }
+  if (imuDevice.device !== null) { deviceList.push('IMU sensor: ' + imuDevice.getDeviceName()); }
   if (deviceList.length !== 0) {
     settingsDevices.innerHTML = deviceList.join(' <br /> ');
-  } else {
-    settingsDevices.innerHTML = "No devices connected";
-  }
+  } else { settingsDevices.innerHTML = "No devices connected"; }
   recordingDeviceList = deviceList;
   fileName = "experiment_" + Date.now();
   fileNameInput.value = fileName;
@@ -1226,12 +1179,8 @@ function saveSettingsAndRecord() {
   }
 }
 function startRecording() {
-  if (fileName == null) {
-    fileName = 'experiment_' + Date.now();
-  }
-  if (duration == null) {
-    duration = 60;
-  }
+  if (fileName == null) { fileName = 'experiment_' + Date.now(); }
+  if (duration == null) { duration = 60; }
   duration = duration * 60 * 1000 //miliseconds
   isRecording = true;
   recordingStartTime = Date.now();
@@ -1253,9 +1202,7 @@ function stopRecording() {
     resetMeasurements(true, true, true, true);
     setTimeout(resetAllCharts(), 1000);
     console.log('> Recording stopped');
-  } else {
-    showToast("Not recording!", "Record data");
-  }
+  } else { showToast("Not recording!", "Record data"); }
 }
 function saveToFile() {
   var file;
@@ -1306,9 +1253,7 @@ function saveToFile() {
   try {
     var downloadFileName = fileName.replace(/\s+/g, '-') + ".json";
     file = new File(myJSON, downloadFileName, properties);
-  } catch (e) {
-    file = new Blob([myJSON], { type: "application/json" });
-  }
+  } catch (e) { file = new Blob([myJSON], { type: "application/json" }); }
   var a = document.createElement('a');
   a.href = window.URL.createObjectURL(file);
   a.download = downloadFileName;

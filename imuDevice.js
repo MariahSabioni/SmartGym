@@ -1,7 +1,17 @@
 /*
-Documentation: https://github.com/polarofficial/polar-ble-sdk/blob/master/technical_documentation/Polar_Measurement_Data_Specification.pdf
-Code example: https://webbluetoothcg.github.io/web-bluetooth/#dom-bluetoothremotegattcharacteristic-readvalue
+> Description:
+This class constructs the bluetooth Polar Verity Sense device.
+Different Polar devices follow different commands (see documentation), therefore will only work with Verity Sense.
+> Documentation:
+https://github.com/polarofficial/polar-ble-sdk/blob/master/technical_documentation/Polar_Measurement_Data_Specification.pdf
+https://github.com/polarofficial/polar-ble-sdk/blob/master/technical_documentation/SdkModeExplained.md
+> Code example:
+https://webbluetoothcg.github.io/web-bluetooth/#dom-bluetoothremotegattcharacteristic-readvalue
+> Other references:
+Sensor timestamp: https://github.com/polarofficial/polar-ble-sdk/blob/master/technical_documentation/TimeSystemExplained.md
+Reference sample (always full bytes, not per documentation but per issue):https://github.com/polarofficial/polar-ble-sdk/issues/187
 */
+
 "use strict";
 class ImuDevice {
 
@@ -15,7 +25,7 @@ class ImuDevice {
         this.hrDataChUUID = 'heart_rate_measurement';
         this.dataChUUID = "fb005c82-02e7-f387-1cad-8acd2d8df0c8";
         this.controlChUUID = "fb005c81-02e7-f387-1cad-8acd2d8df0c8";
-        this.refTimeStamp = new Date('2000-01-01T00:00:00Z').getTime(); // reference date https://github.com/polarofficial/polar-ble-sdk/issues/192
+        this.refTimeStamp = new Date('2000-01-01T00:00:00Z').getTime();
         this.errorTypes = {
             0: 'SUCCESS',
             1: 'ERROR INVALID OP CODE',
@@ -35,7 +45,7 @@ class ImuDevice {
         this.measTypes = {
             0: { value: 'HR', name: 'heart rate', unit: 'bpm', channels: [1] },
             1: { value: 'PPG', name: 'photoplethysmogram', unit: 'NA', sample_rate: [135], resolution: [22], range: ['N/A'], channels: [4] },
-            2: { value: 'Acc', name: 'accelerometer', unit: 'g', sample_rate: [52], resolution: [16], range: [8], channels: [3] },
+            2: { value: 'Acc', name: 'accelerometer', unit: 'm/s^2', sample_rate: [52], resolution: [16], range: [8], channels: [3] }, // Acc is converted to m/s^2 in the parsing steps
             3: { value: 'PPI', name: 'pp interval', unit: 's' },
             5: { value: 'Gyr', name: 'gyroscope', unit: 'degrees/s', sample_rate: [52], resolution: [16], range: [2000], channels: [3] },
             6: { value: 'Mag', name: 'magnetometer', unit: 'G', sample_rate: [50], resolution: [16], range: [50], channels: [3] },
@@ -335,7 +345,6 @@ class ImuDevice {
 
             let numOfChannels = this.currentSetting[measId].channels;
             let refSampleSize = 2 * numOfChannels;
-            // ref sample is always full bytes, not according to documentation but according to https://github.com/polarofficial/polar-ble-sdk/issues/187
             console.log(`>> refSampleSize: ${refSampleSize}`);
             let refSample = {
                 measurementType: measType,

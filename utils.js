@@ -1,3 +1,8 @@
+/*
+> Description:
+This file contains some utility functions used by several JS files.
+*/
+
 /* DATA OPERATIONS*/
 
 // convert a hex string to a byte array
@@ -106,14 +111,4 @@ function getKeyByPropValue(object, value, property) {
 // remove element from list
 function removeElement(list, element) {
     return list.filter(item => item !== element);
-}
-
-/* USER INTERFACE*/
-
-// show toast
-function showToast(message, title) {
-    toastMessage.textContent = message;
-    toastTitle.textContent = title;
-    var toast = new bootstrap.Toast(toastDisconnection)
-    toast.show();
 }

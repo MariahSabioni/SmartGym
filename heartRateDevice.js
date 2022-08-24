@@ -1,6 +1,9 @@
 /*
-Documentation: https://www.bluetooth.com/specifications/specs/heart-rate-profile-1-0/
-Code example:
+> Description:
+This class constructs the bluetooth heart rate device.
+It follows bluetooth heart rate protocol, therefore works with any HR device.
+> Documentation:
+https://www.bluetooth.com/specifications/specs/heart-rate-profile-1-0/
 */
 
 class HeartRateDevice {

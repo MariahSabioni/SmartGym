@@ -1,6 +1,12 @@
 /*
-Documentation: 
-Code example: https://googlechrome.github.io/samples/web-bluetooth/discover-services-and-characteristics.html
+> Description:
+This class constructs the bluetooth device to discover service characteristics.
+All devices will be found, but only the characteristics of the UUID provided can be discovered.
+If the selected device does not contain the provided UUID, it will throw an error.
+> Documentation:
+https://web.dev/bluetooth/
+> Code example:
+https://googlechrome.github.io/samples/web-bluetooth/discover-services-and-characteristics.html
 */
 
 class BleDevice {

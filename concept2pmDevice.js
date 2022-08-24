@@ -1,8 +1,15 @@
 /*
-Documentation: https://www.concept2.co.uk/files/pdf/us/monitors/PM5_BluetoothSmartInterfaceDefinition.pdf
+> Description:
+This class constructs the bluetooth Concept2 PM device.
+The device uses CSAFE proprietary commands (see documentation), therefore will only work with Concept2 Performance Monitors.
+> Documentation:
+https://www.concept2.co.uk/files/pdf/us/monitors/PM5_BluetoothSmartInterfaceDefinition.pdf
 https://www.concept2.com/files/pdf/us/monitors/PM5_CSAFECommunicationDefinition.pdf
-Code example: https://github.com/GoogleChromeLabs/rowing-monitor
-Other references: https://www.c2forum.com/viewtopic.php?f=15&t=93321
+> Code example:
+https://github.com/GoogleChromeLabs/rowing-monitor
+> Other references:
+Finish pm5 workout command: https://www.c2forum.com/viewtopic.php?f=15&t=93321
+Checksum: https://www.c2forum.com/viewtopic.php?f=15&t=77779&p=295416&hilit=checksum#p295416
 */
 
 class Concept2pmDevice {

@@ -54,19 +54,6 @@ function decIntToBinString(dec) {
 }
 
 // convert buffer array to binary
-function bufferToBinString(buffer) {
-    array = new Uint8Array(buffer);
-    let bin = [];
-    array.forEach(function (element) {
-        let elementBin = (element >>> 0).toString(2).split('');
-        for (let i = 0; i < 8 - elementBin.length; i++) {
-            elementBin.unshift("0");
-        }
-        bin.push(elementBin.join(''));
-    });
-    return bin.join('');
-}
-
 function bufferToReverseBinString(buffer) {
     array = new Uint8Array(buffer);
     let bin = [];
@@ -81,19 +68,6 @@ function bufferToReverseBinString(buffer) {
 function bitStringToSignedInt(binStr) {
     if (binStr.length >64) throw new RangeError('parsing only supports ints up to 32 bits');
     return parseInt(binStr[0] === "1" ? binStr.padStart(32, "1") : binStr.padStart(32, "0"), 2) >> 0;
-}
-
-function bufferToReverseBinArray(buffer) {
-    array = new Uint8Array(buffer);
-    let bin = [];
-    array.forEach(function (element) {
-        let elementBin = (element >>> 0).toString(2).split();
-        for (let i = 0; i < 8 - elementBin.length; i++) {
-            elementBin.unshift("0");
-        }
-        bin.push(elementBin.reverse().join(''));
-    });
-    return bin;
 }
 
 /* OBJECTS AND ARRAYS UTILS*/

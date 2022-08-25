@@ -6,10 +6,13 @@ Different Polar devices follow different commands (see documentation), therefore
 https://github.com/polarofficial/polar-ble-sdk/blob/master/technical_documentation/Polar_Measurement_Data_Specification.pdf
 https://github.com/polarofficial/polar-ble-sdk/blob/master/technical_documentation/SdkModeExplained.md
 > Code example:
-https://webbluetoothcg.github.io/web-bluetooth/#dom-bluetoothremotegattcharacteristic-readvalue
+https://github.com/cjs30/FingerPulseLatency
 > Other references:
+BLE readValue: https://webbluetoothcg.github.io/web-bluetooth/#dom-bluetoothremotegattcharacteristic-readvalue
 Sensor timestamp: https://github.com/polarofficial/polar-ble-sdk/blob/master/technical_documentation/TimeSystemExplained.md
 Reference sample (always full bytes, not per documentation but per issue):https://github.com/polarofficial/polar-ble-sdk/issues/187
+Correcting factor on acceleration value: https://github.com/polarofficial/polar-ble-sdk/issues/187#issuecomment-1204767909
+Calculating timestamp for each sample: https://github.com/polarofficial/polar-ble-sdk/issues/189
 */
 
 "use strict";
@@ -42,6 +45,7 @@ class ImuDevice {
             12: 'ERROR INVALID STATE',
             13: 'ERROR DEVICE IN CHARGER'
         }
+        // the properties sample_rate, resolution, range and channels are the available settings. they get updated on stream settings received.
         this.measTypes = {
             0: { value: 'HR', name: 'heart rate', unit: 'bpm', channels: [1] },
             1: { value: 'PPG', name: 'photoplethysmogram', unit: 'NA', sample_rate: [135], resolution: [22], range: ['N/A'], channels: [4] },
@@ -69,6 +73,7 @@ class ImuDevice {
             2: 'range',
             4: 'channels',
         };
+        // the properties sample_rate, resolution, range and channels are the requested settings. they get updated on start stream sent.
         this.currentSetting = {
             0: { channels: 1 },
             1: { sample_rate: 135, resolution: 22, range: 'N/A', channels: 4 },
@@ -133,7 +138,7 @@ class ImuDevice {
                     characteristic.readValue(),
                     characteristic.startNotifications()
                         .then(characteristic => {
-                            characteristic.addEventListener('characteristicvaluechanged', this.parseControlResponse.bind(this));
+                            characteristic.addEventListener('characteristicvaluechanged', this.parseControlResponse.bind(this)); //bind context to get the device on the callback
                         }),
                 ]);
             })
@@ -250,6 +255,7 @@ class ImuDevice {
     }
 
     getMeasSettingsCommand(measId, actionId) {
+        // [opCode, streamType]
         let commandArray = Array(2);
         commandArray[0] = actionId;
         commandArray[1] = measId;;
@@ -267,7 +273,7 @@ class ImuDevice {
             commandView.setUint8(0, actionId);
             commandView.setUint8(1, measId);
         } else if (measType == 'PPG') {
-            //PPG
+            //PPG (doesn't have range property)
             commandArray = new ArrayBuffer(13);
             commandView = new DataView(commandArray);
             commandView.setUint8(0, actionId);
@@ -328,7 +334,11 @@ class ImuDevice {
     parseIMUData(event) {
         let value = event.target.value;
         value = value.buffer ? value : new DataView(value); // In Chrome 50+, a DataView is returned instead of an ArrayBuffer.
-
+        
+        // HEADING [streamType x 8 bit, timestamp x 64 bits, frameType x 8 bits, refSample x (numOfChannels * 16 bits), ...]
+        // DELTA DUMP 1 [..., deltaSize x 8 bits, deltaSampleCount x 8 bits, samples x (deltaSize * numOfChannels * deltaSampleCount), ...]
+        // DELTA DUMP 2 [..., deltaSize x 8 bits, deltaSampleCount x 8 bits, samples x (deltaSize * numOfChannels * deltaSampleCount), ...]
+        // etc. For more infor see '/references/decodingAccDataExplained'
         console.log('> response to data request | received hex:', byteArrayToHexString(value));
         let measId = value.getUint8(0);
         let measType = this.measTypes[measId].value;
@@ -342,7 +352,7 @@ class ImuDevice {
 
         let results = [];
         if ((measType == 'Acc' || measType == 'Gyr' || measType == 'Mag' || measType == 'PPG') && frameType == 'delta_frame') {
-
+            // read heading
             let numOfChannels = this.currentSetting[measId].channels;
             let refSampleSize = 2 * numOfChannels;
             console.log(`>> refSampleSize: ${refSampleSize}`);
@@ -358,7 +368,7 @@ class ImuDevice {
                 refSampleStr += ' | ' + channel + ': ' + refSample[channel];
             };
             console.log(refSampleStr);
-
+            // read delta dumps of the data frame
             let offset = 10 + refSampleSize;
             let frameSampleIndex = 0;
             do {
@@ -369,10 +379,11 @@ class ImuDevice {
 
                 let indexDeltaStart = offset + 2;
                 let indexDeltaStop = indexDeltaStart + deltaBytesCount;
-                let deltaData = value.buffer.slice(indexDeltaStart, indexDeltaStop);
-                let binDeltaData = bufferToReverseBinString(deltaData);
+                let deltaData = value.buffer.slice(indexDeltaStart, indexDeltaStop); // get the current delta dump
+                let binDeltaData = bufferToReverseBinString(deltaData); // convert to binary string reversing each byte
+                // read samples of delta dump
                 for (let i = 0; i < sampleCount; i++) {
-                    let binSample = binDeltaData.slice(i * numOfChannels * deltaSize);
+                    let binSample = binDeltaData.slice(i * numOfChannels * deltaSize); //slice start to the current sample of the delta dump
                     let sample = {
                         measurementType: measType,
                         measurementId: measId,
@@ -385,25 +396,25 @@ class ImuDevice {
                     let sampleStr = '>> sample | timestamp: ' + sample.time;
                     for (let j = 0; j < numOfChannels; j++) {
                         let channel = 'channel_' + j;
-                        let channelSample = binSample.slice(j * deltaSize, (j + 1) * deltaSize).split("").reverse().join("");
-                        let signedInt = bitStringToSignedInt(channelSample);
+                        let channelSample = binSample.slice(j * deltaSize, (j + 1) * deltaSize).split("").reverse().join(""); // get each channel data from the sample regardless of size in bits
+                        let signedInt = bitStringToSignedInt(channelSample); // read as signed int as long as size < 32bits
                         if (measType == 'Acc') {
-                            sample[channel] = (signedInt + refSample[channel]) * 0.24399999 * 0.00980665;
+                            sample[channel] = (signedInt + refSample[channel]) * 0.24399999 * 0.00980665; // refer to other references
                         } else {
                             sample[channel] = (signedInt + refSample[channel]);
                         }
                         sampleStr += ' | ' + channel + ': ' + sample[channel];
                     };
                     if (measType == 'Acc' || measType == 'Gyr') {
-                        sample.combined = Math.sqrt(Math.pow(sample.channel_0, 2) + Math.pow(sample.channel_1, 2) + Math.pow(sample.channel_2, 2)) - (measType == 'Acc' ? 9.80665 : 0);
+                        sample.combined = Math.sqrt(Math.pow(sample.channel_0, 2) + Math.pow(sample.channel_1, 2) + Math.pow(sample.channel_2, 2)) - (measType == 'Acc' ? 9.80665 : 0); //calculate combined magnitude
                         sampleStr += ' | combined: ' + sample.combined;
                     }
                     console.log(sampleStr);
                     results.push(sample);
-                    frameSampleIndex++;
+                    frameSampleIndex++; // compute the index of the sample in the frame (samples with same timestamp)
                 }
                 offset = offset + 2 + deltaBytesCount;
-            } while (offset < value.byteLength);
+            } while (offset < value.byteLength); // loop for all delta dumps in the data frame received 
         }
         // correct the timestamp. the frame contains a single timestamp which refers to the last sample
         if (this.previousTimeStamps[measId] == null) {
@@ -414,7 +425,7 @@ class ImuDevice {
                 array[index] = Object.assign(sample, source);
             });
         } else {
-            // distribute evenly the samples between 2 data frames using previous frame timestamp
+            // distribute evenly the samples between 2 data frames using previous frame timestamp (see other references)
             results.forEach((sample, index, array) => {
                 let timeCorrected = this.previousTimeStamps[measId] + (index + 1) * ((sample.time - this.previousTimeStamps[measId]) / (results.length)) + this.refTimeStamp;
                 let source = { timeCorrected: timeCorrected };
@@ -472,6 +483,7 @@ class ImuDevice {
     /* FUNCTIONS TO READ RESPONSES FROM CONTROL CHARACTERISTIC*/
 
     parseControlResponse(event) {
+        // The parsing of control responses is described in the documentation
         let value = event.target.value;
         value = value.buffer ? value : new DataView(value); // In Chrome 50+, a DataView is returned instead of an ArrayBuffer.
         let valueHexString = byteArrayToHexString(value);

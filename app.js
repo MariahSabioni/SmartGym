@@ -75,12 +75,15 @@ let duration = null;
 let isRecording = false;
 let recordingStartTime = null;
 let recordingDuration = null;
-let recordingDeviceList = [];
+let recordingDevicesNames = [];
+let recordingDevicesObj = {};
 // charts
 let interval = 500; //miliseconds between updates of Charts and recording UI
-let nIntervId;
 let chartMaxTime = 1 * 60 * 1000 //range of charts x axis, in miliseconds
+let nIntervId;
 let currentImuActiveTab;
+let currentConcept2pmActiveTab;
+let currentTreadmillActiveTab;
 // devices
 let heartRateDevice = new HeartRateDevice();
 let treadmillDevice = new TreadmillDevice();
@@ -204,6 +207,14 @@ selectionClickableFitnessMachine.addEventListener('change', function () {
     showTreadmillCanva();
   } else if (this.value == 1) { showConcept2pmCanva(); }
 });
+document.getElementById('pills-tab-treadmill').addEventListener('shown.bs.tab', function (e) {
+  //update only the chart being shown to improve performance
+  let tabId = e.target.id.slice(5, 11);
+  if (tabId == 'chart') {
+    try { chartTreadmill.update(); } catch (e) { }
+    currentTreadmillActiveTab = 'tabId';
+  } else { currentTreadmillActiveTab = 'default'; }
+});
 // concept2 pm5
 document.getElementById('connectButtonConcept2pm').addEventListener('click', function () {
   concept2pmDevice.connect()
@@ -221,6 +232,14 @@ document.getElementById('startConcept2pmButton').addEventListener('click', funct
 });
 document.getElementById('stopConcept2pmButton').addEventListener('click', function () {
   concept2pmDevice.resetConcept2pm();
+});
+document.getElementById('pills-tab-concept2pm').addEventListener('shown.bs.tab', function (e) {
+  //update only the chart being shown to improve performance
+  let tabId = e.target.id.slice(6, 11);
+  if (tabId == 'chart') {
+    try { chartConcept2pm.update(); } catch (e) { }
+    currentConcept2pmActiveTab = 'tabId';
+  } else { currentConcept2pmActiveTab = 'default'; }
 });
 // imu
 document.getElementById('connectButtonIMU').addEventListener('click', function () {
@@ -603,7 +622,7 @@ function drawChartIMU(measType, measId, numOfChannels, hasCombined) {
   };
   const yMinMax = {
     HR: { min: 0, max: 220 },
-    PPG: { min: -20000, max: 20000 },
+    PPG: { min: -40000, max: 40000 },
     Acc: { min: -40, max: 40 },
     Gyr: { min: -2000, max: 2000 },
     Mag: { min: -50, max: 50 },
@@ -750,7 +769,7 @@ function updateChartAndRecording() {
     prettyRecordingDuration = new Date(recordingDuration).toISOString().slice(11, 19);
     timeRemaining = duration - recordingDuration + 1000;
     prettyTimeRemaining = new Date(timeRemaining).toISOString().slice(11, 19);
-    statusTextRecord.innerHTML = `Now recording:<br />${recordingDeviceList.join(' <br /> ')}<br />Auto stop: ${prettyDuration}<br />Current duration: ${prettyRecordingDuration}<br />Time remaining: ${prettyTimeRemaining}`
+    statusTextRecord.innerHTML = `Now recording:<br />${recordingDevicesNames.join(' <br /> ')}<br />Auto stop: ${prettyDuration}<br />Current duration: ${prettyRecordingDuration}<br />Time remaining: ${prettyTimeRemaining}`
     // automatic stop recording to preset autostop
     if (recordingDuration >= duration) {
       saveToFile();
@@ -761,16 +780,19 @@ function updateChartAndRecording() {
       fileName = null;
       duration = null;
       recordingStartTime = null;
-      resetMeasurements(true, true, true, true);
       setTimeout(resetAllCharts(), 1000);
     }
   }
   // part 2: update the charts
   if (heartRateDevice.device !== null) { try { chartHR.update(); } catch (e) { }; }
-  if (treadmillDevice.device !== null) { try { chartTreadmill.update(); } catch (e) { }; }
-  if (concept2pmDevice.device !== null) { try { chartConcept2pm.update(); } catch (e) { }; }
-  if (imuDevice.device !== null && imuDevice.imuStreamList.length != 0 && currentImuActiveTab != 'none') {
-    // update only active tab to improve performance
+  // update only active tab to improve performance
+  if (treadmillDevice.device !== null && currentTreadmillActiveTab !== 'default') {
+    try { chartTreadmill.update(); } catch (e) { };
+  }
+  if (concept2pmDevice.device !== null && currentConcept2pmActiveTab !== 'default') {
+    try { chartConcept2pm.update(); } catch (e) { };
+  }
+  if (imuDevice.device !== null && imuDevice.imuStreamList.length !== 0 && currentImuActiveTab !== 'default') {
     try { window["chartIMU_" + currentImuActiveTab].update(); } catch (e) { };
   }
 }
@@ -812,8 +834,7 @@ function updateDisconnectedHR(reason) {
   titleTextHR.textContent = "Scan for Bluetooth HR sensor";
   containerHR.style.display = "none";
   heartRateDevice = new HeartRateDevice();
-  resetMeasurements(true, false, false, false);
-  chartHR.destroy();
+  try{chartHR.destroy();}catch(e){}
   $('#connectButtonHR').removeClass('disabled');
   switch (reason) {
     case 'failed_connection':
@@ -830,6 +851,7 @@ function updateDisconnectedHR(reason) {
   }
 }
 function updateConnectedHR() {
+  resetMeasurements(true, false, false, false);
   titleTextHR.textContent = "Connected to: " + heartRateDevice.getDeviceName();
   containerHR.style.display = "block";
   drawChartHR();
@@ -858,8 +880,7 @@ function updateDisconnectedTreadmill(reason) {
   titleTextTreadmill.textContent = "Scan for Bluetooth treadmill";
   containerTreadmill.style.display = "none";
   treadmillDevice = new TreadmillDevice();
-  resetMeasurements(false, true, false, false);
-  chartTreadmill.destroy();
+  try{chartTreadmill.destroy();}catch(e){}
   $('#connectButtonTreadmill').removeClass('disabled');
   switch (reason) {
     case 'failed_connection':
@@ -876,6 +897,7 @@ function updateDisconnectedTreadmill(reason) {
   }
 }
 function updateConnectedTredmill() {
+  resetMeasurements(false, true, false, false);
   titleTextTreadmill.textContent = "Connected to: " + treadmillDevice.getDeviceName();
   containerTreadmill.style.display = "block";
   drawChartTreadmill();
@@ -898,8 +920,7 @@ function updateDisconnectedConcept2pm(reason) {
   titleTextConcept2pm.textContent = "Scan for Bluetooth Concept2 PM";
   containerConcept2pm.style.display = "none";
   concept2pmDevice = new Concept2pmDevice();
-  resetMeasurements(false, false, true, false);
-  chartConcept2pm.destroy();
+  try{chartConcept2pm.destroy();}catch(e){}
   $('#connectButtonConcept2pm').removeClass('disabled');
   switch (reason) {
     case 'failed_connection':
@@ -916,16 +937,16 @@ function updateDisconnectedConcept2pm(reason) {
   }
 }
 function updateConnectedConcept2pm() {
+  resetMeasurements(false, false, true, false);
   titleTextConcept2pm.textContent = "Connected to: " + concept2pmDevice.getDeviceName();
   containerConcept2pm.style.display = "block";
   drawChartConcept2pm();
   $('#connectButtonConcept2pm').addClass('disabled');
 }
-function updateDataConcept2pm(type, concept2pmMeasurement) {
+function updateDataConcept2pm(measurementType, concept2pmMeasurement) {
   // add measurement
-  let measurementType = type;
   if (concept2pmMeasurements[measurementType] == undefined) {
-    concept2pmMeasurements[measurementType] = []
+    concept2pmMeasurements[measurementType] = [];
   }
   concept2pmMeasurements[measurementType].push(concept2pmMeasurement);
   // update UI
@@ -1010,7 +1031,6 @@ function updateDisconnectedIMU(reason) {
   // turn on SDK switch
   $("#switchSDK").removeAttr('disabled');
   imuDevice = new ImuDevice();
-  resetMeasurements(false, false, false, true);
   $('#connectButtonIMU').removeClass('disabled');
   switch (reason) {
     case 'failed_connection':
@@ -1027,6 +1047,7 @@ function updateDisconnectedIMU(reason) {
   }
 }
 function updateConnectedIMU() {
+  resetMeasurements(false, false, false, true);
   statusTextIMU.innerHTML = `Subscribe to a data stream to receive data.`;
   titleTextIMU.textContent = "Connected to: " + imuDevice.getDeviceName();
   containerIMU.style.display = "block";
@@ -1122,22 +1143,34 @@ function isDeviceConnected() {
 function resetMeasurements(heartRate, treadmill, concept2pm, imu) {
   if (treadmill) { treadmillMeasurements = []; }
   if (heartRate) { heartRateMeasurements = []; }
-  if (concept2pm) { concept2pmMeasurements = []; }
+  if (concept2pm) { concept2pmMeasurements = {}; }
   if (imu) { imuMeasurements = {}; }
 }
 
 /* RECORDING DATA*/
 
 function updateSettingsModalContent() {
-  let deviceList = [];
-  if (heartRateDevice.device !== null) { deviceList.push('HR sensor: ' + heartRateDevice.getDeviceName()); }
-  if (treadmillDevice.device !== null) { deviceList.push('Treadmill: ' + treadmillDevice.getDeviceName()); }
-  if (concept2pmDevice.device !== null) { deviceList.push('Concept2 PM: ' + concept2pmDevice.getDeviceName()); }
-  if (imuDevice.device !== null) { deviceList.push('IMU sensor: ' + imuDevice.getDeviceName()); }
-  if (deviceList.length !== 0) {
-    settingsDevices.innerHTML = deviceList.join(' <br /> ');
+  recordingDevicesNames = []; // list to display on the modal
+  recordingDevicesObj = {}; // list to tell saveFile which measurement arrays to record
+  if (heartRateDevice.device !== null) {
+    recordingDevicesNames.push('HR sensor: ' + heartRateDevice.getDeviceName());
+    recordingDevicesObj.hr = heartRateDevice.getDeviceName();
+  }
+  if (treadmillDevice.device !== null) {
+    recordingDevicesNames.push('Treadmill: ' + treadmillDevice.getDeviceName());
+    recordingDevicesObj.treadmill = treadmillDevice.getDeviceName();
+  }
+  if (concept2pmDevice.device !== null) {
+    recordingDevicesNames.push('Concept2 PM: ' + concept2pmDevice.getDeviceName());
+    recordingDevicesObj.concept2pm = concept2pmDevice.getDeviceName();
+  }
+  if (imuDevice.device !== null) {
+    recordingDevicesNames.push('IMU sensor: ' + imuDevice.getDeviceName());
+    recordingDevicesObj.imu = imuDevice.getDeviceName();
+  }
+  if (recordingDevicesNames.length !== 0) {
+    settingsDevices.innerHTML = recordingDevicesNames.join(' <br /> ');
   } else { settingsDevices.innerHTML = "No devices connected"; }
-  recordingDeviceList = deviceList;
   fileName = "experiment_" + Date.now();
   fileNameInput.value = fileName;
   duration = 60;
@@ -1199,7 +1232,6 @@ function stopRecording() {
     fileName = null;
     duration = null;
     recordingStartTime = null;
-    resetMeasurements(true, true, true, true);
     setTimeout(resetAllCharts(), 1000);
     console.log('> Recording stopped');
   } else { showToast("Not recording!", "Record data"); }
@@ -1218,33 +1250,33 @@ function saveToFile() {
   let prettyActualDuration = new Date(endTime - recordingStartTime + 1000).toISOString().slice(11, 19);
   let experiment = {
     fileName: fileName,
-    devices: recordingDeviceList,
+    devices: recordingDevicesObj,
     presetDuration: prettyPresetDuration,
     actualDuration: prettyActualDuration,
     startTime: prettyRecordingStartTime,
     endTime: prettyRecordingEndTime,
   };
-  if (heartRateDevice.device !== null) {
+  if (recordingDevicesObj.hasOwnProperty('hr')) {
     heartRateSensor = {
-      device: heartRateDevice.getDeviceName(),
+      device: recordingDevicesObj.hr,
       measurements: heartRateMeasurements,
     };
   }
-  if (treadmillDevice.device !== null) {
+  if (recordingDevicesObj.hasOwnProperty('treadmill')) {
     treadmill = {
-      device: treadmillDevice.getDeviceName(),
+      device: recordingDevicesObj.treadmill,
       measurements: treadmillMeasurements,
     };
   }
-  if (concept2pmDevice.device !== null) {
+  if (recordingDevicesObj.hasOwnProperty('concept2pm')) {
     concept2pm = {
-      device: concept2pmDevice.getDeviceName(),
+      device: recordingDevicesObj.concept2pm,
       measurements: concept2pmMeasurements,
     };
   }
-  if (imuDevice.device !== null) {
+  if (recordingDevicesObj.hasOwnProperty('imu')) {
     imu = {
-      device: imuDevice.getDeviceName(),
+      device: recordingDevicesObj.imu,
       measurements: imuMeasurements,
     };
   }

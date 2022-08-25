@@ -185,7 +185,7 @@ class Concept2pmDevice {
                 return service.getCharacteristic(this.controlRequestChUUID);
             })
             .then(characteristic => {
-                let val = hexStringToByteArray('F176041302010260F2');
+                let val = hexStringToByteArray('F176041302010260F2'); // refer to other references
                 console.log('val', val);
                 characteristic.writeValue(val);
                 console.log(`> command sent to reset Concept2 PM`);
@@ -246,6 +246,7 @@ class Concept2pmDevice {
     /* FUNCTIONS TO READ RESPONSES FROM DATA CHARACTERISTIC*/
 
     parseConcept2pmData(event){
+        // The parsing of data responses is described in the documentation
         let type = getKeyByValue(Concept2pmDevice.dataTypes, event.target.uuid);
         let value = event.target.value;
         value = value.buffer ? value : new DataView(value); // In Chrome 50+, a DataView is returned instead of an ArrayBuffer.
@@ -267,7 +268,6 @@ class Concept2pmDevice {
                 workoutDurationType: value.getUint8(17),
                 dragFactor: value.getUint8(18),
             }
-            console.log('rowingState: ', result.rowingState);
             console.log(`>> sample | timestamp: ${result.time} | Rower: ${result.elapsedTime}s | ${result.distance}m | ${result.dragFactor}drag`)
         } else if (type == 'additional_status_1'){
             result = {...result,

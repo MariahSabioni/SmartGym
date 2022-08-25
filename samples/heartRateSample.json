@@ -1,0 +1,322 @@
+{
+    "experiment": {
+        "fileName": "heartRateSample",
+        "devices": {
+            "hr": "Polar Sense A5F69229"
+        },
+        "presetDuration": "00:01:00",
+        "actualDuration": "00:01:01",
+        "startTime": "2022/08/25 10:06:22",
+        "endTime": "2022/08/25 10:07:23"
+    },
+    "heartRateSensor": {
+        "device": "Polar Sense A5F69229",
+        "measurements": {
+            "HR": [
+                {
+                    "heartRate": 81,
+                    "time": 1661421983267,
+                    "measurementType": "HR"
+                },
+                {
+                    "heartRate": 81,
+                    "time": 1661421984281,
+                    "measurementType": "HR"
+                },
+                {
+                    "heartRate": 81,
+                    "time": 1661421985301,
+                    "measurementType": "HR"
+                },
+                {
+                    "heartRate": 82,
+                    "time": 1661421986264,
+                    "measurementType": "HR"
+                },
+                {
+                    "heartRate": 83,
+                    "time": 1661421987282,
+                    "measurementType": "HR"
+                },
+                {
+                    "heartRate": 83,
+                    "time": 1661421988363,
+                    "measurementType": "HR"
+                },
+                {
+                    "heartRate": 83,
+                    "time": 1661421989322,
+                    "measurementType": "HR"
+                },
+                {
+                    "heartRate": 82,
+                    "time": 1661421990281,
+                    "measurementType": "HR"
+                },
+                {
+                    "heartRate": 81,
+                    "time": 1661421991302,
+                    "measurementType": "HR"
+                },
+                {
+                    "heartRate": 80,
+                    "time": 1661421992269,
+                    "measurementType": "HR"
+                },
+                {
+                    "heartRate": 79,
+                    "time": 1661421993281,
+                    "measurementType": "HR"
+                },
+                {
+                    "heartRate": 78,
+                    "time": 1661421994362,
+                    "measurementType": "HR"
+                },
+                {
+                    "heartRate": 77,
+                    "time": 1661421995268,
+                    "measurementType": "HR"
+                },
+                {
+                    "heartRate": 77,
+                    "time": 1661421996282,
+                    "measurementType": "HR"
+                },
+                {
+                    "heartRate": 77,
+                    "time": 1661421997363,
+                    "measurementType": "HR"
+                },
+                {
+                    "heartRate": 77,
+                    "time": 1661421998267,
+                    "measurementType": "HR"
+                },
+                {
+                    "heartRate": 78,
+                    "time": 1661421999282,
+                    "measurementType": "HR"
+                },
+                {
+                    "heartRate": 78,
+                    "time": 1661422000302,
+                    "measurementType": "HR"
+                },
+                {
+                    "heartRate": 78,
+                    "time": 1661422001321,
+                    "measurementType": "HR"
+                },
+                {
+                    "heartRate": 79,
+                    "time": 1661422002282,
+                    "measurementType": "HR"
+                },
+                {
+                    "heartRate": 80,
+                    "time": 1661422003302,
+                    "measurementType": "HR"
+                },
+                {
+                    "heartRate": 80,
+                    "time": 1661422004267,
+                    "measurementType": "HR"
+                },
+                {
+                    "heartRate": 80,
+                    "time": 1661422005282,
+                    "measurementType": "HR"
+                },
+                {
+                    "heartRate": 81,
+                    "time": 1661422006362,
+                    "measurementType": "HR"
+                },
+                {
+                    "heartRate": 82,
+                    "time": 1661422007322,
+                    "measurementType": "HR"
+                },
+                {
+                    "heartRate": 82,
+                    "time": 1661422008282,
+                    "measurementType": "HR"
+                },
+                {
+                    "heartRate": 83,
+                    "time": 1661422009302,
+                    "measurementType": "HR"
+                },
+                {
+                    "heartRate": 83,
+                    "time": 1661422010321,
+                    "measurementType": "HR"
+                },
+                {
+                    "heartRate": 83,
+                    "time": 1661422011288,
+                    "measurementType": "HR"
+                },
+                {
+                    "heartRate": 84,
+                    "time": 1661422012302,
+                    "measurementType": "HR"
+                },
+                {
+                    "heartRate": 84,
+                    "time": 1661422013263,
+                    "measurementType": "HR"
+                },
+                {
+                    "heartRate": 84,
+                    "time": 1661422014282,
+                    "measurementType": "HR"
+                },
+                {
+                    "heartRate": 85,
+                    "time": 1661422015302,
+                    "measurementType": "HR"
+                },
+                {
+                    "heartRate": 84,
+                    "time": 1661422016276,
+                    "measurementType": "HR"
+                },
+                {
+                    "heartRate": 84,
+                    "time": 1661422017282,
+                    "measurementType": "HR"
+                },
+                {
+                    "heartRate": 84,
+                    "time": 1661422018362,
+                    "measurementType": "HR"
+                },
+                {
+                    "heartRate": 84,
+                    "time": 1661422019268,
+                    "measurementType": "HR"
+                },
+                {
+                    "heartRate": 85,
+                    "time": 1661422020342,
+                    "measurementType": "HR"
+                },
+                {
+                    "heartRate": 85,
+                    "time": 1661422021363,
+                    "measurementType": "HR"
+                },
+                {
+                    "heartRate": 85,
+                    "time": 1661422022279,
+                    "measurementType": "HR"
+                },
+                {
+                    "heartRate": 84,
+                    "time": 1661422023282,
+                    "measurementType": "HR"
+                },
+                {
+                    "heartRate": 83,
+                    "time": 1661422024302,
+                    "measurementType": "HR"
+                },
+                {
+                    "heartRate": 83,
+                    "time": 1661422025281,
+                    "measurementType": "HR"
+                },
+                {
+                    "heartRate": 82,
+                    "time": 1661422026283,
+                    "measurementType": "HR"
+                },
+                {
+                    "heartRate": 82,
+                    "time": 1661422027302,
+                    "measurementType": "HR"
+                },
+                {
+                    "heartRate": 82,
+                    "time": 1661422028273,
+                    "measurementType": "HR"
+                },
+                {
+                    "heartRate": 81,
+                    "time": 1661422029344,
+                    "measurementType": "HR"
+                },
+                {
+                    "heartRate": 81,
+                    "time": 1661422030303,
+                    "measurementType": "HR"
+                },
+                {
+                    "heartRate": 80,
+                    "time": 1661422031267,
+                    "measurementType": "HR"
+                },
+                {
+                    "heartRate": 80,
+                    "time": 1661422032282,
+                    "measurementType": "HR"
+                },
+                {
+                    "heartRate": 79,
+                    "time": 1661422033302,
+                    "measurementType": "HR"
+                },
+                {
+                    "heartRate": 79,
+                    "time": 1661422034279,
+                    "measurementType": "HR"
+                },
+                {
+                    "heartRate": 79,
+                    "time": 1661422035282,
+                    "measurementType": "HR"
+                },
+                {
+                    "heartRate": 78,
+                    "time": 1661422036302,
+                    "measurementType": "HR"
+                },
+                {
+                    "heartRate": 77,
+                    "time": 1661422037322,
+                    "measurementType": "HR"
+                },
+                {
+                    "heartRate": 77,
+                    "time": 1661422038342,
+                    "measurementType": "HR"
+                },
+                {
+                    "heartRate": 77,
+                    "time": 1661422039302,
+                    "measurementType": "HR"
+                },
+                {
+                    "heartRate": 78,
+                    "time": 1661422040323,
+                    "measurementType": "HR"
+                },
+                {
+                    "heartRate": 80,
+                    "time": 1661422041283,
+                    "measurementType": "HR"
+                },
+                {
+                    "heartRate": 81,
+                    "time": 1661422042302,
+                    "measurementType": "HR"
+                }
+            ]
+        }
+    },
+    "treadmill": null,
+    "concept2pm": null,
+    "imu": null
+}

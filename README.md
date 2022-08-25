@@ -14,6 +14,8 @@ The software is originally designed to connect and gather data from all the Blue
 * **Polar Verity Sense:** read and record (heart rate, accelerometer, gyroscope, magnetometer, photoplethysmogram), control/write (activate SDK mode, choose stream settings), plot (all streams channels, acc magnitude, gyro magnitude);
 * **Heart rate sensors (any):** read and record (heart rate, rr intervals, energy expended), plot (heart rate);
 
+The code is divided in one HTML file, one CSS file and various JS files. The main JS file is app.js. The other files contain the bluetooth devices constructors and the methods associated to each bluetooth device class.
+
 ## Getting Started
 
 ### Instructions
@@ -41,7 +43,7 @@ Streaming starts automatically after bluetooth connection is established for all
 In case of errors, they are displayed on the area above the connect button. Lost connection is reported on a toast on the bottom-right of the screen.
 
 * Real-time charts:  
-When data is received, the charts are automatically updated.  
+When data is received, the charts are automatically updated. When connection is lost, the charts are destroyed.  
 The interval between chart updates and the range displayed on charts x-axis can be changed on lines 80 and 81 of app.js:  
 ```
 // charts

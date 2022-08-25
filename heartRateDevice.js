@@ -120,8 +120,9 @@ class HeartRateDevice {
             result.rrIntervals = rrIntervals;
         }
         result.time = Date.now();
+        result.measurementType = 'HR';
         console.log(`>> sample | timestamp: ${result.time}| HR: ${result.heartRate}bpm`);
-        updateDataHR(result);
+        updateDataHR(result.measurementType, result);
         startLoopUpdate();
     }
 

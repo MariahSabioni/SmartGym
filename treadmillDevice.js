@@ -254,8 +254,9 @@ class TreadmillDevice {
         result.duration = seconds * 1000;
         result.prettyDuration = new Date(seconds * 1000).toISOString().slice(11, 19);
         result.time = Date.now();
+        result.measurementType = 'FTMS';
         console.log(`timestamp: ${result.time} | Treadmill: ${result.speed}km/h | ${result.inclination}% | ${result.distance}m | ${result.prettyDuration}`)
-        updateDataTreadmill(result);
+        updateDataTreadmill(result.measurementType, result);
         startLoopUpdate();
     }
 

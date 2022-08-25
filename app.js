@@ -60,14 +60,13 @@ let settingsButton = document.getElementById('settingsButton');
 /* GLOBAL VARIABLES*/
 
 // HR
-let heartRateMeasurements = [];
+let heartRateMeasurements = {};
 // treadmill
-let treadmillMeasurements = [];
+let treadmillMeasurements = {};
 // concept2 pm5
-let concept2pmMeasurements = [];
+let concept2pmMeasurements = {};
 // imu
 let imuMeasurements = {};
-//let tempImuMeasurements = {};
 let selectedIMUTabId;
 // recording data
 let fileName = null;
@@ -155,42 +154,42 @@ document.getElementById('stopTreadmillButton').addEventListener('click', functio
     .catch(error => { console.log(error); });
 });
 document.getElementById('speedUpButton').addEventListener('click', function () {
-  currSpeed = treadmillMeasurements.at(-1).speed;
+  currSpeed = treadmillMeasurements.FTMS.at(-1).speed;
   treadmillDevice.increaseSpeedStep(currSpeed, 0.1)
     .catch(error => { console.log(error); });
 });
 document.getElementById('speedDownButton').addEventListener('click', function () {
-  currSpeed = treadmillMeasurements.at(-1).speed;
+  currSpeed = treadmillMeasurements.FTMS.at(-1).speed;
   treadmillDevice.decreaseSpeedStep(currSpeed, 0.1)
     .catch(error => { console.log(error); });
 });
 document.getElementById('speedUp2Button').addEventListener('click', function () {
-  currSpeed = treadmillMeasurements.at(-1).speed;
+  currSpeed = treadmillMeasurements.FTMS.at(-1).speed;
   treadmillDevice.increaseSpeedStep(currSpeed, 1.0)
     .catch(error => { console.log(error); });
 });
 document.getElementById('speedDown2Button').addEventListener('click', function () {
-  currSpeed = treadmillMeasurements.at(-1).speed;
+  currSpeed = treadmillMeasurements.FTMS.at(-1).speed;
   treadmillDevice.decreaseSpeedStep(currSpeed, 1.0)
     .catch(error => { console.log(error); });
 });
 document.getElementById('inclinationUpButton').addEventListener('click', function () {
-  currInclination = treadmillMeasurements.at(-1).inclination;
+  currInclination = treadmillMeasurements.FTMS.at(-1).inclination;
   treadmillDevice.increaseInclinationStep(currInclination, 0.5)
     .catch(error => { console.log(error); });
 });
 document.getElementById('inclinationDownButton').addEventListener('click', function () {
-  currInclination = treadmillMeasurements.at(-1).inclination;
+  currInclination = treadmillMeasurements.FTMS.at(-1).inclination;
   treadmillDevice.decreaseInclinationStep(currInclination, 0.5)
     .catch(error => { console.log(error); });
 });
 document.getElementById('inclinationUp2Button').addEventListener('click', function () {
-  currInclination = treadmillMeasurements.at(-1).inclination;
+  currInclination = treadmillMeasurements.FTMS.at(-1).inclination;
   treadmillDevice.increaseInclinationStep(currInclination, 1.0)
     .catch(error => { console.log(error); });
 });
 document.getElementById('inclinationDown2Button').addEventListener('click', function () {
-  currInclination = treadmillMeasurements.at(-1).inclination;
+  currInclination = treadmillMeasurements.FTMS.at(-1).inclination;
   treadmillDevice.decreaseInclinationStep(currInclination, 1.0)
     .catch(error => { console.log(error); });
 });
@@ -857,9 +856,12 @@ function updateConnectedHR() {
   drawChartHR();
   $('#connectButtonHR').addClass('disabled');
 }
-function updateDataHR(heartRateMeasurement) {
+function updateDataHR(measurementType, heartRateMeasurement) {
   statusTextHR.innerHTML = `> Heart rate: ${heartRateMeasurement.heartRate}bpm`;
-  heartRateMeasurements.push(heartRateMeasurement);
+  if (heartRateMeasurements[measurementType] == undefined) {
+    heartRateMeasurements[measurementType] = [];
+  }
+  heartRateMeasurements[measurementType].push(heartRateMeasurement);
   let plotNewHR = heartRateMeasurement.heartRate;
   let plotNewData = [plotNewHR];
   let index = new Date(heartRateMeasurement.time);
@@ -903,11 +905,14 @@ function updateConnectedTredmill() {
   drawChartTreadmill();
   $('#connectButtonTreadmill').addClass('disabled');
 }
-function updateDataTreadmill(treadmillMeasurement) {
+function updateDataTreadmill(measurementType, treadmillMeasurement) {
   statusTextTreadmill.innerHTML = /*'&#x1F3C3;'*/ `> Speed: ${(treadmillMeasurement.speed < 10 ? '&nbsp;' : '')}${treadmillMeasurement.speed} km/h<br />> Inclination: ${(treadmillMeasurement.inclination < 0 ? '' : '&nbsp;')}${treadmillMeasurement.inclination} %`;
   speedTextTreadmill.textContent = treadmillMeasurement.speed;
   inclinationTextTreadmill.textContent = treadmillMeasurement.inclination;
-  treadmillMeasurements.push(treadmillMeasurement);
+  if (treadmillMeasurements[measurementType] == undefined) {
+    treadmillMeasurements[measurementType] = [];
+  }
+  treadmillMeasurements[measurementType].push(treadmillMeasurement);  
   let plotNewSpeed = parseFloat(treadmillMeasurement.speed);
   let plotNewInclination = parseFloat(treadmillMeasurement.inclination);
   let plotNewData = [plotNewSpeed, plotNewInclination];
@@ -1141,8 +1146,8 @@ function isDeviceConnected() {
   if (deviceList.length == 0) { return false; } else { return true; }
 }
 function resetMeasurements(heartRate, treadmill, concept2pm, imu) {
-  if (treadmill) { treadmillMeasurements = []; }
-  if (heartRate) { heartRateMeasurements = []; }
+  if (treadmill) { treadmillMeasurements = {}; }
+  if (heartRate) { heartRateMeasurements = {}; }
   if (concept2pm) { concept2pmMeasurements = {}; }
   if (imu) { imuMeasurements = {}; }
 }
@@ -1183,31 +1188,24 @@ function saveSettingsAndRecord() {
   } else {
     //validate and get filename and auto stop setting
     if (fileNameInput.value == "") {
-      console.log('empty input');
       fileNameInput.value = fileName;
       return;
     } else if (fileNameInput.value.replace(/\s+/g, '').length == 0) {
-      console.log('incorrect input');
       fileNameInput.value = fileName;
       return;
-    } else {
-      console.log('correct input')
     }
     if (durationInput.value == "") {
-      console.log('empty input');
       durationInput.value = duration;
       return;
     } else if ((!/\D/.test(durationInput.value)) && (durationInput.value > 0) && (durationInput.value < 300)) {
-      console.log('correct input')
     } else {
-      console.log('incorrect input');
       durationInput.value = duration;
       return;
     }
     fileName = fileNameInput.value;
     duration = durationInput.value;
-    console.log('new filename: ', fileName);
-    console.log('new duration: ', duration);
+    console.log('> Recording setting new filename: ', fileName);
+    console.log('> Recording setting new duration: ', duration);
     startRecording();
   }
 }
@@ -1232,7 +1230,7 @@ function stopRecording() {
     fileName = null;
     duration = null;
     recordingStartTime = null;
-    setTimeout(resetAllCharts(), 1000);
+    //setTimeout(resetAllCharts(), 1000);
     console.log('> Recording stopped');
   } else { showToast("Not recording!", "Record data"); }
 }

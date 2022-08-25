@@ -52,14 +52,14 @@ let chartMaxTime = 1 * 60 * 1000 //range of charts x axis, in miliseconds
 ```
 
 * Recording:  
-To record and save the data, go to "Record Data". The user can set a pre-set autostop or stop at any time with the button. Data is saved to a json file on default downloads folder. Data is saved for all the connected devices with the same format. Samples are available at [/samples](https://github.com/MariahSabioni/SmartGym/samples).  
+To record and save the data, go to "Record Data". The user can set a pre-set autostop or stop at any time with the button. Data is saved to a json file on default downloads folder. Data is saved for all the connected devices with the same format. Samples are available at [/samples](https://github.com/MariahSabioni/SmartGym/tree/master/samples).  
 Although the data displayed is limited, all the data parsed from the received data packages is stored and saved to json file when recording.  
 All the charts use Charts JS API and follow the best practices recommended for improving [performance](https://www.chartjs.org/docs/3.3.0/general/performance.html).
 
 ### Good to know
 
-The format of the control commands and the data broadcast is particular to each device. Command writting and data parsing have been developed according to the available documentation and github issues. The versions of the documentations used to write this code are available at folder [/references](https://github.com/MariahSabioni/SmartGym/references). For source, refer to the links on the heading of each JS file.  
-There is also an explanation of how to parse the delta frames received from Polar verity sense available [here](https://github.com/MariahSabioni/SmartGym/references/decodingAccDataExplained).
+The format of the control commands and the data broadcast is particular to each device. Command writting and data parsing have been developed according to the available documentation and github issues. The versions of the documentations used to write this code are available at folder [/references](https://github.com/MariahSabioni/SmartGym/tree/master/references). For source, refer to the links on the heading of each JS file.  
+There is also an explanation of how to parse the delta frames received from Polar verity sense available [here](https://github.com/MariahSabioni/SmartGym/blob/master/references/decodingAccDataExplained.txt).
 
 ## Known issues
 

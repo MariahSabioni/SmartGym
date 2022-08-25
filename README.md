@@ -50,42 +50,43 @@ let chartMaxTime = 1 * 60 * 1000 //range of charts x axis, in miliseconds
 ```
 
 * Recording:  
-To record and save the data, go to "Record Data". The user can set a pre-set autostop or stop at any time with the button. Data is saved to a json file on default downloads folder. Data is saved for all the connected devices. A sample is available at [/references/savedExperimentExample.json](https://github.com/MariahSabioni/SmartGym/references/savedExperimentExample.json).  
+To record and save the data, go to "Record Data". The user can set a pre-set autostop or stop at any time with the button. Data is saved to a json file on default downloads folder. Data is saved for all the connected devices with the same format. Samples are available at [/samples](https://github.com/MariahSabioni/SmartGym/samples).  
 Although the data displayed is limited, all the data parsed from the received data packages is stored and saved to json file when recording.  
 All the charts use Charts JS API and follow the best practices recommended for improving [performance](https://www.chartjs.org/docs/3.3.0/general/performance.html).
 
 ### Good to know
 
-The format of the control commands and the data broadcast is particular to each device. Command writting and data parsing have been developed according to the available documentation and github issues. The versions of the documentations used to write this code are available at folder [/references](https://github.com/MariahSabioni/SmartGym/references). For source, refer to the links available in the heading of each JS file.
+The format of the control commands and the data broadcast is particular to each device. Command writting and data parsing have been developed according to the available documentation and github issues. The versions of the documentations used to write this code are available at folder [/references](https://github.com/MariahSabioni/SmartGym/references). For source, refer to the links on the heading of each JS file.  
+There is also an explanation of how to parse the delta frames received from Polar verity sense available [here](https://github.com/MariahSabioni/SmartGym/references/decodingAccDataExplained).
 
 ## Known issues
 
 * If the Polar Verity Sense sends out data bigger than 32 bits, it is not readable and an error is thrown;
 * Date time of polar verity sense can be off a couple of hours - reason not investigated but probably due to local time set issues (read more [here](https://github.com/polarofficial/polar-ble-sdk/issues/192#issuecomment-945407913));
-* The program does not handle disconnection of a sensor in the middle of recording. It is expected that the data gathered until disconnection will be saved, but it has not been tested.
+* The program does not handle disconnection of a sensor in the middle of recording. It is expected that the data gathered until disconnection will be saved, but it has not been tested. If the device is reconnected during the experiment, it will erase all the previous recorded data. This is because any new established connection triggers a reset of the measurements array of that device type.
 
 
 ## Future work
 
 What's next? (not really, just suggestions for further development)
-* General:
+* General:  
 Fix known issues;
 Upload and plot previously recorded experiment;
 Allow connection of more than one device of same type;
 View measurements of different devices on same chart;
-* New devices
+* New devices:  
 Connect to monark bike;
 Connect movesense;
-* Verity sense:
+* Verity sense:  
 Add PPI to verity sense;
 Add filter for combined acceleration and gyro;
-* Treadmill
+* Treadmill:  
 Create and load customized track;
 Add heart rate based speed control;
-* Concept2 PM
+* Concept2 PM:  
 Add more options of custom workout ;
 Display workout summary on finish workout;
-* Heart rate
+* Heart rate:  
 Compute HR zones (user inputs max);
 Write to sensor to reset energy expended value;
 

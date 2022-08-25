@@ -4,8 +4,17 @@
     justify-content: center;
     vertical-align: middle;
     width: 100%;
-    height: 250px;
+    height: 330px;
     padding: 1%;
+    margin: 0;
+}
+
+.imuChartCanvas{
+    justify-content: center;
+    vertical-align: middle;
+    width: 100%;
+    height: 280px;
+    padding: 0%;
     margin: 0;
 }
 
@@ -23,9 +32,18 @@
     margin-right: auto;
 }
 
+/* .nav-pills .nav-link {
+    background-color: white !important;
+    color: blue !important;
+}
+
 .nav-pills .nav-link.active {
     background-color: lightgray !important;
     color: black !important;
+} */
+
+.nav-pills .nav-link.disabled {
+    color: gray !important;
 }
 
 .card {

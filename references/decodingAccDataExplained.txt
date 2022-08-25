@@ -1,0 +1,25 @@
+Data received: 022A363E4DE567EA0980F9052300B7F10613786554.....
+
+>> heading
+02: meas type = Acc
+2A363E4DE567EA09: timestamp in ns (BinInt64) = 3041687102617545225
+80: data type = delta frame
+F9052300B7F1: ref sample = 3 channels x 16 bits/value
+ref sample: channel 0: 1529
+	  	channel 1: 35
+	  	channel 2: -3657
+>> delta dump 1
+06: data size = 6 bits/value
+13: sample clount = 13 samples
+samples: 786554......
+78 | 011110 00
+65 | 0110 0101
+54 | 01 010100
+sample 1: channel 0:  011110 = 30
+	    channel 1: 0110 00 = 24
+	    channel 2: 01 0101 = 21
+measurement 1: channel 0: (30 +    1529) * 0.24399999 * 0.00980665 = 
+	  	   channel 1: (24 +      35) * 0.24399999 * 0.00980665 = 
+	  	   channel 2: (21 + (-3657)) * 0.24399999 * 0.00980665 = 
+
+>> each data package contains one or more delta dumps that contain several samples

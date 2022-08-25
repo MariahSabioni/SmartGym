@@ -12,17 +12,17 @@
     <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet"
         integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
-    <!-- Google Chart API -->
-    <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
 </head>
 
 <body>
     <nav class="navbar sticky-top navbar"
         style="box-shadow: 0 3px 5px 0 rgba(0,0,0,0.16); background-color: white;vertical-align: middle;padding-left: 30px;outline-style:solid;outline-color: lightgrey; margin-bottom: 5px;outline-width: 1px;">
-        <a class="navbar-brand" href="#" style="color: black;">
-            <h2>Smart Gym</h2>
-        </a>
         <div class="container-fluid">
+            <a class="navbar-brand" href="#" style="color: black;">
+                <h2>Smart Gym</h2>
+            </a>
+            <button id="resetChartsButton" class="btn btn-sm btn-outline-secondary" type="button">Reset all
+                charts</button>
         </div>
     </nav>
     <div class="card">
@@ -33,7 +33,7 @@
                 <div class="row">
                     <div class="col-3">
                         <h5 id="titleTextHR" class="card-title">Scan for Bluetooth HR sensor</h5>
-                        <p id="statusTextHR" class="card-text">No device connected</p>
+                        <p id="statusTextHR" class="card-text" style="font-size:larger">No device connected</p>
                         <a id="connectButtonHR" href="#" class="btn btn-primary">Connect</a>
                         <a id="disconnectButtonHR" href="#" class="btn btn-primary">Disconnect</a>
                     </div>
@@ -53,11 +53,13 @@
                         <div class="tab-content" id="pills-tabContent-hr">
                             <div class="tab-pane fade show active" id="pills-chart-hr" role="tabpanel"
                                 aria-labelledby="pills-chart-hr-tab">
-                                <div id="canvasHR" class="myCanvas"></div>
+                                <div class="myCanvas">
+                                    <canvas id="canvasHR"></canvas>
+                                </div>
                             </div>
                             <div class="tab-pane fade" id="pills-zones-hr" role="tabpanel"
                                 aria-labelledby="pills-zones-hr-tab">
-                                <div id="zonesHR" class="myCanvas">...</div>
+                                <div id="zonesHR" class="myCanvas">TBD</div>
                             </div>
                         </div>
                     </div>
@@ -66,76 +68,168 @@
         </div>
     </div>
     <div class="card">
-        <h5 class="card-header" id="headingFTMS" data-bs-toggle="collapse" data-bs-target="#collapseFTMS"
-            aria-expanded="true" aria-controls="collapseFTMS">Fitness machine</h5>
-        <div id="collapseFTMS" class="collapse show" aria-labelledby="headingFTMS">
-            <div class="card-body">
+        <h5 class="card-header" id="headingTreadmill" aria-expanded="true" aria-controls="collapseTreadmill"
+            style="display: flex; align-items: center;">
+            <div style="width:auto; float:left; margin-right: 10px; height: 100%;">Fitness machine</div>
+            <select id="selectionClickableFitnessMachine" class="form-select" aria-label="select"
+                style="width:auto; font-size:large; ">
+                <option value="0" selected>FTMS Treadmill</option>
+                <option value="1">Concept2 PM5</option>
+            </select>
+        </h5>
+        <div id="collapseTreadmill" class="collapse show" aria-labelledby="headingTreadmill">
+            <div id="selectedTreadmill" class="card-body">
                 <div class="row">
                     <div class="col-3">
-                        <h5 id="titleTextFTMS" class="card-title">Scan for Bluetooth fitness machine</h5>
-                        <p id="statusTextFTMS" class="card-text">No device connected</p>
-                        <a id="connectButtonFTMS" href="#" class="btn btn-primary">Connect</a>
-                        <a id="disconnectButtonFTMS" href="#" class="btn btn-primary">Disconnect</a>
+                        <h5 id="titleTextTreadmill" class="card-title">Scan for Bluetooth treadmill</h5>
+                        <p id="statusTextTreadmill" class="card-text" style="font-size:larger">No device connected</p>
+                        <a id="connectButtonTreadmill" href="#" class="btn btn-primary">Connect</a>
+                        <a id="disconnectButtonTreadmill" href="#" class="btn btn-primary">Disconnect</a>
                     </div>
-                    <div id="containerFTMS" class="col">
-                        <ul class="nav nav-pills mb-3" id="pills-tab-ftms" role="tablist">
+                    <div id="containerTreadmill" class="col">
+                        <ul class="nav nav-pills mb-3" id="pills-tab-treadmill" role="tablist">
                             <li class="nav-item" role="presentation">
-                                <button class="nav-link active" id="pills-chart-ftms-tab" data-bs-toggle="pill"
-                                    data-bs-target="#pills-chart-ftms" type="button" role="tab"
-                                    aria-controls="pills-chart-ftms" aria-selected="true">Chart</button>
+                                <button class="nav-link active" id="pills-chart-treadmill-tab" data-bs-toggle="pill"
+                                    data-bs-target="#pills-chart-treadmill" type="button" role="tab"
+                                    aria-controls="pills-chart-treadmill" aria-selected="true">Chart</button>
                             </li>
                             <li class="nav-item" role="presentation">
-                                <button class="nav-link" id="pills-controls-ftms-tab" data-bs-toggle="pill"
-                                    data-bs-target="#pills-controls-ftms" type="button" role="tab"
-                                    aria-controls="pills-controls-ftms" aria-selected="false">Controls</button>
+                                <button class="nav-link" id="pills-controls-treadmill-tab" data-bs-toggle="pill"
+                                    data-bs-target="#pills-controls-treadmill" type="button" role="tab"
+                                    aria-controls="pills-controls-treadmill" aria-selected="false">Controls</button>
                             </li>
                         </ul>
-                        <div class="tab-content" id="pills-tabContent-ftms">
-                            <div class="tab-pane fade show active" id="pills-chart-ftms" role="tabpanel"
-                                aria-labelledby="pills-chart-ftms-tab">
-                                <div id="canvasFTMS" class="myCanvas"></div>
+                        <div class="tab-content" id="pills-tabContent-treadmill">
+                            <div class="tab-pane fade show active" id="pills-chart-treadmill" role="tabpanel"
+                                aria-labelledby="pills-chart-treadmill-tab">
+                                <div class="myCanvas">
+                                    <canvas id="canvasTreadmill"></canvas>
+                                </div>
                             </div>
-                            <div class="tab-pane fade" id="pills-controls-ftms" role="tabpanel"
-                                aria-labelledby="pills-controls-ftms-tab">
-                                <div id="controlsFTMS" class="myCanvas">
-                                    <div class="row d-flex align-items-center" style="height: 100%;">
+                            <div class="tab-pane fade" id="pills-controls-treadmill" role="tabpanel"
+                                aria-labelledby="pills-controls-treadmill-tab">
+                                <div id="controlsTreadmill" class="myCanvas">
+                                    <div class="row d-flex align-items-center" style="height: 40%;">
+                                        <div class="col d-flex justify-content-center">
+                                            <button id="startTreadmillButton" type="button"
+                                                class="btn btn-primary btn-lg"
+                                                style="background-color: green;border-color: green;">Start
+                                                Treadmill</button>
+                                        </div>
+                                        <div class="col d-flex justify-content-center">
+                                            <button id="stopTreadmillButton" type="button"
+                                                class="btn btn-primary btn-lg"
+                                                style="background-color: red;border-color: red;">Stop
+                                                Treadmill</button>
+                                        </div>
+                                    </div>
+                                    <div class="row d-flex align-items-center" style="height: 60%;">
                                         <div class="col d-flex justify-content-center">
                                             <div class="btn-group btn-group-lg" role="group"
                                                 aria-label="Basic outlined example">
-                                                <button id='speedDownStepButton' type="button"
+                                                <button id='speedDown2Button' type="button"
                                                     class="btn btn-outline-primary">&#8722&#8722</button>
                                                 <button id='speedDownButton' type="button"
                                                     class="btn btn-outline-primary">&nbsp&#8722&nbsp</button>
                                                 <button type="button" class="btn btn-outline-primary"
                                                     style="width: 120px;" disabled>
-                                                    <p id="speedTextFTMS" style="font-size: xx-large; margin: 0;">0.0
+                                                    <p id="speedTextTreadmill" style="font-size: xx-large; margin: 0;">
+                                                        0.0
                                                     </p>
                                                     <p style="font-size: smaller; margin: 0;">km/h</p>
                                                 </button>
                                                 <button id='speedUpButton' type="button"
                                                     class="btn btn-outline-primary">&nbsp&#x2b&nbsp</button>
-                                                <button id='speedUpStepButton' type="button"
+                                                <button id='speedUp2Button' type="button"
                                                     class="btn btn-outline-primary">&#x2b&#x2b</button>
                                             </div>
                                         </div>
                                         <div class="col d-flex justify-content-center">
                                             <div class="btn-group btn-group-lg" role="group"
                                                 aria-label="Basic outlined example" style="height: 100%;">
-                                                <button id='inclinationDownStepButton' type="button"
+                                                <button id='inclinationDown2Button' type="button"
                                                     class="btn btn-outline-primary">&#8722&#8722</button>
                                                 <button id='inclinationDownButton' type="button"
                                                     class="btn btn-outline-primary">&nbsp&#8722&nbsp</button>
                                                 <button type="button" class="btn btn-outline-primary"
                                                     style="width: 120px;" disabled>
-                                                    <p id="inclinationTextFTMS" style="font-size: xx-large; margin: 0;">0.0
+                                                    <p id="inclinationTextTreadmill"
+                                                        style="font-size: xx-large; margin: 0;">
+                                                        0.0
                                                     </p>
                                                     <p style="font-size: smaller; margin: 0;">%</p>
                                                 </button>
                                                 <button id='inclinationUpButton' type="button"
                                                     class="btn btn-outline-primary">&nbsp&#x2b&nbsp</button>
-                                                <button id='inclinationUpStepButton' type="button"
+                                                <button id='inclinationUp2Button' type="button"
                                                     class="btn btn-outline-primary">&#x2b&#x2b</button>
                                             </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div id="selectedConcept2pm" class="card-body" style="display: none;">
+                <div class="row">
+                    <div class="col-3">
+                        <h5 id="titleTextConcept2pm" class="card-title">Scan for Bluetooth Concept2 PM5</h5>
+                        <p id="statusTextConcept2pm" class="card-text" style="font-size:larger">No device connected</p>
+                        <a id="connectButtonConcept2pm" href="#" class="btn btn-primary">Connect</a>
+                        <a id="disconnectButtonConcept2pm" href="#" class="btn btn-primary">Disconnect</a>
+                    </div>
+                    <div id="containerConcept2pm" class="col">
+                        <ul class="nav nav-pills mb-3" id="pills-tab-concept2pm" role="tablist">
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link active" id="pills-chart-concept2pm-tab" data-bs-toggle="pill"
+                                    data-bs-target="#pills-chart-concept2pm" type="button" role="tab"
+                                    aria-controls="pills-chart-concept2pm" aria-selected="true">Chart</button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link" id="pills-controls-concept2pm-tab" data-bs-toggle="pill"
+                                    data-bs-target="#pills-controls-concept2pm" type="button" role="tab"
+                                    aria-controls="pills-controls-concept2pm" aria-selected="false">Controls</button>
+                            </li>
+                        </ul>
+                        <div class="tab-content" id="pills-tabContent-concept2pm">
+                            <div class="tab-pane fade show active" id="pills-chart-concept2pm" role="tabpanel"
+                                aria-labelledby="pills-chart-concept2pm-tab">
+                                <div class="myCanvas">
+                                    <canvas id="canvasConcept2pm"></canvas>
+                                </div>
+                            </div>
+                            <div class="tab-pane fade" id="pills-controls-concept2pm" role="tabpanel"
+                                aria-labelledby="pills-controls-concept2pm-tab">
+                                <div id="controlsConcept2pm" class="myCanvas">
+                                    <div class="row d-flex align-items-center" style="height: 100%;">
+                                        <div class="col d-flex justify-content-center" style="height: fit-content;">
+                                            <div style="height:fit-content">
+                                                <div class="row justify-content-md-center "
+                                                    style="padding-bottom: 10px">
+                                                    <span style="width:auto; align-self: center;">Distance:</span>
+                                                    <select id="selectionClickableDistance" class="form-select"
+                                                        aria-label="select" style="width:auto; display: inline-block;">
+                                                        <option value="0" selected>1000 m</option>
+                                                        <option value="1">2000 m</option>
+                                                        <option value="2" selected>5000 m</option>
+                                                        <option value="3">10000 m</option>
+                                                    </select>
+                                                </div>
+                                                <div class="row justify-content-md-center" style="padding-top: 10px">
+                                                    <button id="startConcept2pmButton" type="button"
+                                                        class="btn btn-primary btn-lg"
+                                                        style="background-color: green;border-color: green; width: fit-content;">Start
+                                                        Workout</button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col d-flex justify-content-center">
+                                            <button id="stopConcept2pmButton" type="button"
+                                                class="btn btn-primary btn-lg"
+                                                style="background-color: red;border-color: red;">Reset
+                                                Concept2</button>
                                         </div>
                                     </div>
                                 </div>
@@ -148,20 +242,396 @@
     </div>
     <div class="card">
         <h5 class="card-header" id="headingIMU" data-bs-toggle="collapse" data-bs-target="#collapseIMU"
-            aria-expanded="true" aria-controls="collapseIMU">IMU sensor</h5>
+            aria-expanded="true" aria-controls="collapseIMU">Polar Verity Sense</h5>
         <div id="collapseIMU" class="collapse show" aria-labelledby="headingIMU">
             <div class="card-body">
                 <div class="row">
-                    <div class="col">
+                    <div class="col-3">
                         <h5 id="titleTextIMU" class="card-title">Scan for Bluetooth IMU sensors</h5>
-                        <p id="statusTextIMU" class="card-text">No device connected</p>
+                        <p id="statusTextIMU" class="card-text" style="font-size:larger">No device connected</p>
                         <a id="connectButtonIMU" href="#" class="btn btn-primary">Connect</a>
                         <a id="disconnectButtonIMU" href="#" class="btn btn-primary">Disconnect</a>
                     </div>
-                    <div class="col-9">
-                        <div id="canvasContainerIMU" class="card-body">
-                            <canvas id="canvasIMU"></canvas>
+                    <div id="containerIMU" class="col">
+                        <ul class="nav nav-pills mb-3" id="pills-tab-imu" role="tablist">
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link active" id="pills-streams-imu-tab-A" data-bs-toggle="pill"
+                                    data-bs-target="#pills-streams-imu" type="button" role="tab"
+                                    aria-controls="pills-streams-imu" aria-selected="true">Data Streams</button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link disabled" id="pills-chart-imu-tab-2" data-bs-toggle="pill"
+                                    data-bs-target="#pills-chart-imu-2" type="button" role="tab"
+                                    aria-controls="pills-chart-imu-2" aria-selected="false" disabled>Chart Acc</button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link disabled" id="pills-chart-imu-tab-5" data-bs-toggle="pill"
+                                    data-bs-target="#pills-chart-imu-5" type="button" role="tab"
+                                    aria-controls="pills-chart-imu-5" aria-selected="false" disabled>Chart Gyr</button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link disabled" id="pills-chart-imu-tab-6" data-bs-toggle="pill"
+                                    data-bs-target="#pills-chart-imu-6" type="button" role="tab"
+                                    aria-controls="pills-chart-imu-6" aria-selected="false" disabled>Chart Mag</button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link disabled" id="pills-chart-imu-tab-1" data-bs-toggle="pill"
+                                    data-bs-target="#pills-chart-imu-1" type="button" role="tab"
+                                    aria-controls="pills-chart-imu-1" aria-selected="false" disabled>Chart PPG</button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link disabled" id="pills-chart-imu-tab-0" data-bs-toggle="pill"
+                                    data-bs-target="#pills-chart-imu-0" type="button" role="tab"
+                                    aria-controls="pills-chart-imu-0" aria-selected="false" disabled>Chart HR</button>
+                            </li>
+                        </ul>
+                        <div class="tab-content" id="pills-tabContent-imu">
+                            <div class="tab-pane fade show active" id="pills-streams-imu" role="tabpanel"
+                                aria-labelledby="pills-streams-imu-tab-A">
+                                <div id="streamsIMU" class="myCanvas" style="height: auto;">
+                                    <form>
+                                        <div class="row mb-1">
+                                            <div class="col-sm-2">
+                                                <div class="form-check form-switch">
+                                                    <input class="form-check-input" type="checkbox" id="switchSDK">
+                                                    <label class="form-check-label" for="flexSwitchCheckDefault">SDK
+                                                        Mode</label>
+                                                </div>
+                                            </div>
+                                            <div class="col-sm-8">
+                                                <span style="font-size: small;vertical-align:middle;">SDK mode enables
+                                                    different stream settings. Unsubscribe to all streams (but HR) to
+                                                    enable/disable SDK mode.</span>
+                                            </div>
+                                        </div>
+                                        <div class="row mb-1">
+                                            <div class="col-sm-2">
+                                                <div class="form-check form-check-inline">
+                                                    <input id="checkboxAcc" class="form-check-input" type="checkbox"
+                                                        id="inlineCheckboxAcc" value="option1" data-bs-toggle="collapse"
+                                                        data-bs-target="#containerAccSettings" aria-expanded="false"
+                                                        aria-controls="containerAccSettings">
+                                                    <label class="form-check-label"
+                                                        for="inlineCheckboxAcc">Acceleration</label>
+                                                </div>
+                                            </div>
+                                            <div class="col sm-10">
+                                                <div id="containerAccSettings" class="row g-3 collapse">
+                                                    <div class="col">
+                                                        <span style="font-size: small;">Sample rate:</span>
+                                                        <select id="Accsample_rate" class="form-select form-select-sm"
+                                                            aria-label=".form-select-sm example">
+                                                            <option selected>52</option>
+                                                        </select>
+                                                    </div>
+                                                    <div class="col">
+                                                        <span style="font-size: small;">Resolution:</span>
+                                                        <select id="Accresolution" class="form-select form-select-sm"
+                                                            aria-label=".form-select-sm example">
+                                                            <option selected>16</option>
+                                                        </select>
+                                                    </div>
+                                                    <div class="col">
+                                                        <span style="font-size: small;">Range:</span>
+                                                        <select id="Accrange" class="form-select form-select-sm"
+                                                            aria-label=".form-select-sm example">
+                                                            <option selected>8</option>
+                                                        </select>
+                                                    </div>
+                                                    <div class="col">
+                                                        <span style="font-size: small;">Channels:</span>
+                                                        <select id="Accchannels" class="form-select form-select-sm"
+                                                            aria-label=".form-select-sm example">
+                                                            <option selected>3</option>
+                                                        </select>
+                                                    </div>
+                                                    <div class="col-sm-3">
+                                                        <div class="form-check form-switch" style="margin-left: 10px;">
+                                                            <input class="form-check-input" type="checkbox"
+                                                                id="switchAcc">
+                                                            <label class="form-check-label"
+                                                                for="flexSwitchCheckDefault">Subscribe</label>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="row mb-1">
+                                            <div class="col-sm-2">
+                                                <div class="form-check form-check-inline">
+                                                    <input id="checkboxGyr" class="form-check-input" type="checkbox"
+                                                        id="inlineCheckboxGyr" value="option1" data-bs-toggle="collapse"
+                                                        data-bs-target="#containerGyrSettings" aria-expanded="false"
+                                                        aria-controls="containerGyrSettings">
+                                                    <label class="form-check-label"
+                                                        for="inlineCheckboxGyr">Gyroscope</label>
+                                                </div>
+                                            </div>
+                                            <div class="col sm-10">
+                                                <div id="containerGyrSettings" class="row g-3 collapse">
+                                                    <div class="col">
+                                                        <span style="font-size: small;">Sample rate:</span>
+                                                        <select id="Gyrsample_rate" class="form-select form-select-sm"
+                                                            aria-label=".form-select-sm example">
+                                                            <option selected>52</option>
+                                                        </select>
+                                                    </div>
+                                                    <div class="col">
+                                                        <span style="font-size: small;">Resolution:</span>
+                                                        <select id="Gyrresolution" class="form-select form-select-sm"
+                                                            aria-label=".form-select-sm example">
+                                                            <option selected>16</option>
+                                                        </select>
+                                                    </div>
+                                                    <div class="col">
+                                                        <span style="font-size: small;">Range:</span>
+                                                        <select id="Gyrrange" class="form-select form-select-sm"
+                                                            aria-label=".form-select-sm example">
+                                                            <option selected>2000</option>
+                                                        </select>
+                                                    </div>
+                                                    <div class="col">
+                                                        <span style="font-size: small;">Channels:</span>
+                                                        <select id="Gyrchannels" class="form-select form-select-sm"
+                                                            aria-label=".form-select-sm example">
+                                                            <option selected>3</option>
+                                                        </select>
+                                                    </div>
+                                                    <div class="col-sm-3">
+                                                        <div class="form-check form-switch" style="margin-left: 10px;">
+                                                            <input class="form-check-input" type="checkbox"
+                                                                id="switchGyr">
+                                                            <label class="form-check-label"
+                                                                for="flexSwitchCheckDefault">Subscribe</label>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="row mb-1">
+                                            <div class="col-sm-2">
+                                                <div class="form-check form-check-inline">
+                                                    <input id="checkboxMag" class="form-check-input" type="checkbox"
+                                                        id="inlineCheckboxMag" value="option1" data-bs-toggle="collapse"
+                                                        data-bs-target="#containerMagSettings" aria-expanded="false"
+                                                        aria-controls="containerMagSettings">
+                                                    <label class="form-check-label"
+                                                        for="inlineCheckboxMag">Magnetometer</label>
+                                                </div>
+                                            </div>
+                                            <div class="col sm-10">
+                                                <div id="containerMagSettings" class="row g-3 collapse">
+                                                    <div class="col">
+                                                        <span style="font-size: small;">Sample rate:</span>
+                                                        <select id="Magsample_rate" class="form-select form-select-sm"
+                                                            aria-label=".form-select-sm example">
+                                                            <option selected>50</option>
+                                                        </select>
+                                                    </div>
+                                                    <div class="col">
+                                                        <span style="font-size: small;">Resolution:</span>
+                                                        <select id="Magresolution" class="form-select form-select-sm"
+                                                            aria-label=".form-select-sm example">
+                                                            <option selected>16</option>
+                                                        </select>
+                                                    </div>
+                                                    <div class="col">
+                                                        <span style="font-size: small;">Range:</span>
+                                                        <select id="Magrange" class="form-select form-select-sm"
+                                                            aria-label=".form-select-sm example">
+                                                            <option selected>50</option>
+                                                        </select>
+                                                    </div>
+                                                    <div class="col">
+                                                        <span style="font-size: small;">Channels:</span>
+                                                        <select id="Magchannels" class="form-select form-select-sm"
+                                                            aria-label=".form-select-sm example">
+                                                            <option selected>3</option>
+                                                        </select>
+                                                    </div>
+                                                    <div class="col-sm-3">
+                                                        <div class="form-check form-switch" style="margin-left: 10px;">
+                                                            <input class="form-check-input" type="checkbox"
+                                                                id="switchMag">
+                                                            <label class="form-check-label"
+                                                                for="flexSwitchCheckDefault">Subscribe</label>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="row mb-1">
+                                            <div class="col-sm-2">
+                                                <div class="form-check form-check-inline">
+                                                    <input id="checkboxPPG" class="form-check-input" type="checkbox"
+                                                        id="inlineCheckboxPPG" value="option1" data-bs-toggle="collapse"
+                                                        data-bs-target="#containerPPGSettings" aria-expanded="false"
+                                                        aria-controls="containerPPGSettings">
+                                                    <label class="form-check-label" for="inlineCheckboxPPG">PPG</label>
+                                                </div>
+                                            </div>
+                                            <div class="col sm-10">
+                                                <div id="containerPPGSettings" class="row g-3 collapse">
+                                                    <div class="col">
+                                                        <span style="font-size: small;">Sample rate:</span>
+                                                        <select id="PPGsample_rate" class="form-select form-select-sm"
+                                                            aria-label=".form-select-sm example">
+                                                            <option selected>135</option>
+                                                        </select>
+                                                    </div>
+                                                    <div class="col">
+                                                        <span style="font-size: small;">Resolution:</span>
+                                                        <select id="PPGresolution" class="form-select form-select-sm"
+                                                            aria-label=".form-select-sm example">
+                                                            <option selected>22</option>
+                                                        </select>
+                                                    </div>
+                                                    <div class="col">
+                                                        <span style="font-size: small;">Range:</span>
+                                                        <select id="PPGrange" class="form-select form-select-sm"
+                                                            aria-label=".form-select-sm example" disabled>
+                                                            <option selected>N/A</option>
+                                                        </select>
+                                                    </div>
+                                                    <div class="col">
+                                                        <span style="font-size: small;">Channels:</span>
+                                                        <select id="PPGchannels" class="form-select form-select-sm"
+                                                            aria-label=".form-select-sm example">
+                                                            <option selected>4</option>
+                                                        </select>
+                                                    </div>
+                                                    <div class="col-sm-3">
+                                                        <div class="form-check form-switch" style="margin-left: 10px;">
+                                                            <input class="form-check-input" type="checkbox"
+                                                                id="switchPPG">
+                                                            <label class="form-check-label"
+                                                                for="flexSwitchCheckDefault">Subscribe</label>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="row mb-1">
+                                            <div class="col-sm-2">
+                                                <div class="form-check form-check-inline">
+                                                    <input id="checkboxHR" class="form-check-input" type="checkbox"
+                                                        id="inlineCheckboxHR" value="option1" data-bs-toggle="collapse"
+                                                        data-bs-target="#containerHRSettings" aria-expanded="false"
+                                                        aria-controls="containerHRSettings">
+                                                    <label class="form-check-label" for="inlineCheckboxHR">Heart
+                                                        Rate</label>
+                                                </div>
+                                            </div>
+                                            <div class="col sm-10">
+                                                <div id="containerHRSettings" class="row g-3 collapse">
+                                                    <div class="col">
+                                                        <span style="font-size: small;">Sample rate:</span>
+                                                        <select class="form-select form-select-sm"
+                                                            aria-label=".form-select-sm example" disabled>
+                                                            <option selected>N/A</option>
+                                                        </select>
+                                                    </div>
+                                                    <div class="col">
+                                                        <span style="font-size: small;">Resolution:</span>
+                                                        <select class="form-select form-select-sm"
+                                                            aria-label=".form-select-sm example" disabled>
+                                                            <option selected>N/A</option>
+                                                        </select>
+                                                    </div>
+                                                    <div class="col">
+                                                        <span style="font-size: small;">Range:</span>
+                                                        <select class="form-select form-select-sm"
+                                                            aria-label=".form-select-sm example" disabled>
+                                                            <option selected>N/A</option>
+                                                        </select>
+                                                    </div>
+                                                    <div class="col">
+                                                        <span style="font-size: small;">Channels:</span>
+                                                        <select class="form-select form-select-sm"
+                                                            aria-label=".form-select-sm example" disabled>
+                                                            <option selected>N/A</option>
+                                                        </select>
+                                                    </div>
+                                                    <div class="col-sm-3">
+                                                        <div class="form-check form-switch" style="margin-left: 10px;">
+                                                            <input class="form-check-input" type="checkbox"
+                                                                id="switchHR">
+                                                            <label class="form-check-label"
+                                                                for="flexSwitchCheckDefault">Subscribe</label>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                            <div class="tab-pane fade" id="pills-chart-imu-1" role="tabpanel"
+                                aria-labelledby="pills-chart-imu-tab-1">
+                                <div class="myCanvas">
+                                    <canvas id="canvasIMU_1"></canvas>
+                                </div>
+                            </div>
+                            <div class="tab-pane fade" id="pills-chart-imu-2" role="tabpanel"
+                                aria-labelledby="pills-chart-imu-tab-2">
+                                <div class="myCanvas">
+                                    <select id="selectionClickableImuAccChart" class="form-select"
+                                        aria-label="select" style="width:auto; font-size:small; ">
+                                        <option value="0" selected>Raw data</option>
+                                        <option value="1">Combined</option>
+                                    </select>
+                                    <div class="imuChartCanvas">
+                                        <canvas id="canvasIMU_2"></canvas>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="tab-pane fade" id="pills-chart-imu-5" role="tabpanel"
+                                aria-labelledby="pills-chart-imu-tab-5">
+                                <div class="myCanvas">
+                                    <select id="selectionClickableImuGyrChart" class="form-select"
+                                        aria-label="select" style="width:auto; font-size:small; ">
+                                        <option value="0" selected>Raw data</option>
+                                        <option value="1">Combined</option>
+                                    </select>
+                                    <div class="imuChartCanvas">
+                                        <canvas id="canvasIMU_5"></canvas>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="tab-pane fade" id="pills-chart-imu-6" role="tabpanel"
+                                aria-labelledby="pills-chart-imu-tab-6">
+                                <div class="myCanvas">
+                                    <canvas id="canvasIMU_6"></canvas>
+                                </div>
+                            </div>
+                            <div class="tab-pane fade" id="pills-chart-imu-0" role="tabpanel"
+                                aria-labelledby="pills-chart-imu-tab-0">
+                                <div class="myCanvas">
+                                    <canvas id="canvasIMU_0"></canvas>
+                                </div>
+                            </div>
                         </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="card">
+        <h5 class="card-header" id="headingBle" data-bs-toggle="collapse" data-bs-target="#collapseBle"
+            aria-expanded="true" aria-controls="collapseBle">Discover characteristics</h5>
+        <div id="collapseBle" class="collapse show" aria-labelledby="headingBle">
+            <div class="card-body">
+                <div class="row">
+                    <div class="col">
+                        <h5 id="uuidTextBle" class="card-title">Enter service UUID</h5>
+                        <div class="input" style="width:50%; margin-bottom: 10px;">
+                            <input id="uuidInput" type="text" class="form-control" placeholder="UUID" aria-label="UUID"
+                                aria-describedby="basic-addon1">
+                        </div>
+                        <h5 id="titleTextBle" class="card-title">Scan for Bluetooth devices</h5>
+                        <p id="statusTextBle" class="card-text">No BLE device connected</p>
+                        <a id="connectButtonBle" href="#" class="btn btn-primary">Connect</a>
+                        <a id="disconnectButtonBle" href="#" class="btn btn-primary">Disconnect</a>
                     </div>
                 </div>
             </div>
@@ -229,11 +699,6 @@
                             </div>
                         </div>
                     </div>
-                    <div class="col-9">
-                        <div id="canvasContainerRecord" class="card-body">
-                            <canvas id="canvasRecord"></canvas>
-                        </div>
-                    </div>
                 </div>
             </div>
         </div>
@@ -250,9 +715,13 @@
         </div>
     </div>
 
-    <script src="app.js"></script>
     <script src="heartRateDevice.js"></script>
-    <script src="fitnessMachineDevice.js"></script>
+    <script src="treadmillDevice.js"></script>
+    <script src="concept2pmDevice.js"></script>
+    <script src="imuDevice.js"></script>
+    <script src="bleDevice.js"></script>
+    <script src="utils.js"></script>
+    <script src="app.js"></script>
 
     <!-- jQuery first, then Popper.js, then Bootstrap JS -->
     <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"
@@ -264,6 +733,10 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.min.js"
         integrity="sha384-cVKIPhGWiC2Al4u+LWgxfKTRIcfu0JTxR+EQDz/bgldoEyl4H0zUF0QKbrJ0EcQF"
         crossorigin="anonymous"></script>
+    <!-- Chart JS -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script
+        src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
 </body>
 
 </html>
